@@ -39,7 +39,7 @@ export function useSignup() {
     },
     onSuccess: () => {
       toast.success("Đăng ký thành công! Hãy đăng nhập.");
-      router.push("/login");
+      router.push("/signin");
     },
     onError: (error: Error) => {
       toast.error(error.message);
