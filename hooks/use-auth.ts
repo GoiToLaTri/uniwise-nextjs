@@ -8,10 +8,11 @@ import { LoginRequest } from "@/app/(auth)/signin/_interfaces";
 import { CreateAccountRequest } from "@/app/(auth)/signup/_interfaces";
 import { setTokenResponse, removeToken } from "@/stores/token-store";
 import { removeCachedProfile } from "@/stores/profile-store";
+import { clearAccessTokenCookie, syncAccessTokenCookie } from "@/lib/token";
 
 export function useLogin() {
   const router = useRouter();
-
+ 
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
       return apiClient.post<LoginRequest, ApiResponse<TokenResponse>>(
@@ -20,9 +21,17 @@ export function useLogin() {
       );
     },
     onSuccess: async (response: ApiResponse<TokenResponse>) => {
-      await setTokenResponse(response.data);
+      console.log(":::: response", response)
+      await Promise.all([
+        setTokenResponse(response.data),        // Toàn bộ token vào IndexedDB
+        syncAccessTokenCookie(response.data),   // Chỉ accessToken vào cookie cho proxy.ts
+      ]);
+ 
       toast.success("Đăng nhập thành công!");
-      router.push("/");
+ 
+      const params = new URLSearchParams(window.location.search);
+      router.refresh();
+      router.push(params.get("redirect") ?? "/dashboard");
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -53,8 +62,11 @@ export function useLogout() {
  
   return useMutation({
     mutationFn: async () => {
-      await removeToken();
-      await removeCachedProfile();
+      await Promise.all([
+        removeToken(),
+        removeCachedProfile(),
+        clearAccessTokenCookie(),
+      ]);
     },
     onSuccess: () => {
       queryClient.clear();
