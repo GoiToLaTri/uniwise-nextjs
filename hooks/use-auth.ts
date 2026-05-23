@@ -1,4 +1,4 @@
-import { useMutation } from "@tanstack/react-query";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import apiClient from "@/lib/api-client";
@@ -6,7 +6,8 @@ import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { TokenResponse } from "@/interfaces/response/token-response.interface";
 import { LoginRequest } from "@/app/(auth)/signin/_interfaces";
 import { CreateAccountRequest } from "@/app/(auth)/signup/_interfaces";
-import { setTokenResponse, removeToken } from "@/lib/token-store";
+import { setTokenResponse, removeToken } from "@/stores/token-store";
+import { removeCachedProfile } from "@/stores/profile-store";
 
 export function useLogin() {
   const router = useRouter();
@@ -48,12 +49,15 @@ export function useSignup() {
 
 export function useLogout() {
   const router = useRouter();
-
+  const queryClient = useQueryClient();
+ 
   return useMutation({
     mutationFn: async () => {
       await removeToken();
+      await removeCachedProfile();
     },
     onSuccess: () => {
+      queryClient.clear();
       toast.success("Đăng xuất thành công!");
       router.push("/signin");
     },
