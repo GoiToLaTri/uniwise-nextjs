@@ -6,6 +6,7 @@ import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { TokenResponse } from "@/interfaces/response/token-response.interface";
 import { LoginRequest } from "@/app/(auth)/signin/_interfaces";
 import { CreateAccountRequest } from "@/app/(auth)/signup/_interfaces";
+import { setTokenResponse, removeToken } from "@/lib/token-store";
 
 export function useLogin() {
   const router = useRouter();
@@ -17,10 +18,8 @@ export function useLogin() {
         credentials,
       );
     },
-    onSuccess: (response: ApiResponse<TokenResponse>) => {
-      if (response.data.accessToken) {
-        localStorage.setItem("uniwise_token", response.data.accessToken);
-      }
+    onSuccess: async (response: ApiResponse<TokenResponse>) => {
+      await setTokenResponse(response.data);
       toast.success("Đăng nhập thành công!");
       router.push("/");
     },
@@ -43,6 +42,20 @@ export function useSignup() {
     },
     onError: (error: Error) => {
       toast.error(error.message);
+    },
+  });
+}
+
+export function useLogout() {
+  const router = useRouter();
+
+  return useMutation({
+    mutationFn: async () => {
+      await removeToken();
+    },
+    onSuccess: () => {
+      toast.success("Đăng xuất thành công!");
+      router.push("/signin");
     },
   });
 }
