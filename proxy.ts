@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
   // Public route + đã login → redirect dashboard
   // Nhưng "/" thì cho ở lại (landing page ai cũng xem được)
   if (isPublic && accessToken && pathname !== "/") {
-    return NextResponse.redirect(new URL("/dashboard", request.url));
+    return NextResponse.redirect(new URL("/", request.url));
   }
 
   // Protected route + chưa login → redirect signin

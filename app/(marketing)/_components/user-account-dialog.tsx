@@ -76,7 +76,7 @@ export function UserAccountDialog({ user }: { user: UserProfile }) {
       return {
         label: "Quản trị hệ thống",
         icon: LayoutDashboard,
-        href: "/admin/dashboard",
+        href: "/admin",
         color: "text-rose-600",
         bgColor: "hover:bg-rose-50",
         badge: "Administrator"
