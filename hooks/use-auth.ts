@@ -6,13 +6,14 @@ import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { TokenResponse } from "@/interfaces/response/token-response.interface";
 import { LoginRequest } from "@/app/(auth)/signin/_interfaces";
 import { CreateAccountRequest } from "@/app/(auth)/signup/_interfaces";
-import { setTokenResponse, removeToken } from "@/stores/token-store";
+import { setTokenResponse, removeToken, getTokenResponse } from "@/stores/token-store";
 import { removeCachedProfile } from "@/stores/profile-store";
 import { clearAccessTokenCookie, syncAccessTokenCookie } from "@/lib/token";
+import { startTransition } from "react";
 
 export function useLogin() {
   const router = useRouter();
- 
+  const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
       return apiClient.post<LoginRequest, ApiResponse<TokenResponse>>(
@@ -21,7 +22,6 @@ export function useLogin() {
       );
     },
     onSuccess: async (response: ApiResponse<TokenResponse>) => {
-      console.log(":::: response", response)
       await Promise.all([
         setTokenResponse(response.data),        // Toàn bộ token vào IndexedDB
         syncAccessTokenCookie(response.data),   // Chỉ accessToken vào cookie cho proxy.ts
@@ -30,8 +30,12 @@ export function useLogin() {
       toast.success("Đăng nhập thành công!");
  
       const params = new URLSearchParams(window.location.search);
-      router.refresh();
-      router.push(params.get("redirect") ?? "/dashboard");
+      startTransition(() => {
+        router.refresh();
+        router.push(params.get("redirect") ?? "/");
+      });
+
+      queryClient.invalidateQueries()
     },
     onError: (error: Error) => {
       toast.error(error.message);
@@ -62,6 +66,18 @@ export function useLogout() {
  
   return useMutation({
     mutationFn: async () => {
+      const tokenResponse = await getTokenResponse();
+ 
+      // Gọi backend logout — gửi kèm sessionId để server revoke session
+      // Dùng try/catch riêng để dù backend lỗi vẫn xóa local data
+      try {
+        await apiClient.post("/identity-service/api/v1/authentication/logout", {refreshToken: tokenResponse?.refreshToken});
+      } catch (error) {
+        // Backend lỗi không chặn logout ở client
+        console.error("[useLogout] Backend logout failed:", error);
+      }
+ 
+      // Xóa local data sau khi gọi backend xong
       await Promise.all([
         removeToken(),
         removeCachedProfile(),
@@ -71,7 +87,11 @@ export function useLogout() {
     onSuccess: () => {
       queryClient.clear();
       toast.success("Đăng xuất thành công!");
-      router.push("/signin");
+      router.refresh();
+      // router.push("/signin");
+    },
+    onError: (error: Error) => {
+      toast.error(error.message);
     },
   });
 }

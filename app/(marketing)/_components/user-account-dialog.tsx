@@ -23,6 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { useLogout } from "@/hooks/use-auth";
 
 interface UserProfile {
   id: string;
@@ -35,8 +36,7 @@ interface UserProfile {
 }
 
 export function UserAccountDialog({ user }: { user: UserProfile }) {
-  const router = useRouter();
-  
+  const {mutate: logout, isPending} = useLogout()  
   const initials = user.name
     ?.split(" ")
     .map((n) => n[0])
@@ -45,10 +45,7 @@ export function UserAccountDialog({ user }: { user: UserProfile }) {
     .slice(0, 2);
 
   const handleLogout = () => {
-    localStorage.removeItem("uniwise_token");
-    toast.success("Đã đăng xuất khỏi Uniwise");
-    router.refresh();
-    router.push("/");
+    logout()
   };
 
   return (
@@ -127,7 +124,7 @@ export function UserAccountDialog({ user }: { user: UserProfile }) {
               className="w-full h-12 bg-slate-900 hover:bg-red-600 text-white font-black rounded-xl active:scale-95 transition-all shadow-lg"
             >
               <LogOut className="mr-2 h-4 w-4" />
-              ĐĂNG XUẤT KHỎI HỆ THỐNG
+              {isPending? "Đang đăng xuất...":"ĐĂNG XUẤT KHỎI HỆ THỐNG"}
             </Button>
           </div>
         </div>
