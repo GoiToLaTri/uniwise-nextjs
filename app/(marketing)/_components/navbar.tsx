@@ -8,7 +8,6 @@ import { useProfile } from "@/hooks/use-profile";
 
 export function Navbar() {
   const { data, isLoading } = useProfile();
-
   return (
     <nav className="fixed top-0 w-full z-50 border-b border-slate-200 bg-white/90 backdrop-blur-md">
       <div className="container mx-auto px-4 h-16 flex items-center justify-between">
