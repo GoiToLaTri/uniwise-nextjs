@@ -4,10 +4,11 @@ import apiClient from "@/lib/api-client";
 import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { PermissionResponse } from "./use-permission";
 
 const ROLES_QUERY_KEY = ["roles"];
 const ROLE_DETAIL_QUERY_KEY = (id: number) => ["role", id];
-
+const ROLE_PERMISSIONS_QUERY_KEY = (roleId: number) => ["role-permissions", roleId];
 // Hook lấy danh sách roles (có phân trang)
 export function useRoles(pageNumber = 0, pageSize = 10, search?: string) {
   return useQuery({
@@ -245,3 +246,94 @@ export function useToggleRoleActive() {
 //     }
 //   };
 // }
+
+// Hook lấy danh sách permissions của role
+export function useRolePermissions(roleId: number) {
+  return useQuery({
+    queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId),
+    queryFn: async (): Promise<RoleResponse | null> => {
+      if (!roleId) return null;
+
+      const tokenResponse = await getTokenResponse();
+      if (!tokenResponse) return null;
+
+      const response = await apiClient.get<never, ApiResponse<RoleResponse>>(
+        `/identity-service/api/v1/roles/${roleId}`
+      );
+
+      return response.data;
+    },
+    enabled: !!roleId,
+    staleTime: 5 * 60 * 1000, // 5 minutes
+    retry: false,
+  });
+}
+
+// Hook cấp quyền cho role (nhận mảng tên quyền)
+export function useAssignPermissions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      roleId,
+      permissionNames,
+    }: {
+      roleId: number;
+      permissionNames: string[]; // Mảng tên quyền (permission names)
+    }): Promise<PermissionResponse[] | null> => {
+      try {
+        const response = await apiClient.post<never, ApiResponse<PermissionResponse[]>>(
+          `/identity-service/api/v1/roles/${roleId}/assign-permissions`,
+          permissionNames // Gửi mảng tên quyền
+        );
+        toast.success(`Đã cấp ${permissionNames.length} quyền thành công!`);
+        return response.data;
+      } catch (error) {
+        toast.error("Không thể cấp quyền cho vai trò.");
+        throw error;
+      }
+    },
+    onSuccess: (data, { roleId }) => {
+      if (data) {
+        // Invalidate và refetch permissions của role
+        queryClient.invalidateQueries({ queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId) });
+        
+        // Optional: Invalidate danh sách tất cả permissions nếu có
+        queryClient.invalidateQueries({ queryKey: ["permissions"] });
+      }
+    },
+  });
+}
+
+// Hook thu hồi quyền của role (nhận mảng tên quyền)
+export function useRevokePermissions() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({
+      roleId,
+      permissionNames,
+    }: {
+      roleId: number;
+      permissionNames: string[]; // Mảng tên quyền (permission names)
+    }): Promise<PermissionResponse[] | null> => {
+      try {
+        const response = await apiClient.post<never, ApiResponse<PermissionResponse[]>>(
+          `/identity-service/api/v1/roles/${roleId}/revoke-permissions`,
+          permissionNames // Gửi mảng tên quyền
+        );
+        toast.success(`Đã thu hồi ${permissionNames.length} quyền thành công!`);
+        return response.data;
+      } catch (error) {
+        toast.error("Không thể thu hồi quyền của vai trò.");
+        throw error;
+      }
+    },
+    onSuccess: (data, { roleId }) => {
+      if (data) {
+        // Invalidate và refetch permissions của role
+        queryClient.invalidateQueries({ queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId) });
+      }
+    },
+  });
+}

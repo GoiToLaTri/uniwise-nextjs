@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 import { 
   LayoutDashboard, BookOpen, Users, BarChart3, 
   Settings, GraduationCap, ChevronRight, Loader2, 
-  ShieldCheck
+  ShieldCheck,
+  Key
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/use-profile"; // Hook của bạn
@@ -16,7 +17,8 @@ const routes = [
   { label: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { label: "Khóa học", icon: BookOpen, href: "/admin/courses" },
   { label: "Người dùng", icon: Users, href: "/admin/users" },
-  { label: "Phân quyền", icon: ShieldCheck, href: "/admin/roles" },
+  { label: "Vai trò", icon: ShieldCheck, href: "/admin/roles" },
+  { label: "Quyền hạn", icon: Key, href: "/admin/permissions"},
   { label: "Doanh thu", icon: BarChart3, href: "/admin/analytics" },
   { label: "Cài đặt", icon: Settings, href: "/admin/settings" },
 ];

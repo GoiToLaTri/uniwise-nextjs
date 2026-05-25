@@ -19,6 +19,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { RoleListResponse } from "@/interfaces/response";
 import { RoleFormDialog } from "./role-form-dialog";
+import { useMemo } from "react";
 
 interface RoleTableProps {
   data?: RoleListResponse | null;
@@ -121,7 +122,9 @@ export function RoleTable({ data, isLoading }: RoleTableProps) {
             <TableCell>
               <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                 {/* Nút Cấp quyền */}
-                <PermissionMatrix roleName={role.displayName}>
+                <PermissionMatrix roleId={role.id}
+                                  roleName={role.displayName}
+                                  initialPermissionNames={role.permissions?.map(p => p.name) || []}>
                   <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl hover:bg-indigo-600 hover:text-white transition-all active:scale-90">
                     <Settings2 className="w-4 h-4" />
                   </Button>

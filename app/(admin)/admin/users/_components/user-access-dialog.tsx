@@ -72,7 +72,7 @@ export function UserAccessDialog({ children, user }: { children: React.ReactNode
       <Dialog open={open} onOpenChange={setOpen}>
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[450px] p-0 rounded-[1.25rem] border-none shadow-2xl overflow-hidden bg-white">
-          <div className="h-2 bg-indigo-600" />
+            <div className="h-2 bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500" />
           
           <DialogHeader className="px-8 pt-8">
             <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-2">

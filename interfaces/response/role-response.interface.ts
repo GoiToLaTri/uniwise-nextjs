@@ -1,3 +1,5 @@
+import { PermissionResponse } from "@/hooks/use-permission";
+
 export interface RoleResponse {
     id: number;
     displayName: string;
@@ -5,5 +7,6 @@ export interface RoleResponse {
     description: string;
     isActive: boolean;
     userCount: number;
+    permissions: PermissionResponse[]
 }
   
