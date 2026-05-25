@@ -18,6 +18,7 @@ import {
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { RoleListResponse } from "@/interfaces/response";
+import { RoleFormDialog } from "./role-form-dialog";
 
 interface RoleTableProps {
   data?: RoleListResponse | null;
@@ -132,12 +133,24 @@ export function RoleTable({ data, isLoading }: RoleTableProps) {
                     <Button variant="ghost" size="icon" className="h-9 w-9 rounded-xl"><MoreHorizontal className="w-4 h-4" /></Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="rounded-xl p-2 border-slate-200 shadow-xl">
-                    <DropdownMenuItem className="rounded-lg font-bold text-slate-600 focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer">
-                      <Edit3 className="w-4 h-4 mr-2" /> Chỉnh sửa
-                    </DropdownMenuItem>
+                    
+                    {/* Bọc RoleFormDialog bên ngoài */}
+                    <RoleFormDialog initialData={role}>
+                      <DropdownMenuItem 
+                        // QUAN TRỌNG: Ngăn Dropdown đóng lại ngay lập tức khi click
+                        onSelect={(e) => e.preventDefault()} 
+                        className="rounded-lg font-bold text-slate-600 focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer"
+                      >
+                        <Edit3 className="w-4 h-4 mr-2" /> 
+                        Chỉnh sửa
+                      </DropdownMenuItem>
+                    </RoleFormDialog>
+
                     <DropdownMenuItem className="rounded-lg font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                      <Trash2 className="w-4 h-4 mr-2" /> Xóa vai trò
+                      <Trash2 className="w-4 h-4 mr-2" /> 
+                      Xóa vai trò
                     </DropdownMenuItem>
+
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>

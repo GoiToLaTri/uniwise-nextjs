@@ -1,6 +1,9 @@
 "use client";
 
 import * as React from "react";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import * as z from "zod";
 import { 
   ShieldPlus, Info, KeyRound, AlignLeft, 
   Save, Loader2, AlertCircle 
@@ -21,68 +24,96 @@ import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
 import { cn } from "@/lib/utils";
+import { useCreateRole, useUpdateRole } from "@/hooks/use-role";
+
+// Schema cho cả create và update
+const roleSchema = z.object({
+  displayName: z.string()
+    .min(2, "Tên hiển thị tối thiểu 2 ký tự")
+    .max(50, "Tên hiển thị quá dài"),
+  name: z.string()
+    .min(2, "Mã vai trò tối thiểu 2 ký tự")
+    .regex(/^[A-Z0-9_]+$/, "Mã chỉ gồm chữ HOA, số và dấu gạch dưới (VD: ADMIN_PRO)"),
+  description: z.string()
+    .min(5, "Mô tả vai trò tối thiểu 5 ký tự")
+    .max(200, "Mô tả không nên vượt quá 200 ký tự"),
+  isActive: z.boolean().optional(), // Optional cho create
+});
+
+type RoleFormValues = z.infer<typeof roleSchema>;
 
 interface RoleFormDialogProps {
   children: React.ReactNode;
-  initialData?: {
-    id?: string;
-    name: string;
-    code: string;
-    description: string;
-  };
+  initialData?: RoleFormValues & { id?: number; isActive?: boolean };
 }
 
 export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
   const [open, setOpen] = React.useState(false);
-  const [isSubmitting, setIsSubmitting] = React.useState(false);
   
-  // State quản lý Form
-  const [formData, setFormData] = React.useState({
-    name: initialData?.name || "",
-    code: initialData?.code || "ROLE_",
-    description: initialData?.description || "",
+  const createRoleMutation = useCreateRole();
+  const updateRoleMutation = useUpdateRole();
+  
+  const isEditMode = !!initialData?.id;
+  const isSubmitting = createRoleMutation.isPending || updateRoleMutation.isPending;
+
+  const {
+    register,
+    handleSubmit,
+    reset,
+    formState: { errors },
+    setValue,
+    watch
+  } = useForm<RoleFormValues>({
+    resolver: zodResolver(roleSchema),
+    defaultValues: initialData || {
+      displayName: "",
+      name: "",
+      description: "",
+      isActive: true,
+    },
   });
 
-  // State quản lý Error
-  const [errors, setErrors] = React.useState<Record<string, string>>({});
-
-  // Reset form khi đóng/mở
+  // Tự động viết hoa trường Name
+  const nameValue = watch("name");
   React.useEffect(() => {
-    if (open) {
-      setFormData(initialData || { name: "", code: "ROLE_", description: "" });
-      setErrors({});
+    if (nameValue && !isEditMode) {
+      setValue("name", nameValue.toUpperCase(), { shouldValidate: true });
     }
-  }, [open, initialData]);
+  }, [nameValue, setValue, isEditMode]);
 
-  // Hàm Validate thủ công
-  const validate = () => {
-    const newErrors: Record<string, string> = {};
-    if (formData.name.length < 2) newErrors.name = "Tên vai trò tối thiểu 2 ký tự";
-    if (!formData.code.startsWith("ROLE_") || formData.code.length < 6) {
-      newErrors.code = "Mã phải bắt đầu bằng ROLE_ và viết hoa";
+  // Reset form khi đóng dialog
+  React.useEffect(() => {
+    if (!open) {
+      reset();
     }
-    if (formData.description.length < 5) newErrors.description = "Mô tả quá ngắn";
-    
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
+  }, [open, reset]);
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!validate()) return;
-
-    setIsSubmitting(true);
+  const onSubmit = async (values: RoleFormValues) => {
     try {
-      // Giả lập API call
-      console.log("Submitting:", formData);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
+      if (isEditMode && initialData?.id) {
+        // Update mode
+        await updateRoleMutation.mutateAsync({
+          id: initialData.id,
+          data: {
+            name: values.name,
+            description: values.description,
+            isActive: initialData.isActive ?? true,
+          },
+        });
+      } else {
+        // Create mode
+        await createRoleMutation.mutateAsync({
+          displayName: values.displayName,
+          name: values.name,
+          description: values.description,
+          isActive: true,
+        });
+      }
       
-      toast.success(initialData ? "Đã cập nhật vai trò" : "Đã tạo vai trò mới");
       setOpen(false);
+      reset();
     } catch (error) {
-      toast.error("Lỗi hệ thống, vui lòng thử lại");
-    } finally {
-      setIsSubmitting(false);
+      console.error("Submit error:", error);
     }
   };
 
@@ -90,92 +121,134 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 rounded-[1.25rem] border-none shadow-2xl overflow-hidden bg-white outline-hidden">
-        {/* Decorative Top Bar */}
-        <div className="h-2 bg-linear-to-r from-indigo-600 to-blue-500" />
+        <div className="h-2 bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500" />
 
         <DialogHeader className="px-8 pt-8">
           <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-2">
             <ShieldPlus className="w-6 h-6 text-indigo-600" />
-            {initialData ? "Chỉnh sửa vai trò" : "Tạo vai trò mới"}
+            {isEditMode ? "Chỉnh sửa vai trò" : "Tạo vai trò mới"}
           </DialogTitle>
-          <DialogDescription className="font-medium text-slate-500">
-            Cung cấp thông tin định danh cho vai trò này.
+          <DialogDescription className="font-medium text-slate-500 italic">
+            {isEditMode 
+              ? "Cập nhật thông tin vai trò" 
+              : "Vui lòng điền chính xác thông tin để phân quyền hệ thống."}
           </DialogDescription>
         </DialogHeader>
 
-        {/* FORM THƯỜNG */}
-        <form onSubmit={handleSubmit} className="px-8 py-6 space-y-5">
-          {/* Tên hiển thị */}
+        <form onSubmit={handleSubmit(onSubmit)} className="px-8 py-6 space-y-5">
+          
+          {/* Tên hiển thị - disabled khi edit vì không có trong API update */}
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
               <Info className="w-3 h-3" /> Tên hiển thị
             </Label>
             <Input
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              placeholder="Ví dụ: Giảng viên cấp cao"
+              {...register("displayName")}
+              placeholder="Ví dụ: Quản trị viên"
+              disabled={isSubmitting || isEditMode}
               className={cn(
                 "h-12 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
-                errors.name && "border-rose-500 focus-visible:ring-rose-500/20"
+                errors.displayName && "border-rose-500 focus-visible:ring-rose-500/20",
+                isEditMode && "bg-slate-50 text-slate-500"
               )}
             />
-            {errors.name && <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.name}</p>}
+            {errors.displayName && (
+              <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1 animate-in fade-in slide-in-from-left-2">
+                <AlertCircle className="w-3 h-3" /> {errors.displayName.message}
+              </p>
+            )}
           </div>
 
-          {/* Mã định danh */}
+          {/* Mã hệ thống - disabled khi edit */}
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              <KeyRound className="w-3 h-3" /> Mã hệ thống (System Code)
+              <KeyRound className="w-3 h-3" /> Mã hệ thống (Internal Name)
             </Label>
-            <Input
-              value={formData.code}
-              onChange={(e) => setFormData({ ...formData, code: e.target.value.toUpperCase() })}
-              placeholder="ROLE_INSTRUCTOR"
-              className={cn(
-                "h-12 rounded-xl font-mono border-slate-200 bg-slate-50",
-                errors.code && "border-rose-500"
-              )}
-            />
-            {errors.code && <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.code}</p>}
+            <div className="relative flex items-center">
+              <span className="absolute left-4 text-[10px] font-black text-slate-400 select-none">ROLE_</span>
+              <Input
+                {...register("name")}
+                placeholder="ADMIN_PRO"
+                disabled={isSubmitting || isEditMode}
+                className={cn(
+                  "h-12 pl-14 rounded-xl font-mono border-slate-200 bg-slate-50",
+                  errors.name && "border-rose-500",
+                  isEditMode && "opacity-70"
+                )}
+              />
+            </div>
+            {errors.name && (
+              <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1 animate-in fade-in slide-in-from-left-2">
+                <AlertCircle className="w-3 h-3" /> {errors.name.message}
+              </p>
+            )}
           </div>
 
           {/* Mô tả */}
           <div className="space-y-2">
             <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
-              <AlignLeft className="w-3 h-3" /> Mô tả vai trò
+              <AlignLeft className="w-3 h-3" /> Mô tả chi tiết
             </Label>
             <Textarea
-              value={formData.description}
-              onChange={(e) => setFormData({ ...formData, description: e.target.value })}
-              placeholder="Mô tả các quyền hạn cơ bản..."
+              {...register("description")}
+              placeholder="Giải thích quyền hạn của vai trò này..."
+              disabled={isSubmitting}
               className={cn(
                 "min-h-[100px] rounded-xl border-slate-200 resize-none",
                 errors.description && "border-rose-500"
               )}
             />
-            {errors.description && <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1"><AlertCircle className="w-3 h-3" /> {errors.description}</p>}
+            {errors.description && (
+              <p className="text-[10px] font-bold text-rose-500 flex items-center gap-1 animate-in fade-in slide-in-from-left-2">
+                <AlertCircle className="w-3 h-3" /> {errors.description.message}
+              </p>
+            )}
           </div>
+
+          {/* Trạng thái Active - chỉ hiển thị khi edit */}
+          {isEditMode && (
+            <div className="space-y-2">
+              <Label className="text-[10px] font-black uppercase tracking-widest text-slate-400 flex items-center gap-2">
+                Trạng thái
+              </Label>
+              <div className="flex items-center gap-2">
+                <input
+                  type="checkbox"
+                  {...register("isActive")}
+                  disabled={isSubmitting}
+                  className="w-4 h-4 rounded border-slate-300 text-indigo-600 focus:ring-indigo-500"
+                />
+                <span className="text-sm font-medium text-slate-700">
+                  Kích hoạt vai trò này
+                </span>
+              </div>
+            </div>
+          )}
 
           <DialogFooter className="pt-6 border-t border-slate-50">
             <Button 
               type="button" 
               variant="ghost" 
               onClick={() => setOpen(false)}
-              className="font-bold rounded-xl h-12"
+              disabled={isSubmitting}
+              className="font-bold rounded-xl h-12 text-slate-500"
             >
               Hủy bỏ
             </Button>
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-indigo-600 hover:bg-indigo-700 font-black rounded-xl h-12 px-8 active:scale-95 transition-all shadow-lg shadow-indigo-100 min-w-[140px]"
+              className="bg-indigo-600 hover:bg-indigo-700 font-black rounded-xl h-12 px-8 active:scale-95 transition-all shadow-lg shadow-indigo-100 min-w-[160px]"
             >
               {isSubmitting ? (
-                <Loader2 className="w-4 h-4 animate-spin" />
+                <>
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                  ĐANG XỬ LÝ...
+                </>
               ) : (
                 <>
                   <Save className="w-4 h-4 mr-2" />
-                  {initialData ? "LƯU THAY ĐỔI" : "TẠO VAI TRÒ"}
+                  {isEditMode ? "LƯU CẬP NHẬT" : "XÁC NHẬN TẠO"}
                 </>
               )}
             </Button>
