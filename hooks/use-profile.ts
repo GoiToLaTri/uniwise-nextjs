@@ -5,8 +5,9 @@ import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { ProfileResponse } from "@/interfaces/response/profile-response.interface";
 import { getCachedProfile, setCachedProfile } from "@/stores/profile-store";
 import { getTokenResponse, isTokenExpired } from "@/stores/token-store";
+import { ProfileListResponse } from "@/interfaces/response/profile-list-response.interface";
 
-const PROFILE_QUERY_KEY = ["profile", "me"];
+const PROFILE_QUERY_KEY = ["profile", "me", "profiles"];
 
 export function useProfile() {
   return useQuery({
@@ -55,4 +56,28 @@ export function useRefreshProfile() {
       return null;
     }
   };
+}
+
+// Hook lấy danh sách profiles (có phân trang)
+export function useProfiles(pageNumber = 0, pageSize = 10, search?: string) {
+  return useQuery({
+    queryKey: [...PROFILE_QUERY_KEY, pageNumber, pageSize, search],
+    queryFn: async (): Promise<ProfileListResponse | null> => {
+      // Không có session → không gọi API
+      const tokenResponse = await getTokenResponse();
+      if (!tokenResponse) return null;
+
+      // Gọi API
+      const response = await apiClient.get<never, ApiResponse<ProfileListResponse>>(
+        "/user-service/api/v1/profiles",
+        {
+          params: { page:pageNumber, size:pageSize, search },
+        }
+      );
+
+      return response.data;
+    },
+    staleTime: Infinity,
+    retry: false,
+  });
 }

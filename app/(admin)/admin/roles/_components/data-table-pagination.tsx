@@ -28,7 +28,7 @@ export function DataTablePagination({
   return (
     <div className="flex items-center justify-between px-6 py-4 bg-slate-50/50 border-t border-slate-100">
       <div className="flex-1 text-xs font-bold text-slate-500 uppercase tracking-widest">
-        Tổng số <span className="text-indigo-600">{totalElements}</span> vai trò
+        Tổng số <span className="text-indigo-600">{totalElements}</span> người dùng
       </div>
       
       <div className="flex items-center gap-2">

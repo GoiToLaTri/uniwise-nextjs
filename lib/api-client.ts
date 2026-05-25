@@ -14,7 +14,7 @@ import { clearAccessTokenCookie, syncAccessTokenCookie } from "./token";
 const AUTH_ROUTES = [
   "/identity-service/api/v1/authentication/token",
   "/identity-service/api/v1/authentication/refresh",
-  "/identity-service/api/v1/accounts",
+  // "/identity-service/api/v1/accounts",
 ];
 
 function isAuthRoute(url: string = ""): boolean {
@@ -31,7 +31,7 @@ const apiClient = axios.create({
 // ─── Refresh logic ────────────────────────────────────────────────────────────
 let refreshPromise: Promise<TokenResponse | null> | null = null;
 
-async function refreshAccessToken(): Promise<TokenResponse | null> {
+export async function refreshAccessToken(): Promise<TokenResponse | null> {
   if (refreshPromise) return refreshPromise;
 
   refreshPromise = (async () => {

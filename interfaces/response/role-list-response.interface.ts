@@ -1,10 +1,6 @@
+import { ListResponse } from "./list-response.interface";
 import { RoleResponse } from "./role-response.interface";
 
-export interface RoleListResponse {
+export interface RoleListResponse extends ListResponse {
     content: RoleResponse[];
-    pageNumber: number;
-    pageSize: number;
-    totalElements: number;
-    totalPages: number;
-    last: boolean;
 }
