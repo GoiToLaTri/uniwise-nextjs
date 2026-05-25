@@ -57,7 +57,7 @@ export async function refreshAccessToken(): Promise<TokenResponse | null> {
       await setTokenResponse(newToken);
       await syncAccessTokenCookie(newToken);
 
-      console.info("[api-client] Token refreshed successfully");
+      // console.info("[api-client] Token refreshed successfully");
       return newToken;
     } catch (error) {
       console.error("[api-client] Refresh token failed:", error);

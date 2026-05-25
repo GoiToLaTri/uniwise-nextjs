@@ -10,10 +10,6 @@ import { PermissionFormDialog } from "./permission-form-dialog";
 import { PermissionResponse, useAllPermissions } from "@/hooks/use-permission";
 
 export function PermissionTable({ data, isLoading, onRefresh }: { data?: { content: PermissionResponse[] } | null, isLoading: boolean, onRefresh: () => void }) {
-
-    const {data: per} = useAllPermissions()
-    console.log(":::: per", per)
-  
   const handleDelete = async (id: number) => {
     if (confirm("Bạn có chắc chắn muốn xóa quyền này? Hành động này có thể ảnh hưởng đến các vai trò đang được gán.")) {
       toast.success("Đã xóa quyền hạn thành công");

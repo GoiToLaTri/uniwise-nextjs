@@ -31,7 +31,7 @@ export function useTokenRefresh() {
    
         // Dùng refreshAccessToken từ api-client — singleton refreshPromise
         // đảm bảo dù interceptor cũng đang refresh thì chỉ có 1 request duy nhất
-        console.info("[useTokenRefresh] Token sắp hết hạn, đang refresh ngầm...");
+        // console.info("[useTokenRefresh] Token sắp hết hạn, đang refresh ngầm...");
         await refreshAccessToken();
       }
    
