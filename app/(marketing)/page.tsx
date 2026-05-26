@@ -22,7 +22,7 @@ const FEATURED_COURSES = [
     students: 856,
     category: "Design",
     image:
-      "https://images.unsplash.com/photo-1541462608141-ad516a6250c8?w=800&q=80",
+      "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=800&q=80",
   },
   {
     title: "AI & Machine Learning cơ bản cho người mới bắt đầu",

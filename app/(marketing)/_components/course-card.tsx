@@ -20,6 +20,7 @@ export function CourseCard({ title, instructor, price, rating, students, image, 
         <Image 
           src={image} 
           alt={title} 
+          sizes=""
           fill 
           className="object-cover transition-transform duration-500 group-hover:scale-110"
         />
