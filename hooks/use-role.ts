@@ -6,7 +6,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { PermissionResponse } from "./use-permission";
 
-const ROLES_QUERY_KEY = ["roles"];
+export const ROLES_QUERY_KEY = ["roles"];
 const ROLE_DETAIL_QUERY_KEY = (id: number) => ["role", id];
 const ROLE_PERMISSIONS_QUERY_KEY = (roleId: number) => ["role-permissions", roleId];
 // Hook lấy danh sách roles (có phân trang)
@@ -291,10 +291,16 @@ export function useAssignPermissions() {
     },
     onSuccess: (data, { roleId }) => {
       if (data) {
-        // Invalidate và refetch permissions của role
+        // Invalidate permissions của role
         queryClient.invalidateQueries({ queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId) });
         
-        // Optional: Invalidate danh sách tất cả permissions nếu có
+        // Vì userCount có thể thay đổi sau khi cấp/thu hồi quyền
+        queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
+        
+        // Invalidate chi tiết role (nếu có)
+        queryClient.invalidateQueries({ queryKey: ROLE_DETAIL_QUERY_KEY(roleId) });
+        
+        // Invalidate danh sách permissions
         queryClient.invalidateQueries({ queryKey: ["permissions"] });
       }
     },
@@ -327,8 +333,17 @@ export function useRevokePermissions() {
     },
     onSuccess: (data, { roleId }) => {
       if (data) {
-        // Invalidate và refetch permissions của role
+        // Invalidate permissions của role
         queryClient.invalidateQueries({ queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId) });
+        
+        // Invalidate danh sách roles
+        queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
+        
+        // Invalidate chi tiết role
+        queryClient.invalidateQueries({ queryKey: ROLE_DETAIL_QUERY_KEY(roleId) });
+        
+        // Invalidate danh sách permissions
+        queryClient.invalidateQueries({ queryKey: ["permissions"] });
       }
     },
   });

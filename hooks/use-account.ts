@@ -4,6 +4,7 @@ import apiClient from "@/lib/api-client";
 import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner"; // or your toast library
+import { ROLES_QUERY_KEY } from "./use-role";
 
 export interface AccountResponse {
   id: string;
@@ -123,6 +124,8 @@ export function useAssignRolesToAccount() {
       }
     },
     onSuccess: (updatedAccount, { id }) => {
+      queryClient.invalidateQueries({queryKey: ROLES_QUERY_KEY})
+
       if (updatedAccount) {
         // Update cache chi tiết
         queryClient.setQueryData(ACCOUNT_DETAIL_QUERY_KEY(id), updatedAccount);
@@ -171,6 +174,7 @@ export function useRevokeRolesFromAccount() {
       }
     },
     onSuccess: (updatedAccount, { id }) => {
+      queryClient.invalidateQueries({queryKey: ROLES_QUERY_KEY})
       if (updatedAccount) {
         // Update cache chi tiết
         queryClient.setQueryData(ACCOUNT_DETAIL_QUERY_KEY(id), updatedAccount);
