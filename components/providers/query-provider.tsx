@@ -1,6 +1,6 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { keepPreviousData, QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ReactQueryDevtools } from "@tanstack/react-query-devtools";
 
 // Hàm tạo QueryClient để đảm bảo không tạo lại client trên mỗi lần render
@@ -8,11 +8,12 @@ function makeQueryClient() {
   return new QueryClient({
     defaultOptions: {
       queries: {
-        // SSR thường yêu cầu staleTime > 0 để tránh refetch ngay lập tức ở client
         staleTime: 60 * 1000,
         gcTime: 5 * 60 * 1000,
         retry: 1,
         refetchOnWindowFocus: false,
+        refetchOnMount: false,        // Áp dụng cho tất cả query
+        placeholderData: keepPreviousData, // Giữ data cũ khi navigate
       },
     },
   });

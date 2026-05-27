@@ -7,6 +7,7 @@ import { ProfileTabs } from "../_components/profile-tabs";
 import { usePublicProfile } from "@/hooks/use-profile";
 
 export default function PublicProfilePage() {
+  console.log("PublicProfilePage render");
   const { publicId } = useParams<{publicId: string}>();
   const { data: user, isLoading, error } = usePublicProfile(publicId);
 

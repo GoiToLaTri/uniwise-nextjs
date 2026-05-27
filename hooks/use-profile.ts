@@ -1,4 +1,4 @@
-import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
 import { ApiResponse } from "@/interfaces/response/api-response.interface";
@@ -87,13 +87,23 @@ export function useProfiles(pageNumber = 0, pageSize = 10, search?: string) {
     retry: false,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
+    placeholderData: keepPreviousData
   });
 }
 
 export function usePublicProfile(publicId?: string) {
+  const queryClient = useQueryClient();
+  
+  // Log xem cache có gì trước khi query chạy
+  console.log(
+    "cache state:",
+    queryClient.getQueryData([...PUBLIC_PROFILE_QUERY_KEY, publicId])
+  );
+
   return useQuery({
     queryKey: [...PUBLIC_PROFILE_QUERY_KEY, publicId],
     queryFn: async (): Promise<ProfileResponse | null> => {
+      console.log("queryFn running for:", publicId);
       // Không có publicId → không gọi API
       if (!publicId) return null;
 
