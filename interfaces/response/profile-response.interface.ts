@@ -6,4 +6,5 @@ export interface ProfileResponse {
     avatarUrl: string;
     bio: string;
     publicId: string;
+    profileType: string;
   }
