@@ -1,4 +1,4 @@
-import { keepPreviousData, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
 import { ApiResponse } from "@/interfaces/response/api-response.interface";
@@ -35,11 +35,11 @@ export function useProfile() {
       await setCachedProfile(response.data);
       return response.data;
     },
-    staleTime: Infinity,
-    gcTime: 10 * 60 * 1000,
-    retry: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    // staleTime: Infinity,
+    // gcTime: 10 * 60 * 1000,
+    // retry: false,
+    // refetchOnMount: false,
+    // refetchOnWindowFocus: false,
   });
 }
 
@@ -82,12 +82,12 @@ export function useProfiles(pageNumber = 0, pageSize = 10, search?: string) {
 
       return response.data;
     },
-    staleTime: Infinity,
-    gcTime: 10 * 60 * 1000,
-    retry: false,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
-    placeholderData: keepPreviousData
+    // staleTime: Infinity,
+    // gcTime: 10 * 60 * 1000,
+    // retry: false,
+    // refetchOnMount: false,
+    // refetchOnWindowFocus: false,
+    // placeholderData: keepPreviousData
   });
 }
 
@@ -120,10 +120,10 @@ export function usePublicProfile(publicId?: string) {
       }
     },
     enabled: !!publicId,
-    staleTime: 5 * 60 * 1000, // 5 phút
-    gcTime: 10 * 60 * 1000, // 10 phút
-    retry: 1,
-    refetchOnMount: false,
-    refetchOnWindowFocus: false,
+    // staleTime: 5 * 60 * 1000, // 5 phút
+    // gcTime: 10 * 60 * 1000, // 10 phút
+    // retry: 1,
+    // refetchOnMount: false,
+    // refetchOnWindowFocus: false,
   });
 }

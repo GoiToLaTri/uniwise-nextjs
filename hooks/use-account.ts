@@ -39,8 +39,6 @@ export function useAccounts(pageNumber = 0, pageSize = 10, search?: string) {
 
       return response.data;
     },
-    staleTime: Infinity,
-    retry: false,
   });
 }
 
@@ -61,8 +59,6 @@ export function useAccount(id: string) {
       return response.data;
     },
     enabled: !!id,
-    staleTime: Infinity,
-    retry: false,
   });
 }
 

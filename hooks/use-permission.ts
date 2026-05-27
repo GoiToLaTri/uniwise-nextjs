@@ -49,8 +49,7 @@ export function usePermissions(pageNumber = 0, pageSize = 10, search?: string) {
 
       return response.data;
     },
-    staleTime: Infinity,
-    retry: false,
+    
   });
 }
 
@@ -71,8 +70,6 @@ export function usePermission(id: number) {
       return response.data;
     },
     enabled: !!id,
-    staleTime: Infinity,
-    retry: false,
   });
 }
 
@@ -210,7 +207,5 @@ export function useAllPermissions() {
 
       return response.data?.content || [];
     },
-    staleTime: Infinity,
-    retry: false,
   });
 }

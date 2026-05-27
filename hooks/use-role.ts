@@ -28,8 +28,7 @@ export function useRoles(pageNumber = 0, pageSize = 10, search?: string) {
 
       return response.data;
     },
-    staleTime: Infinity,
-    retry: false,
+    
   });
 }
 
@@ -50,8 +49,7 @@ export function useRole(id: number) {
       return response.data;
     },
     enabled: !!id,
-    staleTime: Infinity,
-    retry: false,
+    
   });
 }
 
@@ -264,8 +262,6 @@ export function useRolePermissions(roleId: number) {
       return response.data;
     },
     enabled: !!roleId,
-    staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: false,
   });
 }
 
