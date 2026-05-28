@@ -10,6 +10,8 @@ import { setTokenResponse, removeToken, getTokenResponse } from "@/stores/token-
 import { removeCachedProfile } from "@/stores/profile-store";
 import { clearAccessTokenCookie, syncAccessTokenCookie } from "@/lib/token";
 import { startTransition } from "react";
+import { ACCOUNT_DETAIL_QUERY_KEY } from "./use-account";
+import { PROFILE_QUERY_KEY } from "./use-profile";
 
 export function useLogin() {
   const router = useRouter();
@@ -28,14 +30,18 @@ export function useLogin() {
       ]);
  
       toast.success("Đăng nhập thành công!");
- 
+      
+      await queryClient.invalidateQueries({queryKey: PROFILE_QUERY_KEY})
+
+      // Force refetch ngay
+      await queryClient.refetchQueries({ queryKey: PROFILE_QUERY_KEY });
+
       const params = new URLSearchParams(window.location.search);
       startTransition(() => {
-        router.refresh();
-        router.push(params.get("redirect") ?? "/");
+        // router.refresh();
+        router.replace(params.get("redirect") ?? "/");
       });
 
-      queryClient.invalidateQueries()
     },
     onError: (error: Error) => {
       toast.error(error.message);

@@ -38,7 +38,7 @@ export function proxy(request: NextRequest) {
   // Auth-only routes
   if (matchesAny(pathname, AUTH_ONLY_ROUTES)) {
     if (accessToken) {
-      return NextResponse.redirect(new URL("/dashboard", request.url));
+      return NextResponse.redirect(new URL("/", request.url));
     }
     return NextResponse.next(); // ← không có token thì cho vào bình thường
   }

@@ -18,8 +18,8 @@ export interface AccountListResponse extends ListResponse {
 }
 
 // Query keys
-const ACCOUNTS_QUERY_KEY = ["accounts"];
-const ACCOUNT_DETAIL_QUERY_KEY = (id: string) => ["account", id];
+export const ACCOUNTS_QUERY_KEY = ["accounts"];
+export const ACCOUNT_DETAIL_QUERY_KEY = (id: string) => ["account", id];
 
 // Hook lấy danh sách accounts (có phân trang)
 export function useAccounts(pageNumber = 0, pageSize = 10, search?: string) {

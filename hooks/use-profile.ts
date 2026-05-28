@@ -7,9 +7,9 @@ import { getCachedProfile, setCachedProfile } from "@/stores/profile-store";
 import { getTokenResponse, isTokenExpired } from "@/stores/token-store";
 import { ProfileListResponse } from "@/interfaces/response/profile-list-response.interface";
 
-const PROFILE_QUERY_KEY = ["profile", "me", "profiles"];
+export const PROFILE_QUERY_KEY = ["profile", "me", "profiles"];
 // Tạo query key riêng cho public profile
-const PUBLIC_PROFILE_QUERY_KEY = ["profile", "public"];
+export const PUBLIC_PROFILE_QUERY_KEY = ["profile", "public"];
 
 export function useProfile() {
   return useQuery({
