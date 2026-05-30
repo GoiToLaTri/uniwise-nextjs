@@ -184,7 +184,7 @@ export function LoginForm() {
 
           <Button
             tabIndex={5}
-            className="w-full h-12 bg-indigo-600 ..."
+            className="w-full h-12 bg-linear-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700 text-white font-black rounded-xl active:scale-95 transition-all shadow-lg shadow-indigo-200 mt-2"
             disabled={isPending} // Disable khi đang call API
           >
             {isPending ? (

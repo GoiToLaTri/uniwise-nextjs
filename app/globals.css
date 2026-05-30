@@ -2,6 +2,9 @@
 @import "tw-animate-css";
 @import "shadcn/tailwind.css";
 
+/* Quét TẤT CẢ các thư mục có tên là _components nằm ở bất kỳ đâu trong thư mục app */
+@source "../app/**/_components/**/*.{ts,tsx,js,jsx}";
+
 @custom-variant dark (&:is(.dark *));
 
 @theme inline {

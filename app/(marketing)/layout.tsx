@@ -5,7 +5,6 @@ export default function MarketingLayout({
 }: {
   children: React.ReactNode;
 }) {
-  console.log("MarketingLayout render"); // ← thêm dòng này
   return (
     <div className={`font-sans antialiased bg-slate-50 text-slate-950`}>
       <Navbar />
