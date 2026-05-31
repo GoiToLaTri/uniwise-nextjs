@@ -10,12 +10,15 @@ import { Button } from "@/components/ui/button";
 import { ArrowRight, CheckCircle2, Clock, GraduationCap, Home, Loader2, Mail, PartyPopper, Terminal } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
+import { useApplyInstructor } from "@/hooks/use-instructor";
 
 export function InstructorProfileForm() {
   const [currentStep, setCurrentStep] = useState(1);
-  const [isLoading, setIsLoading] = useState(false);
   const [isSuccess, setIsSuccess] = useState(false);
-  const router = useRouter()
+  const router = useRouter();
+  
+  // Sử dụng hook useApplyInstructor
+  const { mutate: applyInstructor, isPending: isLoading } = useApplyInstructor();
 
   // State tổng quản lý toàn bộ dữ liệu form
   const [formData, setFormData] = useState<Partial<InstructorProfileFormValues>>({
@@ -42,20 +45,34 @@ export function InstructorProfileForm() {
 
   // XỬ LÝ SUBMIT CUỐI CÙNG
   const handleFinalSubmit = async (expertiseData: Pick<InstructorProfileFormValues, "expertises">) => {
-    setIsLoading(true);
-    
     // Gom tất cả dữ liệu lại lần cuối
     const finalPayload = { ...formData, ...expertiseData };
     
-    // Giả lập gọi API (Delay 2s)
-    await new Promise((resolve) => setTimeout(resolve, 2000));
-    
     console.log(">>> FINAL DATA SUBMITTED TO BACKEND:", finalPayload);
     
-    setFormData(finalPayload); // Lưu bản đầy đủ để hiển thị ở màn success
-    setIsLoading(false);
-    setIsSuccess(true);
-    window.scrollTo({ top: 0, behavior: "smooth" });
+    // Transform data to match API expected format if needed
+    const apiPayload = {
+      headline: finalPayload.headline!,
+      biography: finalPayload.biography!,
+      yearsOfExperience: finalPayload.yearsOfExperience!,
+      degrees: finalPayload.degrees!,
+      expertises: finalPayload.expertises!
+    };
+    
+    // Gọi API thông qua hook
+    applyInstructor(apiPayload, {
+      onSuccess: (data) => {
+        // Lưu bản đầy đủ để hiển thị ở màn success
+        setFormData(finalPayload);
+        setIsSuccess(true);
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      },
+      onError: (error) => {
+        // Error handling is already done in the hook (toast.error)
+        console.error("Submission failed:", error);
+        // You can add additional error handling here if needed
+      }
+    });
   };
 
   const handleBack = () => {

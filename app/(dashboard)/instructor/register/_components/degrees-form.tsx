@@ -106,10 +106,16 @@ export function DegreesForm({ onNext, onBack, initialData }: { onNext: (data: De
                         <SelectValue placeholder="Chọn loại bằng cấp" />
                       </SelectTrigger>
                       <SelectContent className="rounded-xl border-slate-200 shadow-2xl p-1">
-                        {["Cử nhân", "Thạc sĩ", "Tiến sĩ", "Chứng chỉ chuyên môn", "Khác"].map((t) => (
-                            <SelectItem key={t} value={t} className="text-[14px] focus:bg-indigo-50 focus:text-indigo-600 rounded-lg cursor-pointer py-2.5 px-3">
-                                {t}
-                            </SelectItem>
+                        {[
+                          { label: "Cử nhân", value: "BACHELOR" },
+                          { label: "Thạc sĩ", value: "MASTER" },
+                          { label: "Tiến sĩ", value: "DOCTORATE" },
+                          { label: "Chứng chỉ chuyên môn", value: "CERTIFICATE" },
+                          { label: "Khác", value: "OTHER" }
+                        ].map((option) => (
+                          <SelectItem key={option.value} value={option.value} className="text-[14px] focus:bg-indigo-50 focus:text-indigo-600 rounded-lg cursor-pointer py-2.5 px-3">
+                            {option.label}
+                          </SelectItem>
                         ))}
                       </SelectContent>
                     </Select>
@@ -160,52 +166,72 @@ export function DegreesForm({ onNext, onBack, initialData }: { onNext: (data: De
 
               {/* 4. Ngày cấp */}
               <div className="space-y-2.5">
-                <Label className="text-sm font-bold text-slate-700">Ngày cấp</Label>
-                <Controller
-                  control={control}
-                  name={`degrees.${index}.issuedDate`}
-                  render={({ field }) => (
-                    <Popover>
-                      <PopoverTrigger asChild>
-                        <Button
-                          variant="outline"
-                          className={cn(
-                            "w-full h-12 justify-between text-left font-medium rounded-xl border-slate-200 bg-white hover:bg-white hover:border-indigo-500 transition-all focus:ring-1 focus:ring-indigo-500/30",
-                            !field.value && "text-slate-400",
-                            errors.degrees?.[index]?.issuedDate && "border-destructive"
-                          )}
-                        >
-                          <span className="flex items-center">
-                            <CalendarIcon className="mr-2 h-4 w-4 text-indigo-500" />
-                            {field.value ? format(new Date(field.value), "dd/MM/yyyy") : "Chọn ngày"}
-                          </span>
-                          <ChevronDown className="h-4 w-4 opacity-50" />
-                        </Button>
-                      </PopoverTrigger>
-                      <PopoverContent className="w-auto p-0 rounded-2xl border-slate-200 shadow-2xl" align="start">
-                        <div className={styles.wrapper}>
-                            <Calendar
+              <Label className="text-sm font-bold text-slate-700">Ngày cấp</Label>
+              <Controller
+                control={control}
+                name={`degrees.${index}.issuedDate`}
+                render={({ field }) => (
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        className={cn(
+                          "w-full h-12 justify-between text-left font-medium rounded-xl border-slate-200 bg-white hover:bg-white hover:border-indigo-500 transition-all focus:ring-1 focus:ring-indigo-500/30",
+                          !field.value && "text-slate-400",
+                          errors.degrees?.[index]?.issuedDate && "border-destructive"
+                        )}
+                      >
+                        <span className="flex items-center">
+                          <CalendarIcon className="mr-2 h-4 w-4 text-indigo-500" />
+                          {/* Hiển thị trên UI vẫn là định dạng Việt Nam cho dễ đọc */}
+                          {field.value ? format(new Date(field.value), "dd/MM/yyyy") : "Chọn ngày"}
+                        </span>
+                        <ChevronDown className="h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent className="w-auto p-0 rounded-2xl border-slate-200 shadow-2xl" align="start">
+                      <div className={styles.wrapper}>
+                          <Calendar
                             mode="single"
                             selected={field.value ? new Date(field.value) : undefined}
-                            onSelect={(date) => field.onChange(date?.toISOString())}
+                            // CHỈNH SỬA: Format lại dữ liệu đầu ra thành YYYY-MM-DD
+                            onSelect={(date) => {
+                              if (date) {
+                                field.onChange(format(date, "yyyy-MM-dd"));
+                              }
+                            }}
                             disabled={(date) => date > new Date()}
                             locale={vi}
-                            // Custom style chọn ngày chuẩn Indigo thương hiệu
+                            
+                            // THÊM: Cho phép chọn tháng và năm
+                            captionLayout="dropdown" 
+                            // fromYear={1960}
+                            // toYear={new Date().getFullYear()}
+                            
                             styles={{
-                                selected: { backgroundColor: "#4f46e5", color: "white", borderRadius: "8px" },
+                              selected: { backgroundColor: "#4f46e5", color: "white", borderRadius: "8px" },
                             }}
-                            />
-                        </div>
-                      </PopoverContent>
-                    </Popover>
-                  )}
-                />
-                {errors.degrees?.[index]?.issuedDate && (
-                  <p className="flex items-center gap-1.5 text-[10px] font-black text-destructive uppercase tracking-tighter">
-                    <AlertCircle className="w-3 h-3" /> {errors.degrees[index]?.issuedDate?.message}
-                  </p>
+                            // Custom class để đảm bảo dropdown hiển thị đẹp theo Design System
+                            classNames={{
+                              caption_label: "hidden", // Ẩn label mặc định khi dùng dropdown
+                              // dropdown_month: "flex-1",
+                              // dropdown_year: "flex-1",
+                              dropdown: "bg-transparent font-bold text-sm focus:outline-none cursor-pointer p-1 rounded-md hover:bg-slate-100",
+                              // vhidden: "hidden", // Ẩn các phần tử bổ trợ của react-day-picker
+                              // caption_dropdowns: "flex gap-2 w-full mb-2"
+                            }}
+                          />
+                      </div>
+                    </PopoverContent>
+                  </Popover>
                 )}
-              </div>
+              />
+              {errors.degrees?.[index]?.issuedDate && (
+                <p className="flex items-center gap-1.5 text-[10px] font-black text-destructive uppercase tracking-tighter mt-1">
+                  <AlertCircle className="w-3 h-3" /> {errors.degrees[index]?.issuedDate?.message}
+                </p>
+              )}
+            </div>
 
               {/* 5. Mô tả chi tiết */}
               <div className="md:col-span-2 space-y-2.5">
