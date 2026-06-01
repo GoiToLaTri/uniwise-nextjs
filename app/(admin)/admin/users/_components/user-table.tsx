@@ -24,17 +24,17 @@ export function UserTable({ data, isLoading }: { data?: { content: ProfileRespon
     <Table>
       <TableHeader className="bg-slate-50/50">
         <TableRow className="border-slate-100">
-          <TableHead className="text-[10px] font-black uppercase tracking-widest py-4">Người dùng</TableHead>
-          <TableHead className="text-[10px] font-black uppercase tracking-widest">Email</TableHead>
-          <TableHead className="text-[10px] font-black uppercase tracking-widest">Public ID</TableHead>
-          <TableHead className="text-[10px] font-black uppercase tracking-widest text-center">Trạng thái</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 pl-6 text-slate-500">Người dùng</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Email</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Public ID</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest text-center text-slate-500">Trạng thái</TableHead>
           <TableHead className="w-[80px]"></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {data?.content.map((user) => (
           <TableRow key={user.id} className="hover:bg-slate-50/30 border-slate-100 transition-colors group">
-            <TableCell>
+            <TableCell className="pl-6">
               <div className="flex items-center gap-3">
                 <Avatar className="h-10 w-10 border-2 border-white shadow-sm rounded-xl">
                   <AvatarImage src={user.avatarUrl || ""} />

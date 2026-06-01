@@ -32,6 +32,8 @@ export const expertiseSchema = z.object({
  * Schema chính cho Đăng ký Giảng viên (InstructorProfileCreateRequest)
  */
 export const instructorProfileSchema = z.object({
+  name: z.string().min(2, "Tên giảng viên không được để trống"),
+
   headline: z
     .string()
     .min(10, "Tiêu đề chuyên môn quá ngắn")

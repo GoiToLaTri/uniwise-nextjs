@@ -11,7 +11,7 @@ import { instructorProfileSchema, type InstructorProfileFormValues } from "../_l
 import { cn } from "@/lib/utils";
 
 // Pick các field cần thiết cho Step 1 từ Schema tổng
-export type StepOneValues = Pick<InstructorProfileFormValues, "headline" | "biography" | "yearsOfExperience">;
+export type StepOneValues = Pick<InstructorProfileFormValues, "name" | "headline" | "biography" | "yearsOfExperience">;
 
 interface BasicInfoFormProps {
   onNext: (data: StepOneValues) => void;
@@ -26,12 +26,14 @@ export function BasicInfoForm({ onNext, initialData }: BasicInfoFormProps) {
     formState: { errors },
   } = useForm<StepOneValues>({
     resolver: zodResolver(instructorProfileSchema.pick({
+      name: true,
       headline: true,
       biography: true,
       yearsOfExperience: true,
     })),
     // Ưu tiên lấy initialData nếu có, nếu không thì dùng giá trị mặc định
     defaultValues: initialData || {
+      name: "",
       headline: "",
       biography: "",
       yearsOfExperience: 0,
@@ -43,7 +45,36 @@ export function BasicInfoForm({ onNext, initialData }: BasicInfoFormProps) {
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">
       
-      {/* 1. Headline Field */}
+      {/* 1. Name Field */}
+      <div className="space-y-2.5">
+        <Label 
+          htmlFor="name" 
+          className="text-sm font-bold text-slate-700 flex items-center gap-2"
+        >
+          Tên giảng viên
+        </Label>
+        <Input
+          id="name"
+          placeholder="Nhập họ và tên giảng viên"
+          className={cn(
+            "h-12 rounded-xl border-slate-200 transition-all font-medium focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0",
+            errors.name && "border-destructive focus-visible:border-destructive"
+          )}
+          {...register("name")}
+        />
+        <p className="text-[11px] text-slate-500 font-medium">
+          Họ và tên giảng viên phải khớp với thông tin trong bằng cấp hoặc chứng chỉ của bạn.
+        </p>
+        {errors.name && (
+          <div className="flex items-center gap-1.5 text-destructive mt-1">
+            <AlertCircle className="w-3.5 h-3.5" />
+            <span className="text-[11px] font-black uppercase tracking-tighter">
+              {errors.name.message}
+            </span>
+          </div>
+        )}
+      </div>
+      {/* 2. Headline Field */}
       <div className="space-y-2.5">
         <Label 
           htmlFor="headline" 
@@ -73,7 +104,7 @@ export function BasicInfoForm({ onNext, initialData }: BasicInfoFormProps) {
         )}
       </div>
 
-      {/* 2. Years of Experience Field */}
+      {/* 3. Years of Experience Field */}
       <div className="space-y-3">
         <Label htmlFor="yearsOfExperience" className="text-sm font-bold text-slate-700">
           Số năm kinh nghiệm làm việc
@@ -98,7 +129,7 @@ export function BasicInfoForm({ onNext, initialData }: BasicInfoFormProps) {
         )}
       </div>
 
-      {/* 3. Biography Field */}
+      {/* 4. Biography Field */}
       <div className="space-y-2.5">
         <Label htmlFor="biography" className="text-sm font-bold text-slate-700">
           Tiểu sử & Quá trình công tác

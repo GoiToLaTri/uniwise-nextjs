@@ -1,4 +1,4 @@
-import { InstructorProfile, ApplyInstructorRequest, UpdateInstructorRequest, Degree, Expertise } from "@/interfaces/instructor.interface";
+import { InstructorProfile, ApplyInstructorRequest, UpdateInstructorRequest, Degree, Expertise, InstructorApplicationListResponse } from "@/interfaces/instructor.interface";
 import { ApiResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
 import { getTokenResponse } from "@/stores/token-store";
@@ -6,7 +6,7 @@ import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 
 const INSTRUCTOR_QUERY_KEY = ["instructor", "me"];
-
+const INSTRUCTOR_APPLICATIONS_QUERY_KEY = ["instructor-applications"];
 // Hook lấy thông tin instructor hiện tại
 export function useInstructorProfile() {
   return useQuery({
@@ -18,7 +18,7 @@ export function useInstructorProfile() {
 
       try {
         const response = await apiClient.get<never, ApiResponse<InstructorProfile>>(
-          "/api/v1/instructors/me"
+          "/user-service/api/v1/instructors/me"
         );
         return response.data;
       } catch (error: any) {
@@ -71,7 +71,7 @@ export function useUpdateInstructorProfile() {
     mutationFn: async (data: UpdateInstructorRequest): Promise<InstructorProfile | null> => {
       try {
         const response = await apiClient.put<never, ApiResponse<InstructorProfile>>(
-          "/api/v1/instructors/me",
+          "/user-service/api/v1/instructors/me",
           data
         );
         toast.success("Cập nhật hồ sơ giảng viên thành công!");
@@ -122,7 +122,7 @@ export function useRefreshInstructorProfile() {
       if (!tokenResponse) return null;
 
       const response = await apiClient.get<never, ApiResponse<InstructorProfile>>(
-        "/api/v1/instructors/me"
+        "/user-service/api/v1/instructors/me"
       );
 
       queryClient.setQueryData(INSTRUCTOR_QUERY_KEY, response.data);
@@ -143,7 +143,7 @@ export function useAddDegree() {
     mutationFn: async (degree: Omit<Degree, "id">): Promise<Degree> => {
       try {
         const response = await apiClient.post<never, ApiResponse<Degree>>(
-          "/api/v1/instructors/me/degrees",
+          "/user-service/api/v1/instructors/me/degrees",
           degree
         );
         toast.success("Thêm bằng cấp thành công!");
@@ -167,7 +167,7 @@ export function useDeleteDegree() {
   return useMutation({
     mutationFn: async (degreeId: string): Promise<boolean> => {
       try {
-        await apiClient.delete(`/api/v1/instructors/me/degrees/${degreeId}`);
+        await apiClient.delete(`/user-service/api/v1/instructors/me/degrees/${degreeId}`);
         toast.success("Xóa bằng cấp thành công!");
         return true;
       } catch (error) {
@@ -189,7 +189,7 @@ export function useAddExpertise() {
     mutationFn: async (expertise: Omit<Expertise, "id">): Promise<Expertise> => {
       try {
         const response = await apiClient.post<never, ApiResponse<Expertise>>(
-          "/api/v1/instructors/me/expertises",
+          "/user-service/api/v1/instructors/me/expertises",
           expertise
         );
         toast.success("Thêm chuyên môn thành công!");
@@ -212,7 +212,7 @@ export function useDeleteExpertise() {
   return useMutation({
     mutationFn: async (expertiseId: string): Promise<boolean> => {
       try {
-        await apiClient.delete(`/api/v1/instructors/me/expertises/${expertiseId}`);
+        await apiClient.delete(`/user-service/api/v1/instructors/me/expertises/${expertiseId}`);
         toast.success("Xóa chuyên môn thành công!");
         return true;
       } catch (error) {
@@ -222,6 +222,39 @@ export function useDeleteExpertise() {
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: INSTRUCTOR_QUERY_KEY });
+    },
+  });
+}
+
+// Hook lấy danh sách đơn đăng ký giảng viên (có phân trang và lọc theo status)
+export function useInstructorApplications(
+  pageNumber: number = 0,
+  pageSize: number = 10,
+  status?: string
+) {
+  return useQuery({
+    queryKey: [...INSTRUCTOR_APPLICATIONS_QUERY_KEY, pageNumber, pageSize, status],
+    queryFn: async (): Promise<InstructorApplicationListResponse | null> => {
+      // Không có session → không gọi API
+      const tokenResponse = await getTokenResponse();
+      if (!tokenResponse) return null;
+
+      // Gọi API
+      const params: Record<string, any> = {
+        page: pageNumber,
+        size: pageSize,
+      };
+      
+      if (status) {
+        params.status = status;
+      }
+
+      const response = await apiClient.get<never, ApiResponse<InstructorApplicationListResponse>>(
+        "/user-service/api/v1/instructors/applications",
+        { params }
+      );
+
+      return response.data;
     },
   });
 }

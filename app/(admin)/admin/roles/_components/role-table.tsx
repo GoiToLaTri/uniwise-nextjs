@@ -70,7 +70,7 @@ export function RoleTable({ data, isLoading }: RoleTableProps) {
     <Table>
       <TableHeader className="bg-slate-50/50">
         <TableRow className="border-slate-100">
-          <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 text-slate-500">Vai trò</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 text-slate-500 pl-6">Vai trò</TableHead>
           <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mã hệ thống</TableHead>
           <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mô tả chi tiết</TableHead>
           <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Trạng thái</TableHead>
@@ -81,7 +81,7 @@ export function RoleTable({ data, isLoading }: RoleTableProps) {
       <TableBody>
         {data.content.map((role) => (
           <TableRow key={role.id} className="hover:bg-slate-50/50 transition-colors border-slate-100 group">
-            <TableCell>
+            <TableCell className="pl-6">
               <div className="flex items-center gap-3">
                 <div className={cn(
                   "p-2 rounded-xl transition-colors",

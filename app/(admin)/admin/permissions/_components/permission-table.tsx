@@ -31,16 +31,16 @@ export function PermissionTable({ data, isLoading, onRefresh }: { data?: { conte
     <Table>
       <TableHeader className="bg-slate-50/50">
         <TableRow className="border-slate-100">
-          <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 w-[80px]">ID</TableHead>
-          <TableHead className="text-[10px] font-black uppercase tracking-widest">Tên quyền (Key)</TableHead>
-          <TableHead className="text-[10px] font-black uppercase tracking-widest">Mô tả chi tiết</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest py-4 w-[80px] text-slate-500 pl-6">ID</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Tên quyền (Key)</TableHead>
+          <TableHead className="text-[10px] font-black uppercase tracking-widest text-slate-500">Mô tả chi tiết</TableHead>
           <TableHead className="w-[80px]"></TableHead>
         </TableRow>
       </TableHeader>
       <TableBody>
         {data?.content.map((item) => (
           <TableRow key={item.id} className="hover:bg-slate-50/30 border-slate-100 group transition-colors">
-            <TableCell className="font-mono text-xs text-slate-400">#{item.id}</TableCell>
+            <TableCell className="font-mono text-xs text-slate-400 pl-6">#{item.id}</TableCell>
             <TableCell>
             <div className="flex items-center gap-2">
                 <div className="p-1.5 bg-indigo-50 rounded-lg text-indigo-600 shadow-sm border border-indigo-100/50">

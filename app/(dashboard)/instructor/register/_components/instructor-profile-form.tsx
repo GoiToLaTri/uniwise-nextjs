@@ -22,6 +22,7 @@ export function InstructorProfileForm() {
 
   // State tổng quản lý toàn bộ dữ liệu form
   const [formData, setFormData] = useState<Partial<InstructorProfileFormValues>>({
+    name: "",
     headline: "",
     biography: "",
     yearsOfExperience: 0,
@@ -52,6 +53,7 @@ export function InstructorProfileForm() {
     
     // Transform data to match API expected format if needed
     const apiPayload = {
+      name: finalPayload.name!,
       headline: finalPayload.headline!,
       biography: finalPayload.biography!,
       yearsOfExperience: finalPayload.yearsOfExperience!,
@@ -186,6 +188,7 @@ export function InstructorProfileForm() {
           <BasicInfoForm 
             onNext={handleStepOneNext} 
             initialData={{
+              name: formData.name!,
               headline: formData.headline!,
               biography: formData.biography!,
               yearsOfExperience: formData.yearsOfExperience!

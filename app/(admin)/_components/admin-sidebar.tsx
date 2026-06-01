@@ -26,6 +26,7 @@ const routes = [
   { label: "Tổng quan", icon: LayoutDashboard, href: "/admin" },
   { label: "Khóa học", icon: BookOpen, href: "/admin/courses" },
   { label: "Người dùng", icon: Users, href: "/admin/users" },
+  { label: "Giảng viên", icon: GraduationCap, href: "/admin/instructors" },
   { label: "Vai trò", icon: ShieldCheck, href: "/admin/roles" },
   { label: "Quyền hạn", icon: Key, href: "/admin/permissions" },
   { label: "Doanh thu", icon: BarChart3, href: "/admin/analytics" },

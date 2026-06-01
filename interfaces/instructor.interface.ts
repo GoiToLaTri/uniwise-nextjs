@@ -19,6 +19,7 @@ export interface Degree {
     id: string;
     accountId: string;
     publicId: string;
+    name: string;
     headline: string;
     biography: string;
     yearsOfExperience: number;
@@ -32,6 +33,7 @@ export interface Degree {
   }
   
   export interface ApplyInstructorRequest {
+    name: string;
     headline: string;
     biography: string;
     yearsOfExperience: number;
@@ -40,6 +42,7 @@ export interface Degree {
   }
   
   export interface UpdateInstructorRequest {
+    name: string;
     headline: string;
     biography: string;
     yearsOfExperience: number;
@@ -47,3 +50,11 @@ export interface Degree {
     expertises: Expertise[];
   }
   
+  export interface InstructorApplicationListResponse {
+    content: InstructorProfile[];
+    pageNumber: number;
+    pageSize: number;
+    totalElements: number;
+    totalPages: number;
+    last: boolean;
+  }
