@@ -9,7 +9,7 @@ const IGNORED_PREFIXES = ["/api/", "/_next/", "/favicon.ico"];
 const AUTH_ONLY_ROUTES = ["/signin", "/signup"];
 
 // Public hoàn toàn — ai cũng vào được dù đã login hay chưa
-const PUBLIC_ROUTES = ["/", "/unauthorized", "/u"];
+const PUBLIC_ROUTES = ["/", "/unauthorized", "/u", "/forbidden"];
 
 // Chỉ PROTECTED_ROUTERS mới vào được (client layout tự check role)
 const PROTECTED_ROUTERS = ["/admin", "/partners"];

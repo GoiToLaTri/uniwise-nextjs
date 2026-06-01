@@ -2,7 +2,7 @@ export function PartnerHero() {
     return (
       <div className="relative pt-20 pb-32 overflow-hidden">
         <div className="container mx-auto px-4 relative z-10 text-center space-y-8">
-          <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-[0.9] text-slate-900 animate-in fade-in slide-in-from-top-12 duration-1000">
+          <h1 className="text-6xl md:text-8xl font-extrabold tracking-tighter leading-[1.1] text-slate-900 animate-in fade-in slide-in-from-top-12 duration-1000">
             Kiến tạo tương lai <br />
             <span className="bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500 bg-clip-text text-transparent">
               Giáo dục số.

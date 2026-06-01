@@ -104,6 +104,7 @@ export function useLogout() {
     onSuccess: () => {
       queryClient.clear();
       toast.success("Đăng xuất thành công!");
+      // window.location.reload();
       router.refresh();
       // router.push("/signin");
     },

@@ -8,11 +8,12 @@ import { useTokenRefresh } from "@/hooks/use-token";
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
-
+  console.log("[AdminLayout] :::: authorized", authorized);
   useEffect(() => {
-    getTokenResponse().then((token) => {
-      const isUser = token?.scope?.includes("ROLE_USER") ?? false;
-      if (!isUser) {
+    getTokenResponse().then(async (token) => {
+      console.log("[AdminLayout] :::: token", await getTokenResponse());
+      const isAdmin = token?.scope?.includes("ROLE_ADMIN") ?? false;
+      if (!isAdmin) {
         router.replace("/forbidden");
       } else {
         setAuthorized(true);
