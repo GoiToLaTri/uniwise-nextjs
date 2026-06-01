@@ -11,8 +11,8 @@ const AUTH_ONLY_ROUTES = ["/signin", "/signup"];
 // Public hoàn toàn — ai cũng vào được dù đã login hay chưa
 const PUBLIC_ROUTES = ["/", "/unauthorized", "/u"];
 
-// Chỉ ROLE_ADMIN mới vào được (client layout tự check role)
-const ADMIN_ROUTES = ["/admin"];
+// Chỉ PROTECTED_ROUTERS mới vào được (client layout tự check role)
+const PROTECTED_ROUTERS = ["/admin", "/partners"];
 
 function matchesAny(pathname: string, routes: string[]): boolean {
   return routes.some((route) =>
@@ -34,7 +34,7 @@ export function proxy(request: NextRequest) {
 
   const accessToken = request.cookies.get(AUTH_COOKIE.ACCESS_TOKEN)?.value;
 
-  // Auth-only routes: login rồi → redirect /dashboard
+  // Auth-only routes: login rồi → redirect /
   // Auth-only routes
   if (matchesAny(pathname, AUTH_ONLY_ROUTES)) {
     if (accessToken) {
@@ -56,7 +56,7 @@ export function proxy(request: NextRequest) {
   }
 
   // Admin routes: chưa login → /unauthorized (client layout tự check role)
-  if (matchesAny(pathname, ADMIN_ROUTES) && !accessToken) {
+  if (matchesAny(pathname, PROTECTED_ROUTERS) && !accessToken) {
     return NextResponse.redirect(new URL("/unauthorized", request.url));
   }
 

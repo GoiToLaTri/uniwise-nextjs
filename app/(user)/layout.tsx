@@ -5,7 +5,7 @@ import { useRouter } from "next/navigation";
 import { getTokenResponse } from "@/stores/token-store";
 import { useTokenRefresh } from "@/hooks/use-token";
 
-export default function AdminLayout({ children }: { children: React.ReactNode }) {
+export default function UserLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const [authorized, setAuthorized] = useState(false);
 

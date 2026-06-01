@@ -38,10 +38,21 @@ export function useLogin() {
 
       const params = new URLSearchParams(window.location.search);
       startTransition(() => {
-        // router.refresh();
-        router.replace(params.get("redirect") ?? "/");
-      });
+        console.log("[use-auth] :::: params", params.get("redirect"))
+        // router.replace(params.get("redirect") ?? "/");
+        /**
+         * window.location.assign chỉ dùng đúng 1 lần — tại thời điểm sau login. Đây là hard navigation có chủ đích vì:
+         * Cần invalidate toàn bộ router cache (session mới)
+         * Cần middleware đọc cookie mới
+         * Cần server component re-render với auth context mới
+         */
+        window.location.replace(params.get("redirect") ?? "/");
+        // window.location.assign(params.get("redirect") ?? "/");
+        // router.refresh()
+        // router.replace("/partners");
 
+      console.log("[use-auth] :::: path: ", window.location.pathname);
+      });
     },
     onError: (error: Error) => {
       toast.error(error.message);

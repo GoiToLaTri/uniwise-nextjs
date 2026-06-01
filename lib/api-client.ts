@@ -51,7 +51,6 @@ export async function refreshAccessToken(): Promise<TokenResponse | null> {
         { refreshToken: tokenResponse.refreshToken },
         { headers: { "Content-Type": "application/json" } },
       );
-
       const newToken: TokenResponse = response.data.data;
 
       await setTokenResponse(newToken);

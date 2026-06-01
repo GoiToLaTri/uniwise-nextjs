@@ -6,6 +6,34 @@ import { Button } from "@/components/ui/button";
 import { UserAccountDialog } from "./user-account-dialog"; // Import Dialog vừa tạo
 import { useProfile } from "@/hooks/use-profile";
 
+const navItems: { key: string; label: string; url: string }[] = [
+  {
+    key: "courses",
+    label: "Khóa học",
+    url: "/courses",
+  },
+  {
+    key: "roadmaps",
+    label: "Lộ trình",
+    url: "/roadmaps",
+  },
+  {
+    key: "instructors",
+    label: "Giảng viên",
+    url: "/instructors",
+  },
+  {
+    key: "community",
+    label: "Cộng đồng",
+    url: "/community",
+  },
+  {
+    key: "partners",
+    label: "Hợp tác",
+    url: "/partners",
+  },
+];
+
 export function Navbar() {
   const { data, isLoading } = useProfile();
   return (
@@ -23,13 +51,14 @@ export function Navbar() {
 
         {/* Menu Items */}
         <div className="hidden md:flex items-center gap-8">
-          {["Khóa học", "Lộ trình", "Giảng viên", "Cộng đồng"].map((item) => (
+          {navItems.map((item) => (
             <Link
-              key={item}
-              href="#"
+              prefetch={false}
+              key={item.key}
+              href={item.url}
               className="text-xs font-black uppercase tracking-widest text-slate-500 hover:text-indigo-600 transition-colors"
             >
-              {item}
+              {item.label}
             </Link>
           ))}
         </div>
