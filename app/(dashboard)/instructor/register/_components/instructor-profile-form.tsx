@@ -7,7 +7,7 @@ import { DegreesForm } from "./degrees-form";
 import { ExpertiseForm } from "./expertise-form";
 import { InstructorProfileFormValues } from "../_lib/form-schema";
 import { Button } from "@/components/ui/button";
-import { ArrowRight, CheckCircle2, Clock, GraduationCap, Home, Loader2, Mail, PartyPopper, Terminal } from "lucide-react";
+import { ArrowRight, CheckCircle2, Clock, GraduationCap, Home, Loader2, Mail} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useApplyInstructor } from "@/hooks/use-instructor";

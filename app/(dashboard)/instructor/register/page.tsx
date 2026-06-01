@@ -1,4 +1,3 @@
-import { Metadata } from "next";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, ShieldCheck } from "lucide-react";
 import { InstructorProfileForm } from "./_components/instructor-profile-form";
@@ -60,9 +59,7 @@ export default function InstructorRegisterPage() {
                     Thông tin này sẽ được dùng để giới thiệu bạn với học viên.
                   </p>
                 </div>
-
                 <InstructorProfileForm />
-                
               </div>
             </div>
           </div>
