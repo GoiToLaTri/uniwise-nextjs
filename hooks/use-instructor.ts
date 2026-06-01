@@ -258,3 +258,22 @@ export function useInstructorApplications(
     },
   });
 }
+
+// Hook lấy chi tiết một instructor
+export function useInstructorProfileByAccountId(accountId: string) {
+  return useQuery({
+    queryKey: [...INSTRUCTOR_QUERY_KEY, accountId],
+    queryFn: async (): Promise<InstructorProfile | null> => {
+      if (!accountId) return null;
+
+      const tokenResponse = await getTokenResponse();
+      if (!tokenResponse) return null;
+
+      const response = await apiClient.get<never, ApiResponse<InstructorProfile>>(
+        `/user-service/api/v1/instructors/by-account-id/${accountId}`
+      );
+      return response.data;
+    },
+    enabled: !!accountId,
+  });
+}

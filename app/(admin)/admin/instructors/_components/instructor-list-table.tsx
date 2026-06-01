@@ -25,15 +25,11 @@ import {
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
+import { InstructorProfile } from "@/interfaces/instructor.interface";
 
-export function InstructorListTable({ data, isLoading, onRefresh }: { data?: any[], isLoading: boolean, onRefresh: () => void }) {
+export function InstructorListTable({ data, isLoading, onRefresh }: { data?: InstructorProfile[], isLoading: boolean, onRefresh: () => void }) {
   
-  const statusStyles = {
-    PENDING: "text-amber-600 bg-amber-50/50 border-amber-100",
-    APPROVED: "text-emerald-600 bg-emerald-50/50 border-emerald-100",
-    REJECTED: "text-rose-600 bg-rose-50/50 border-rose-100",
-    INACTIVE: "text-slate-400 bg-slate-50 border-slate-100",
-  };
+
 
   if (isLoading) {
     return (
@@ -98,7 +94,10 @@ export function InstructorListTable({ data, isLoading, onRefresh }: { data?: any
             <TableCell>
               <Badge variant="outline" className={cn(
                 "px-2 py-0.5 rounded-lg font-black text-[9px] uppercase tracking-widest shadow-none border",
-                statusStyles[item.status as keyof typeof statusStyles]
+                item.status === "PENDING" ? "text-amber-600 bg-amber-50/50 border-amber-100" :
+                item.status === "APPROVED" ? "text-emerald-600 bg-emerald-50/50 border-emerald-100" :
+                item.status === "REJECTED" ? "text-rose-600 bg-rose-50/50 border-rose-100" :
+                "text-slate-400 bg-slate-50 border-slate-100"
               )}>
                 {item.status}
               </Badge>
@@ -121,7 +120,7 @@ export function InstructorListTable({ data, isLoading, onRefresh }: { data?: any
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-52 rounded-xl p-2 border-slate-200 shadow-xl animate-in zoom-in-95 duration-200">
-                  <Link href={`/admin/instructors/${item.id}`}>
+                  <Link href={`/admin/instructors/${item.accountId}`}>
                     <DropdownMenuItem className="rounded-lg font-bold text-slate-600 focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer py-2.5">
                       <Eye className="w-4 h-4 mr-2.5" /> Xem chi tiết
                     </DropdownMenuItem>

@@ -127,3 +127,21 @@ export function usePublicProfile(publicId?: string) {
     // refetchOnWindowFocus: false,
   });
 }
+
+export function useProfileByAccountId(accountId: string) {
+  return useQuery({
+    queryKey: [...PROFILE_QUERY_KEY, accountId],
+    queryFn: async (): Promise<ProfileResponse | null> => {
+      if (!accountId) return null;
+
+      const tokenResponse = await getTokenResponse();
+      if (!tokenResponse) return null;
+
+      const response = await apiClient.get<never, ApiResponse<ProfileResponse>>(
+        `/user-service/api/v1/profiles/by-account-id/${accountId}`
+      );
+      return response.data;
+    },
+    enabled: !!accountId,
+  });
+}
