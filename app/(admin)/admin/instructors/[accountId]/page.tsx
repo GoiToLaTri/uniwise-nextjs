@@ -6,7 +6,8 @@ import {
   ArrowLeft, CheckCircle2, XCircle, Clock, 
   GraduationCap, Mail, Calendar, Award, 
   Cpu, ShieldCheck, MessageSquare, User,
-  ExternalLink, Loader2
+  ExternalLink, Loader2,
+  AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -34,6 +35,7 @@ export default function InstructorDetailsPage() {
     PENDING: { color: "text-amber-600 bg-amber-50 border-amber-100", icon: Clock, label: "Chờ phê duyệt" },
     APPROVED: { color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: ShieldCheck, label: "Đã kích hoạt" },
     REJECTED: { color: "text-rose-600 bg-rose-50 border-rose-100", icon: XCircle, label: "Đã từ chối" },
+    SUSPENDED:{color: "text-violet-600 bg-violet-50 border-violet-100",  icon: AlertCircle, label: "Tạm ngưng"},
     INACTIVE: { color: "text-slate-400 bg-slate-50 border-slate-100", icon: XCircle, label: "Ngừng hoạt động" },
   };
 
@@ -156,7 +158,7 @@ export default function InstructorDetailsPage() {
                      </div>
                      <div>
                         <div className="flex items-center gap-2 mb-1">
-                           <h4 className="font-black text-slate-900 uppercase tracking-tight italic">{exp.name}</h4>
+                           <h4 className="font-black text-slate-900 uppercase tracking-tight">{exp.name}</h4>
                            <Badge variant="outline" className="text-[8px] font-black uppercase tracking-tighter px-1.5 py-0 border-indigo-100 text-indigo-600">{exp.level}</Badge>
                         </div>
                         <p className="text-xs text-slate-400 font-medium leading-relaxed">Kiến thức chuyên sâu và am hiểu thực tế.</p>

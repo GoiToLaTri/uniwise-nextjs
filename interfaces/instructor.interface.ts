@@ -23,7 +23,7 @@ export interface Degree {
     headline: string;
     biography: string;
     yearsOfExperience: number;
-    status: "PENDING" | "APPROVED" | "REJECTED" | "INACTIVE";
+    status: "PENDING" | "APPROVED" | "REJECTED" | "SUSPENDED" | "INACTIVE";
     reviewComment?: string;
     appliedAt: string;
     approvedAt?: string;

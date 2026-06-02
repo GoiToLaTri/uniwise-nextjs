@@ -23,6 +23,7 @@ export default function InstructorManagementPage() {
   const pageSize = 10;
 
   const { data, isLoading, refetch } = useInstructorApplications(page, pageSize, status === "ALL" ? undefined : status);
+  console.log("[instructors] :::: data:", data)
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -55,6 +56,10 @@ export default function InstructorManagementPage() {
              <div className="text-center">
                 <p className="text-[9px] font-black text-rose-500 uppercase tracking-widest">Đã từ chối</p>
                 <p className="text-lg font-bold text-rose-600">{data?.content?.filter((instructor) => instructor.status === "REJECTED").length || 0}</p> {/* Ví dụ số cứng */}
+             </div>
+             <div className="text-center">
+                <p className="text-[9px] font-black text-violet-500 uppercase tracking-widest">Đã tạm ngưng</p>
+                <p className="text-lg font-bold text-violet-600">{data?.content?.filter((instructor) => instructor.status === "SUSPENDED").length || 0}</p> {/* Ví dụ số cứng */}
              </div>
           </div>
         </div>

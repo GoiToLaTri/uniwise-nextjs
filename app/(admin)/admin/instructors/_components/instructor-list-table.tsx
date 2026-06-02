@@ -28,9 +28,6 @@ import Link from "next/link";
 import { InstructorProfile } from "@/interfaces/instructor.interface";
 
 export function InstructorListTable({ data, isLoading, onRefresh }: { data?: InstructorProfile[], isLoading: boolean, onRefresh: () => void }) {
-  
-
-
   if (isLoading) {
     return (
       <div className="p-6 space-y-4">
@@ -97,6 +94,7 @@ export function InstructorListTable({ data, isLoading, onRefresh }: { data?: Ins
                 item.status === "PENDING" ? "text-amber-600 bg-amber-50/50 border-amber-100" :
                 item.status === "APPROVED" ? "text-emerald-600 bg-emerald-50/50 border-emerald-100" :
                 item.status === "REJECTED" ? "text-rose-600 bg-rose-50/50 border-rose-100" :
+                item.status === "SUSPENDED" ? "text-violet-600 bg-violet-50 border-violet-100" :
                 "text-slate-400 bg-slate-50 border-slate-100"
               )}>
                 {item.status}
