@@ -287,7 +287,7 @@ export function useApproveInstructorApplication() {
     mutationFn: async (applicationId: string): Promise<InstructorProfile | null> => {
       try {
         const response = await apiClient.patch<never, ApiResponse<InstructorProfile>>(
-          `/user-service/api/v1/instructors/applications/applications/${applicationId}/approve`,
+          `/user-service/api/v1/instructors/applications/${applicationId}/approve`,
           {}
         );
         toast.success("Đã duyệt đơn đăng ký giảng viên!");
@@ -302,12 +302,15 @@ export function useApproveInstructorApplication() {
       if (data) {
         // Invalidate danh sách applications
         queryClient.invalidateQueries({ queryKey: INSTRUCTOR_APPLICATIONS_QUERY_KEY });
+        queryClient.refetchQueries({ queryKey: INSTRUCTOR_APPLICATIONS_QUERY_KEY });
         
         // Invalidate chi tiết application
         queryClient.invalidateQueries({ queryKey: ["instructor-application", applicationId] });
-        
+        queryClient.refetchQueries({ queryKey: ["instructor-application", applicationId] });
+
         // Invalidate instructor profile (nếu cần)
         queryClient.invalidateQueries({ queryKey: ["instructor", "me"] });
+        queryClient.refetchQueries({ queryKey: ["instructor", "me"] });
       }
     },
   });

@@ -98,7 +98,7 @@ export default function RegisterLayout({ children }: { children: ReactNode }) {
                 </Link>
               ) : (
                 <div>
-                    <Link href="/">
+                    <Link href="/instructor/settings/profile">
                       <Button className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 group">
                         Chỉnh sửa hồ sơ
                         <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

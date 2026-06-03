@@ -1,0 +1,5 @@
+/* calendar.module.css */
+.wrapper :global([data-selected-single="true"]) {
+    background-color: #4f46e5 !important;
+    color: white !important;
+  }
