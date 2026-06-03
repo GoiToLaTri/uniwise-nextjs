@@ -15,18 +15,47 @@ import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
+import { z } from "zod";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
 
 // Hooks
 import { useProfileByAccountId } from "@/hooks/use-profile";
-import { useInstructorProfileByAccountId } from "@/hooks/use-instructor";
+import { useApproveInstructorApplication, useInstructorProfileByAccountId, useRejectInstructorApplication } from "@/hooks/use-instructor";
+
+// Schema validation cho từ chối
+const rejectSchema = z.object({
+  reviewComment: z.string()
+    .min(10, "Vui lòng nhập ít nhất 10 ký tự để giải thích lý do từ chối")
+    .max(500, "Nhận xét không được vượt quá 500 ký tự")
+});
+
+type RejectFormData = z.infer<typeof rejectSchema>;
 
 export default function InstructorDetailsPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const router = useRouter();
   const [reviewComment, setReviewComment] = React.useState("");
+  const [isRejectDialogOpen, setIsRejectDialogOpen] = React.useState(false);
 
   const { data: profile, isLoading: isLoadingProfile } = useProfileByAccountId(accountId);
   const { data: instructor, isLoading: isLoadingInstructor } = useInstructorProfileByAccountId(accountId);
+  
+  const approveMutation = useApproveInstructorApplication();
+  const rejectMutation = useRejectInstructorApplication();
+
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitting },
+    reset,
+    setValue
+  } = useForm<RejectFormData>({
+    resolver: zodResolver(rejectSchema),
+    defaultValues: {
+      reviewComment: ""
+    }
+  });
 
   const isPending = isLoadingProfile || isLoadingInstructor;
 
@@ -35,8 +64,53 @@ export default function InstructorDetailsPage() {
     PENDING: { color: "text-amber-600 bg-amber-50 border-amber-100", icon: Clock, label: "Chờ phê duyệt" },
     APPROVED: { color: "text-emerald-600 bg-emerald-50 border-emerald-100", icon: ShieldCheck, label: "Đã kích hoạt" },
     REJECTED: { color: "text-rose-600 bg-rose-50 border-rose-100", icon: XCircle, label: "Đã từ chối" },
-    SUSPENDED:{color: "text-violet-600 bg-violet-50 border-violet-100",  icon: AlertCircle, label: "Tạm ngưng"},
+    SUSPENDED: { color: "text-violet-600 bg-violet-50 border-violet-100", icon: AlertCircle, label: "Tạm ngưng" },
     INACTIVE: { color: "text-slate-400 bg-slate-50 border-slate-100", icon: XCircle, label: "Ngừng hoạt động" },
+  };
+
+  // Xử lý phê duyệt
+  const handleApprove = async () => {
+    if (!instructor?.publicId) return;
+    
+    toast.promise(
+      approveMutation.mutateAsync(instructor.publicId),
+      {
+        loading: 'Đang xử lý phê duyệt...',
+        success: () => {
+          router.refresh();
+          return 'Phê duyệt giảng viên thành công!';
+        },
+        error: (error) => {
+          console.error('Approve error:', error);
+          return error?.message || 'Có lỗi xảy ra khi phê duyệt';
+        }
+      }
+    );
+  };
+
+  // Xử lý từ chối với validation
+  const onReject = async (data: RejectFormData) => {
+    if (!instructor?.publicId) return;
+    
+    toast.promise(
+      rejectMutation.mutateAsync({ 
+        applicationId: instructor.publicId, 
+        reviewComment: data.reviewComment 
+      }),
+      {
+        loading: 'Đang xử lý từ chối...',
+        success: () => {
+          router.refresh();
+          setIsRejectDialogOpen(false);
+          reset();
+          return 'Đã từ chối hồ sơ giảng viên!';
+        },
+        error: (error) => {
+          console.error('Reject error:', error);
+          return error?.message || 'Có lỗi xảy ra khi từ chối';
+        }
+      }
+    );
   };
 
   if (isPending) return (
@@ -135,15 +209,15 @@ export default function InstructorDetailsPage() {
                            <td className="px-8 py-5">
                               <p className="font-bold text-slate-800">{deg.name}</p>
                               <p className="text-[10px] font-black text-indigo-500 uppercase">{deg.type}</p>
-                           </td>
+                            </td>
                            <td className="px-8 py-5 text-slate-500 font-medium">{deg.institution}</td>
                            <td className="px-8 py-5 text-right font-mono text-xs text-slate-400 italic">
                               {format(new Date(deg.issuedDate), "dd/MM/yyyy")}
-                           </td>
-                        </tr>
+                            </td>
+                         </tr>
                       ))}
                    </tbody>
-                </table>
+                 </table>
              </div>
           </div>
 
@@ -204,21 +278,62 @@ export default function InstructorDetailsPage() {
                  <MessageSquare className="w-5 h-5 text-indigo-400" />
                  <h3 className="text-[12px] font-black uppercase tracking-widest">Đánh giá hồ sơ</h3>
               </div>
-              <Textarea 
-                 placeholder="Nhập nhận xét hoặc lý do từ chối (nếu có)..."
-                 className="bg-white/10 border-white/10 text-white rounded-xl min-h-[120px] focus:ring-indigo-500 placeholder:text-slate-500"
-                 value={reviewComment}
-                 onChange={(e) => setReviewComment(e.target.value)}
-              />
-              <div className="grid grid-cols-1 gap-3 pt-2">
-                 <Button className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-indigo-500/20">
-                    <CheckCircle2 className="w-4 h-4 mr-2" /> Phê duyệt chuyên gia
-                 </Button>
-                 <Button variant="ghost" className="w-full h-12 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 font-bold uppercase tracking-widest text-[10px]">
-                    Từ chối hồ sơ
-                 </Button>
-              </div>
-              <p className="text-[9px] text-slate-500 text-center font-medium italic">Hành động này sẽ gửi email thông báo cho giảng viên.</p>
+              
+              {/* Form từ chối với validation */}
+              <form onSubmit={handleSubmit(onReject)} className="space-y-4">
+                <div className="space-y-2">
+                  <Textarea 
+                     placeholder="Nhập nhận xét hoặc lý do từ chối (bắt buộc khi từ chối)..."
+                     className={cn(
+                       "bg-white/10 border-white/10 text-white rounded-xl min-h-[120px] focus:ring-indigo-500 placeholder:text-slate-500",
+                       errors.reviewComment && "border-rose-500 focus:ring-rose-500"
+                     )}
+                     {...register("reviewComment")}
+                  />
+                  {errors.reviewComment && (
+                    <p className="text-rose-400 text-xs font-medium animate-in fade-in">
+                      {errors.reviewComment.message}
+                    </p>
+                  )}
+                  <p className="text-[9px] text-slate-400 italic">
+                    * Lý do từ chối sẽ được gửi kèm email thông báo
+                  </p>
+                </div>
+                
+                <div className="grid grid-cols-1 gap-3 pt-2">
+                   <Button 
+                      type="button"
+                      className="w-full h-12 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl font-black uppercase tracking-widest transition-all active:scale-95 shadow-lg shadow-indigo-500/20"
+                      onClick={handleApprove}
+                      disabled={approveMutation.isPending}
+                   >
+                      {approveMutation.isPending ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <CheckCircle2 className="w-4 h-4 mr-2" />
+                      )}
+                      Phê duyệt chuyên gia
+                   </Button>
+                   
+                   <Button 
+                      type="submit"
+                      variant="ghost" 
+                      className="w-full h-12 text-rose-400 hover:text-rose-500 hover:bg-rose-500/10 font-bold uppercase tracking-widest text-[10px]"
+                      disabled={rejectMutation.isPending || isSubmitting}
+                   >
+                      {rejectMutation.isPending || isSubmitting ? (
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                      ) : (
+                        <XCircle className="w-4 h-4 mr-2" />
+                      )}
+                      Từ chối hồ sơ
+                   </Button>
+                </div>
+              </form>
+              
+              <p className="text-[9px] text-slate-500 text-center font-medium italic">
+                Hành động này sẽ gửi email thông báo cho giảng viên.
+              </p>
             </div>
           )}
 

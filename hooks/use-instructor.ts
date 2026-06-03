@@ -7,6 +7,7 @@ import { toast } from "sonner";
 
 const INSTRUCTOR_QUERY_KEY = ["instructor", "me"];
 const INSTRUCTOR_APPLICATIONS_QUERY_KEY = ["instructor-applications"];
+const INSTRUCTORS_QUERY_KEY = ["instructors"];
 // Hook lấy thông tin instructor hiện tại
 export function useInstructorProfile() {
   return useQuery({
@@ -275,5 +276,148 @@ export function useInstructorProfileByAccountId(accountId: string) {
       return response.data;
     },
     enabled: !!accountId,
+  });
+}
+
+// Hook duyệt đơn đăng ký (approve)
+export function useApproveInstructorApplication() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (applicationId: string): Promise<InstructorProfile | null> => {
+      try {
+        const response = await apiClient.patch<never, ApiResponse<InstructorProfile>>(
+          `/user-service/api/v1/instructors/applications/applications/${applicationId}/approve`,
+          {}
+        );
+        toast.success("Đã duyệt đơn đăng ký giảng viên!");
+        return response.data;
+      } catch (error: any) {
+        const message = error?.response?.data?.message || "Không thể duyệt đơn đăng ký.";
+        toast.error(message);
+        throw error;
+      }
+    },
+    onSuccess: (data, applicationId) => {
+      if (data) {
+        // Invalidate danh sách applications
+        queryClient.invalidateQueries({ queryKey: INSTRUCTOR_APPLICATIONS_QUERY_KEY });
+        
+        // Invalidate chi tiết application
+        queryClient.invalidateQueries({ queryKey: ["instructor-application", applicationId] });
+        
+        // Invalidate instructor profile (nếu cần)
+        queryClient.invalidateQueries({ queryKey: ["instructor", "me"] });
+      }
+    },
+  });
+}
+
+// Hook từ chối đơn đăng ký (reject)
+export function useRejectInstructorApplication() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      applicationId, 
+      reviewComment 
+    }: { 
+      applicationId: string; 
+      reviewComment: string;
+    }): Promise<InstructorProfile | null> => {
+      try {
+        const response = await apiClient.patch<never, ApiResponse<InstructorProfile>>(
+          `/user-service/api/v1/instructors/applications/${applicationId}/reject`,
+          { reviewComment }
+        );
+        toast.success("Đã từ chối đơn đăng ký giảng viên!");
+        return response.data;
+      } catch (error: any) {
+        const message = error?.response?.data?.message || "Không thể từ chối đơn đăng ký.";
+        toast.error(message);
+        throw error;
+      }
+    },
+    onSuccess: (data, { applicationId }) => {
+      if (data) {
+        // Invalidate danh sách applications
+        queryClient.invalidateQueries({ queryKey: INSTRUCTOR_APPLICATIONS_QUERY_KEY });
+        
+        // Invalidate chi tiết application
+        queryClient.invalidateQueries({ queryKey: ["instructor-application", applicationId] });
+
+        queryClient.refetchQueries({ queryKey: ["instructor-application", applicationId] })
+      }
+    },
+  });
+}
+
+// Hook tạm ngưng giảng viên (suspend)
+export function useSuspendInstructor() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ 
+      instructorId, 
+      reviewComment 
+    }: { 
+      instructorId: string; 
+      reviewComment: string;
+    }): Promise<boolean> => {
+      try {
+        await apiClient.patch(
+          `/user-service/api/v1/instructors/applications/${instructorId}/suspend`,
+          { reviewComment }
+        );
+        toast.success("Đã tạm ngưng giảng viên!");
+        return true;
+      } catch (error: any) {
+        const message = error?.response?.data?.message || "Không thể tạm ngưng giảng viên.";
+        toast.error(message);
+        throw error;
+      }
+    },
+    onSuccess: (_, instructorId) => {
+      // Invalidate các query liên quan
+      queryClient.invalidateQueries({ queryKey: INSTRUCTORS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: INSTRUCTOR_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["instructor", instructorId] });
+      queryClient.invalidateQueries({ queryKey: INSTRUCTOR_APPLICATIONS_QUERY_KEY });
+      
+      // Invalidate danh sách courses của instructor (nếu có)
+      queryClient.invalidateQueries({ queryKey: ["instructor-courses", instructorId] });
+    },
+  });
+}
+
+// Hook kích hoạt lại giảng viên (reactivate)
+export function useReactivateInstructor() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (instructorId: string): Promise<boolean> => {
+      try {
+        await apiClient.patch(
+          `/user-service/api/v1/instructors/applications/${instructorId}/reactivate`,
+          {}
+        );
+        toast.success("Đã kích hoạt lại giảng viên!");
+        return true;
+      } catch (error: any) {
+        const message = error?.response?.data?.message || "Không thể kích hoạt lại giảng viên.";
+        toast.error(message);
+        throw error;
+      }
+    },
+    onSuccess: (_, instructorId) => {
+      // Invalidate các query liên quan
+      queryClient.invalidateQueries({ queryKey: INSTRUCTORS_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: INSTRUCTOR_QUERY_KEY });
+      queryClient.invalidateQueries({ queryKey: ["instructor", instructorId] });
+      queryClient.invalidateQueries({ queryKey: INSTRUCTOR_APPLICATIONS_QUERY_KEY });
+      
+      // Invalidate danh sách courses của instructor (nếu có)
+      queryClient.invalidateQueries({ queryKey: ["instructor-courses", instructorId] });
+    },
   });
 }

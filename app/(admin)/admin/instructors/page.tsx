@@ -23,7 +23,6 @@ export default function InstructorManagementPage() {
   const pageSize = 10;
 
   const { data, isLoading, refetch } = useInstructorApplications(page, pageSize, status === "ALL" ? undefined : status);
-  console.log("[instructors] :::: data:", data)
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
