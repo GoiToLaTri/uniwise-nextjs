@@ -77,46 +77,27 @@ export function PermissionMatrix({
       return;
     }
 
-    // Xác định quyền cần cấp và thu hồi
-    const currentNames = currentPermissions?.permissions?.map(p => p.name) || [];
-    const newNames = selectedPermissionNames || [];
-    
-    const toAssign = newNames.filter(name => !currentNames.includes(name));
-    const toRevoke = currentNames.filter(name => !newNames.includes(name));
-    
-    if (toAssign.length === 0 && toRevoke.length === 0) {
+    const currentNames = currentPermissions?.permissions?.map(p => p.name) ?? [];
+    const newNames = selectedPermissionNames ?? [];
+
+    // So sánh để check có thay đổi không
+    const hasChanges =
+      newNames.length !== currentNames.length ||
+      newNames.some(name => !currentNames.includes(name));
+
+    if (!hasChanges) {
       toast.info("Không có thay đổi nào để lưu");
       return;
     }
 
     setIsSubmitting(true);
-    
+
     try {
-      // Thực hiện cấp quyền và thu hồi quyền song song
-      const promises = [];
-      
-      if (toAssign.length > 0) {
-        promises.push(
-          assignPermissions.mutateAsync({
-            roleId,
-            permissionNames: toAssign,
-          })
-        );
-      }
-      
-      if (toRevoke.length > 0) {
-        promises.push(
-          revokePermissions.mutateAsync({
-            roleId,
-            permissionNames: toRevoke,
-          })
-        );
-      }
-      
-      await Promise.all(promises);
-      
-      // toast.success(`Đã cập nhật quyền cho vai trò ${roleName}`);
-      
+      // Gửi toàn bộ danh sách mới — backend sẽ replace
+      await assignPermissions.mutateAsync({
+        roleId,
+        permissionNames: newNames,
+      });
     } catch (error) {
       console.error("Error updating permissions:", error);
       toast.error("Có lỗi xảy ra khi cập nhật quyền");
@@ -124,6 +105,60 @@ export function PermissionMatrix({
       setIsSubmitting(false);
     }
   };
+
+  // const handleSave = async () => {
+  //   if (!roleId) {
+  //     toast.error("Không tìm thấy ID vai trò");
+  //     return;
+  //   }
+
+  //   // Xác định quyền cần cấp và thu hồi
+  //   const currentNames = currentPermissions?.permissions?.map(p => p.name) || [];
+  //   const newNames = selectedPermissionNames || [];
+    
+  //   const toAssign = newNames.filter(name => !currentNames.includes(name));
+  //   const toRevoke = currentNames.filter(name => !newNames.includes(name));
+    
+  //   if (toAssign.length === 0 && toRevoke.length === 0) {
+  //     toast.info("Không có thay đổi nào để lưu");
+  //     return;
+  //   }
+
+  //   setIsSubmitting(true);
+    
+  //   try {
+  //     // Thực hiện cấp quyền và thu hồi quyền song song
+  //     const promises = [];
+      
+  //     if (toAssign.length > 0) {
+  //       promises.push(
+  //         assignPermissions.mutateAsync({
+  //           roleId,
+  //           permissionNames: toAssign,
+  //         })
+  //       );
+  //     }
+      
+  //     if (toRevoke.length > 0) {
+  //       promises.push(
+  //         revokePermissions.mutateAsync({
+  //           roleId,
+  //           permissionNames: toRevoke,
+  //         })
+  //       );
+  //     }
+      
+  //     await Promise.all(promises);
+      
+  //     // toast.success(`Đã cập nhật quyền cho vai trò ${roleName}`);
+      
+  //   } catch (error) {
+  //     console.error("Error updating permissions:", error);
+  //     toast.error("Có lỗi xảy ra khi cập nhật quyền");
+  //   } finally {
+  //     setIsSubmitting(false);
+  //   }
+  // };
 
   const isLoading = isLoadingAllPermissions || isLoadingCurrentPermissions;
   const currentPermissionNames = new Set(currentPermissions?.permissions?.map(p => p.name) || []);

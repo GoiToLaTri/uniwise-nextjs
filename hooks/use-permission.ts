@@ -96,6 +96,8 @@ export function useCreatePermission() {
         // Invalidate và refetch danh sách permissions
         queryClient.invalidateQueries({ queryKey: [...PERMISSIONS_QUERY_KEY, "all"] });
         
+        queryClient.refetchQueries({ queryKey: [...PERMISSIONS_QUERY_KEY, "all"] });
+
         // Set cache chi tiết
         queryClient.setQueryData(PERMISSION_DETAIL_QUERY_KEY(newPermission.id), newPermission);
       }
