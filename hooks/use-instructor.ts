@@ -104,7 +104,7 @@ export function useInstructorStatus() {
     isPending: data?.status === "PENDING",
     isApproved: data?.status === "APPROVED",
     isRejected: data?.status === "REJECTED",
-    isInactive: data?.status === "INACTIVE",
+    isSuspended: data?.status === "SUSPENDED",
     hasApplied: !!data,
     reviewComment: data?.reviewComment,
     isLoading,

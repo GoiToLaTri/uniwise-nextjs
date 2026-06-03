@@ -51,7 +51,7 @@ export default function RegisterLayout({ children }: { children: ReactNode }) {
       PENDING: { icon: Clock, color: "text-amber-600", bgColor: "bg-amber-50", title: "Hồ sơ đang chờ duyệt", action: "Quay về trang chủ" },
       APPROVED: { icon: CheckCircle2, color: "text-emerald-600", bgColor: "bg-emerald-50", title: "Bạn đã là giảng viên", action: "Vào Dashboard" },
       REJECTED: { icon: AlertCircle, color: "text-destructive", bgColor: "bg-red-50", title: "Hồ sơ bị từ chối", action: "Liên hệ hỗ trợ" },
-      INACTIVE: { icon: ShieldAlert, color: "text-slate-600", bgColor: "bg-slate-100", title: "Tài khoản tạm khóa", action: "Gửi Hỗ trợ" }
+      SUSPENDED: { icon: ShieldAlert, color: "text-slate-600", bgColor: "bg-slate-100", title: "Tài khoản tạm khóa", action: "Gửi Hỗ trợ" }
     };
     const config = statusConfig[instructor.status];
     const StatusIcon = config.icon;
@@ -85,7 +85,7 @@ export default function RegisterLayout({ children }: { children: ReactNode }) {
               {instructor.status === "PENDING" && "Đội ngũ chuyên môn đang xem xét hồ sơ của bạn. Chúng tôi sẽ phản hồi sớm nhất qua email."}
               {instructor.status === "APPROVED" && "Tuyệt vời! Bạn hiện đã có toàn quyền truy cập vào hệ thống công cụ giảng dạy của Uniwise."}
               {instructor.status === "REJECTED" && (instructor.reviewComment || "Hồ sơ của bạn hiện chưa đáp ứng đủ tiêu chí. Vui lòng kiểm tra lại thông tin.")}
-              {instructor.status === "INACTIVE" && "Tài khoản của bạn tạm thời không khả dụng. Vui lòng liên hệ quản trị viên để kích hoạt lại."}
+              {instructor.status === "SUSPENDED" && "Tài khoản của bạn tạm thời không khả dụng. Vui lòng liên hệ quản trị viên để kích hoạt lại."}
             </p>
 
             <div className="space-y-4">
@@ -97,12 +97,18 @@ export default function RegisterLayout({ children }: { children: ReactNode }) {
                   </Button>
                 </Link>
               ) : (
-                <Link href="/">
-                  <Button className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 group">
-                    {config.action}
-                    <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
-                  </Button>
-                </Link>
+                <div>
+                    <Link href="/">
+                      <Button className="w-full h-16 bg-slate-900 hover:bg-slate-800 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl flex items-center justify-center gap-3 group">
+                        Chỉnh sửa hồ sơ
+                        <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />
+                      </Button>
+                  </Link>
+                  <br/>
+                  <Link href="/">
+                      {config.action}
+                  </Link>
+                </div>
               )}
             </div>
           </div>
