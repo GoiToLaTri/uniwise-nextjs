@@ -86,7 +86,7 @@ export function UserAccountDialog({ user }: { user: UserProfile }) {
       return {
         label: "Quản lý giảng dạy",
         icon: Presentation,
-        href: "/instructor/portal",
+        href: "/instructor",
         color: "text-amber-600",
         bgColor: "hover:bg-amber-50",
         badge: "Instructor"

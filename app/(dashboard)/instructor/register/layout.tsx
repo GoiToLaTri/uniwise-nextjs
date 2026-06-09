@@ -76,7 +76,7 @@ export default function RegisterLayout({ children }: { children: ReactNode }) {
                 <div className={cn("p-5 rounded-[2rem] border-4 border-white shadow-xl mb-4", config.bgColor)}>
                     <StatusIcon className={cn("w-12 h-12", config.color)} />
                 </div>
-                <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase italic">
+                <h2 className="text-4xl font-black text-slate-900 tracking-tighter uppercase">
                     {config.title}
                 </h2>
             </div>
@@ -90,7 +90,7 @@ export default function RegisterLayout({ children }: { children: ReactNode }) {
 
             <div className="space-y-4">
               {instructor.status === "APPROVED" ? (
-                <Link href="/instructor/dashboard">
+                <Link href="/instructor">
                   <Button className="w-full h-16 bg-indigo-600 hover:bg-indigo-700 text-white rounded-2xl font-black uppercase tracking-widest shadow-xl shadow-indigo-100 group transition-all">
                     Vào Dashboard giảng viên
                     <ArrowRight className="ml-2 w-5 h-5 group-hover:translate-x-1 transition-transform" />
