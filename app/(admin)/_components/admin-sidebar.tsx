@@ -5,7 +5,8 @@ import { usePathname, useRouter } from "next/navigation";
 import { 
   LayoutDashboard, BookOpen, Users, BarChart3, 
   Settings, ShieldCheck, Key, GraduationCap, 
-  ChevronRight, Home, LogOut, UserCircle2, ChevronsUpDown 
+  ChevronRight, Home, LogOut, UserCircle2, ChevronsUpDown, 
+  Banknote
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/use-profile";
@@ -29,6 +30,7 @@ const routes = [
   { label: "Giảng viên", icon: GraduationCap, href: "/admin/instructors" },
   { label: "Vai trò", icon: ShieldCheck, href: "/admin/roles" },
   { label: "Quyền hạn", icon: Key, href: "/admin/permissions" },
+  { label: "Mức giá", icon: Banknote , href: "/admin/price-tiers" },
   { label: "Doanh thu", icon: BarChart3, href: "/admin/analytics" },
   { label: "Cài đặt", icon: Settings, href: "/admin/settings" },
 ];
