@@ -65,14 +65,14 @@ export default function PriceTiersPage() {
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input 
             placeholder="Tìm kiếm tên mức giá..." 
-            className="pl-10 h-11 rounded-xl border-slate-200"
+            className="pl-11 h-12 rounded-xl border-slate-200 bg-white shadow-sm focus-visible:ring-indigo-500/20 transition-all font-medium"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
         </div>
         <div className="w-full md:w-48">
           <Select value={currency} onValueChange={(v) => { setCurrency(v); setPage(0); }}>
-            <SelectTrigger className="!h-11 w-full rounded-xl border-slate-200">
+            <SelectTrigger className="!h-12 w-full rounded-xl border-slate-200">
               <Filter className="w-4 h-4 mr-2 text-slate-400" />
               <SelectValue placeholder="Loại tiền tệ" />
             </SelectTrigger>

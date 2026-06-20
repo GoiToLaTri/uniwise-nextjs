@@ -31,7 +31,7 @@ export default function InstructorManagementPage() {
         <div>
           <h1 className="text-3xl font-black tracking-tight text-slate-900 flex items-center gap-3">
             <Users className="w-8 h-8 text-indigo-600" />
-            Quản lý Giảng viên
+            Quản lý giảng viên
           </h1>
           <p className="text-slate-500 font-medium italic">
             Phê duyệt và quản lý danh sách chuyên gia trên toàn hệ thống.

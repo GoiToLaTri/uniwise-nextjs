@@ -10,11 +10,9 @@ import { setTokenResponse, removeToken, getTokenResponse } from "@/stores/token-
 import { removeCachedProfile } from "@/stores/profile-store";
 import { clearAccessTokenCookie, syncAccessTokenCookie } from "@/lib/token";
 import { startTransition } from "react";
-import { ACCOUNT_DETAIL_QUERY_KEY } from "./use-account";
 import { PROFILE_QUERY_KEY } from "./use-profile";
 
 export function useLogin() {
-  const router = useRouter();
   const queryClient = useQueryClient();
   return useMutation({
     mutationFn: async (credentials: LoginRequest) => {
