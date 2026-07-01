@@ -13,11 +13,8 @@ COPY package.json pnpm-lock.yaml pnpm-workspace.yaml ./
 RUN cat pnpm-workspace.yaml
 # Cài dependencies
 RUN --mount=type=cache,id=pnpm_nextjs_cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile --ignore-scripts
+    pnpm install --frozen-lockfile
 
-RUN --mount=type=cache,id=pnpm_nextjs_cache,target=/root/.local/share/pnpm/store \
-    pnpm install --frozen-lockfile --ignore-scripts && \
-    pnpm rebuild sharp
 
 COPY . .
 
