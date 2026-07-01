@@ -57,3 +57,30 @@ export interface UpdateCourseRequest {
 export interface CourseListResponse extends ListResponse {
   content: CourseResponse[];
 }
+
+export interface CreateSectionRequest {
+  courseId: string;
+  title: string;
+  sortOrder: number;
+}
+
+export interface UpdateSectionRequest {
+  title: string;
+  sortOrder?: number;
+}
+
+export interface CreateLessonRequest {
+  sectionId: string;
+  title: string;
+  lessonType: string;
+  contentReference?: string;
+  sortOrder: number;
+}
+
+export interface UpdateLessonRequest {
+  title: string;
+  lessonType: string;
+  contentReference?: string;
+  sortOrder?: number;
+}
+
