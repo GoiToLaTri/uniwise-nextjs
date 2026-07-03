@@ -1,40 +1,8 @@
+"use client";
+
 import { HeroSection } from "./_components/hero-section";
-import { CourseCard } from "./_components/course-card";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-
-const FEATURED_COURSES = [
-  {
-    title: "Fullstack Next.js 14 với Tailwind CSS v4 và Prisma",
-    instructor: "Alex Nguyen",
-    price: "1.299.000đ",
-    rating: 4.9,
-    students: 1205,
-    category: "Development",
-    image:
-      "https://images.unsplash.com/photo-1587620962725-abab7fe55159?w=800&q=80",
-  },
-  {
-    title: "UI/UX Design Masterclass: From Zero to Pro Hero",
-    instructor: "Elena Tran",
-    price: "890.000đ",
-    rating: 4.8,
-    students: 856,
-    category: "Design",
-    image:
-      "https://images.unsplash.com/photo-1586717791821-3f44a563fa4c?w=800&q=80",
-  },
-  {
-    title: "AI & Machine Learning cơ bản cho người mới bắt đầu",
-    instructor: "Dr. Minh Vu",
-    price: "1.500.000đ",
-    rating: 5.0,
-    students: 420,
-    category: "Data Science",
-    image:
-      "https://images.unsplash.com/photo-1677442136019-21780ecad995?w=800&q=80",
-  },
-];
 
 export default function LandingPage() {
   return (
@@ -52,18 +20,20 @@ export default function LandingPage() {
               Khóa học tiêu biểu
             </h3>
           </div>
-          <Button
-            variant="link"
-            className="text-indigo-600 font-bold p-0 h-auto"
-          >
-            Xem tất cả khóa học →
-          </Button>
+          <Link href="/courses">
+            <Button
+              variant="link"
+              className="text-indigo-600 font-bold p-0 h-auto cursor-pointer"
+            >
+              Xem tất cả khóa học →
+            </Button>
+          </Link>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
-          {FEATURED_COURSES.map((course, index) => (
-            <CourseCard key={index} {...course} />
-          ))}
+        <div className="text-center py-16 bg-white/60 backdrop-blur-md rounded-2xl border border-slate-200 border-dashed shadow-xs">
+          <p className="text-slate-500 font-bold italic">
+            Danh sách khóa học tiêu biểu đang được cập nhật. Vui lòng quay lại sau!
+          </p>
         </div>
       </section>
 

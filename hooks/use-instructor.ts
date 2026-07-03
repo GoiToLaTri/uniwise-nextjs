@@ -424,3 +424,24 @@ export function useReactivateInstructor() {
     },
   });
 }
+
+export function usePublicInstructorProfile(profileId?: string) {
+  return useQuery({
+    queryKey: ["instructor", "public", profileId],
+    queryFn: async (): Promise<InstructorProfile | null> => {
+      if (!profileId) return null;
+      try {
+        const response = await apiClient.get<never, ApiResponse<InstructorProfile>>(
+          `/user-service/api/v1/instructors/public/${profileId}`
+        );
+        return response.data;
+      } catch (error: any) {
+        if (error?.response?.status === 404) {
+          return null;
+        }
+        throw error;
+      }
+    },
+    enabled: !!profileId,
+  });
+}

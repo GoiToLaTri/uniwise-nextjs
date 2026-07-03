@@ -134,14 +134,32 @@ export function useProfileByAccountId(accountId: string) {
     queryFn: async (): Promise<ProfileResponse | null> => {
       if (!accountId) return null;
 
-      const tokenResponse = await getTokenResponse();
-      if (!tokenResponse) return null;
-
       const response = await apiClient.get<never, ApiResponse<ProfileResponse>>(
         `/user-service/api/v1/profiles/by-account-id/${accountId}`
       );
       return response.data;
     },
     enabled: !!accountId,
+  });
+}
+
+export function usePublicInstructors(pageNumber = 0, pageSize = 10, keyword?: string) {
+  return useQuery({
+    queryKey: ["profiles", "instructors", pageNumber, pageSize, keyword],
+    queryFn: async (): Promise<ProfileListResponse | null> => {
+      const response = await apiClient.get<
+        never,
+        ApiResponse<ProfileListResponse>
+      >("/user-service/api/v1/profiles", {
+        params: {
+          page: pageNumber,
+          size: pageSize,
+          keyword,
+          profileType: "INSTRUCTOR",
+        },
+      });
+
+      return response.data;
+    },
   });
 }

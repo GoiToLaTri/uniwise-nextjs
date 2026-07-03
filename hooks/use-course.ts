@@ -13,6 +13,28 @@ import {
 export const COURSES_QUERY_KEY = ["courses"];
 export const MY_COURSES_QUERY_KEY = ["my-courses"];
 export const COURSE_DETAIL_QUERY_KEY = (id: string) => ["course", id];
+export const PUBLISHED_COURSES_QUERY_KEY = ["published-courses"];
+
+// Hook lấy danh sách các courses đã được published (dành cho trang chủ/public)
+export function usePublishedCourses(pageNumber = 0, pageSize = 10, sortBy = "createdAt", sortDir = "desc") {
+  return useQuery({
+    queryKey: [...PUBLISHED_COURSES_QUERY_KEY, pageNumber, pageSize, sortBy, sortDir],
+    queryFn: async (): Promise<CourseListResponse | null> => {
+      const response = await apiClient.get<never, ApiResponse<CourseListResponse>>(
+        "/course-service/api/v1/courses/published",
+        {
+          params: {
+            page: pageNumber,
+            size: pageSize,
+            sortBy,
+            sortDir,
+          },
+        }
+      );
+      return response.data;
+    },
+  });
+}
 
 // Hook lấy danh sách tất cả các courses (có phân trang, tìm kiếm & lọc theo trạng thái)
 export function useCourses(pageNumber = 0, pageSize = 10, search?: string, status?: string) {

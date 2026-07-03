@@ -12,16 +12,23 @@ import { StudentCerts } from "./_sections/student-certs";
 import { StudentActivity } from "./_sections/student-activity";
 import { AdminPosts } from "./_sections/admin-posts";
 
+import { InstructorProfile } from "@/interfaces/instructor.interface";
+
 interface ProfileTabsProps {
   roles: string[];
+  instructorProfile?: InstructorProfile | null;
 }
 
-export function ProfileTabs({ roles }: ProfileTabsProps) {
+export function ProfileTabs({ roles, instructorProfile }: ProfileTabsProps) {
   // 1. Mapping Component theo ID
   const COMPONENT_MAP: Record<string, React.ReactNode> = {
-    "ins-courses": <InstructorCourses />,
+    "ins-courses": instructorProfile ? (
+      <InstructorCourses accountId={instructorProfile.accountId} />
+    ) : null,
     "ins-reviews": <InstructorReviews />,
-    "ins-bio": <InstructorBio />,
+    "ins-bio": instructorProfile ? (
+      <InstructorBio profile={instructorProfile} />
+    ) : null,
     "stu-courses": <StudentCourses />,
     "stu-certs": <StudentCerts />,
     "stu-activity": <StudentActivity />,

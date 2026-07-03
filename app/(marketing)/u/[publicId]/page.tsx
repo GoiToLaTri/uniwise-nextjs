@@ -5,11 +5,29 @@ import { ProfileHeader } from "../_components/profile-header";
 import { ProfileHeaderSkeleton } from "../_components/profile-header-skeleton";
 import { ProfileTabs } from "../_components/profile-tabs";
 import { usePublicProfile } from "@/hooks/use-profile";
+import { usePublicInstructorProfile } from "@/hooks/use-instructor";
+import * as React from "react";
 
 export default function PublicProfilePage() {
   console.log("PublicProfilePage render");
   const { publicId } = useParams<{publicId: string}>();
-  const { data: user, isLoading, error } = usePublicProfile(publicId);
+  const { data: user, isLoading: isLoadingUser, error } = usePublicProfile(publicId);
+
+  // Gọi hook lấy thông tin chi tiết giảng viên nếu đây là tài khoản INSTRUCTOR
+  const isInstructor = user?.profileType === "INSTRUCTOR";
+  const { data: instructorProfile, isLoading: isLoadingInstructor } = usePublicInstructorProfile(
+    isInstructor ? user?.id : undefined
+  );
+
+  // Quyết định các tab hiển thị dựa theo loại tài khoản (profileType)
+  const roles = React.useMemo(() => {
+    if (!user) return ["STUDENT"];
+    if (user.profileType === "INSTRUCTOR") return ["INSTRUCTOR"];
+    if (user.profileType === "ADMIN") return ["ADMIN"];
+    return ["STUDENT"]; // Mặc định cho USER thường
+  }, [user?.profileType]);
+
+  const isLoading = isLoadingUser || (isInstructor && isLoadingInstructor);
 
   if (isLoading) {
     return (
@@ -38,9 +56,9 @@ export default function PublicProfilePage() {
       <div className="container mx-auto px-4">
         <div className="relative -mt-32 space-y-8">
           {/* Header Card Trắng */}
-          <ProfileHeader user={user} />
+          <ProfileHeader user={user} headline={instructorProfile?.headline} />
           <div>
-            <ProfileTabs roles={["ADMIN"]}/>
+            <ProfileTabs roles={roles} instructorProfile={instructorProfile} />
           </div>
         </div>
       </div>

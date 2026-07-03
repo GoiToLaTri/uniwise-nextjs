@@ -44,9 +44,6 @@ export function usePriceTiers(
   return useQuery({
     queryKey: [...PRICE_TIERS_QUERY_KEY, pageNumber, pageSize, search, currency],
     queryFn: async function() {
-      const tokenResponse = await getTokenResponse();
-      if (!tokenResponse) return null;
-
       const response = await apiClient.get<never, ApiResponse<PriceTierListResponse>>(
         "/course-service/api/v1/price-tiers",
         {
@@ -69,9 +66,6 @@ export function usePriceTier(id: string) {
     queryKey: PRICE_TIER_DETAIL_QUERY_KEY(id),
     queryFn: async (): Promise<PriceTierResponse | null> => {
       if (!id) return null;
-
-      const tokenResponse = await getTokenResponse();
-      if (!tokenResponse) return null;
 
       const response = await apiClient.get<never, ApiResponse<PriceTierResponse>>(
         `/course-service/api/v1/price-tiers/${id}`

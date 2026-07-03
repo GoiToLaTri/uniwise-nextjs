@@ -5,7 +5,7 @@ import { UserAvatar } from "./user-avatar";
 import { ProfileResponse } from "@/interfaces/response";
 import { MailIcon } from "lucide-react";
 
-export function ProfileHeader({ user }: { user: ProfileResponse }) {
+export function ProfileHeader({ user, headline }: { user: ProfileResponse; headline?: string }) {
   return (
     <div className="rounded-3xl border border-white bg-white p-6 shadow-[0_20px_50px_rgba(0,0,0,0.05)] md:p-10">
       <div className="flex flex-col items-start gap-8 md:flex-row">
@@ -21,6 +21,12 @@ export function ProfileHeader({ user }: { user: ProfileResponse }) {
               <RoleBadge role={user.profileType} />
             </div>
           </div>
+
+          {headline && (
+            <p className="text-lg font-bold text-indigo-600 leading-snug -mt-2">
+              {headline}
+            </p>
+          )}
           
           {/* Thêm email */}
           <div className="flex items-center gap-2 text-slate-500">
