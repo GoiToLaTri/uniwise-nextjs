@@ -91,9 +91,6 @@ export function useCourse(id: string) {
     queryFn: async (): Promise<CourseResponse | null> => {
       if (!id) return null;
 
-      const tokenResponse = await getTokenResponse();
-      if (!tokenResponse) return null;
-
       const response = await apiClient.get<never, ApiResponse<CourseResponse>>(
         `/course-service/api/v1/courses/${id}`
       );

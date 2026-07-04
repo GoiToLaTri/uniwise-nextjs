@@ -9,6 +9,9 @@ export interface CourseLesson {
   contentReference: string;
   status: string;
   sortOrder: number;
+  isPreview?: boolean;
+  isCompleted?: boolean | null;
+  lastWatchedPosition?: number | null;
 }
 
 export interface CourseSection {
@@ -34,6 +37,10 @@ export interface CourseResponse {
   createdAt: string;
   updatedAt: string;
   sections: CourseSection[];
+  isEnrolled?: boolean;
+  totalLessonsCount?: number;
+  completedLessonsCount?: number;
+  progressPercentage?: number;
 }
 
 export interface CreateCourseRequest {
