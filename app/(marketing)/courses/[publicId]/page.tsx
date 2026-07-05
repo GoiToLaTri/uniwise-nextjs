@@ -10,6 +10,7 @@ import { useCreatePayment } from "@/hooks/use-payment";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
+import { VideoPlayer } from "@/components/shared/video-player";
 import { 
   BookOpen, 
   Clock, 
@@ -94,12 +95,33 @@ export default function CourseDetailPage() {
 
   // Mở bài học để học (Học thử hoặc Vào học chính thức)
   const handleOpenLesson = (lesson: any) => {
+    let url = lesson.contentReference || "";
+    
+    if (lesson.lessonType === "VIDEO" && lesson.contentReference) {
+      let lessonId = lesson.contentReference;
+      
+      // Nếu contentReference là URL đầy đủ chứa /lessons/ (vd: http://localhost:9000/uniwise/lessons/2b4724db5d534f35/playlist.m3u8)
+      const match = lesson.contentReference.match(/lessons\/([a-zA-Z0-9_-]+)/);
+      if (match && match[1]) {
+        lessonId = match[1];
+      } else {
+        // Nếu không có /lessons/, giả định nó chỉ là chuỗi ID (vd: "2b4724db5d534f35")
+        // Nếu vô tình có dấu '/', ta lấy phần đầu tiên không chứa đuôi file
+        if (lessonId.includes('/')) {
+           const parts = lessonId.split('/').filter((p: string) => p && !p.includes('.m3u8') && !p.startsWith('http'));
+           if (parts.length > 0) lessonId = parts[parts.length - 1];
+        }
+      }
+
+      url = `/api/proxy/media-service/api/v1/streaming/lessons/${lessonId}/playlist.m3u8`;
+    }
+
     if (isEnrolled) {
       // Đã mua: hiển thị bài học trực tiếp (hoặc báo mở thành công)
       setPreviewLesson({
         title: lesson.title,
         type: lesson.lessonType,
-        url: lesson.contentReference || ""
+        url: url
       });
       return;
     }
@@ -109,7 +131,7 @@ export default function CourseDetailPage() {
       setPreviewLesson({
         title: lesson.title,
         type: lesson.lessonType,
-        url: lesson.contentReference || ""
+        url: url
       });
     } else {
       // Chưa mua và không được học thử
@@ -627,12 +649,12 @@ export default function CourseDetailPage() {
             <div className="flex-1 bg-black flex items-center justify-center min-h-[300px] md:min-h-[450px]">
               {previewLesson.url ? (
                 previewLesson.type === "VIDEO" ? (
-                  <video 
-                    controls 
-                    autoPlay
-                    className="w-full h-full max-h-[70vh] object-contain"
-                    src={previewLesson.url}
-                  />
+                  <div className="w-full max-w-4xl mx-auto">
+                    <VideoPlayer 
+                      src={previewLesson.url} 
+                      title={previewLesson.title || "Video bài giảng"} 
+                    />
+                  </div>
                 ) : (
                   /* Giả lập đọc tài liệu văn bản */
                   <div className="p-8 text-slate-300 text-center max-w-lg space-y-4">
