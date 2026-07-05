@@ -6,6 +6,7 @@ import Link from "next/link";
 import { useCourse } from "@/hooks/use-course";
 import { useProfileByAccountId } from "@/hooks/use-profile";
 import { usePriceTier } from "@/hooks/use-price-tier";
+import { useCreatePayment } from "@/hooks/use-payment";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -54,9 +55,9 @@ export default function CourseDetailPage() {
   // Modal xem thử bài học (Preview Lesson)
   const [previewLesson, setPreviewLesson] = React.useState<{ title: string; type: string; url: string } | null>(null);
 
-  // Modal thanh toán/đăng ký học (Mock Checkout)
+  // Modal thanh toán/đăng ký học
   const [showCheckoutModal, setShowCheckoutModal] = React.useState(false);
-  const [isSubmittingCheckout, setIsSubmittingCheckout] = React.useState(false);
+  const createPayment = useCreatePayment();
 
   // Tự động mở rộng section đầu tiên khi load xong dữ liệu
   React.useEffect(() => {
@@ -117,15 +118,24 @@ export default function CourseDetailPage() {
     }
   };
 
-  // Xác nhận đăng ký/mua khóa học (Mock Action)
-  const handleConfirmCheckout = () => {
-    setIsSubmittingCheckout(true);
-    setTimeout(() => {
-      setIsSubmittingCheckout(false);
-      setShowCheckoutModal(false);
-      setIsEnrolledOverride(true); // Ghi đè trạng thái thành đã đăng ký
-      toast.success("Đăng ký khóa học thành công! Chào mừng bạn đến với khóa học.");
-    }, 1200);
+  // Xác nhận đăng ký/mua khóa học qua cổng thanh toán VNPay
+  const handleConfirmCheckout = async () => {
+    if (!course?.id) return;
+    try {
+      const response = await createPayment.mutateAsync({ courseId: course.id });
+      if (response && response.paymentUrl) {
+        // Lưu lại id giao dịch vào localStorage để đối chiếu kết quả
+        localStorage.setItem("uniwise_last_payment_id", response.id);
+        // Lưu cả publicId để khi redirect về trang kết quả có thể trỏ nút CTA quay lại trang khóa học này
+        localStorage.setItem("uniwise_last_course_public_id", publicId);
+        // Chuyển hướng đến VNPay Sandbox
+        window.location.href = response.paymentUrl;
+      } else {
+        toast.error("Không nhận được đường dẫn thanh toán từ hệ thống.");
+      }
+    } catch (error) {
+      console.error("Lỗi khi tạo liên kết thanh toán:", error);
+    }
   };
 
   // Render trạng thái loading
@@ -705,10 +715,10 @@ export default function CourseDetailPage() {
               </button>
               <button 
                 onClick={handleConfirmCheckout}
-                disabled={isSubmittingCheckout}
+                disabled={createPayment.isPending}
                 className="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 disabled:opacity-50 cursor-pointer text-sm flex items-center justify-center gap-2"
               >
-                {isSubmittingCheckout ? "Đang xử lý..." : "Xác nhận đăng ký"}
+                {createPayment.isPending ? "Đang xử lý..." : "Xác nhận đăng ký"}
               </button>
             </div>
 
