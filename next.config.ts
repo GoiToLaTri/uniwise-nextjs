@@ -2,15 +2,13 @@ import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
   /* config options here */
-  output: "standalone", 
-  images: {
-    remotePatterns: [
-      {
-        protocol: "https",
-        hostname: "images.unsplash.com",
-      },
-    ],
+  experimental: {
+    serverActions: {
+      bodySizeLimit: "500mb",
+    },
+    proxyClientMaxBodySize: "500mb",
   },
+  output: "standalone",
   async rewrites() {
     return [
       {

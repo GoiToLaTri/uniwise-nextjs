@@ -14,7 +14,7 @@ export async function POST(request: NextRequest) {
 
   response.cookies.set(AUTH_COOKIE.ACCESS_TOKEN, body.accessToken, {
     httpOnly: true,
-    sameSite: IS_PRODUCTION ? "strict" : "lax",  // ← đổi lại
+    sameSite: "lax",  // VNPay callback from external domain requires lax or none
     secure: IS_PRODUCTION,
     expires: new Date(body.expiresAt),
     path: "/",
