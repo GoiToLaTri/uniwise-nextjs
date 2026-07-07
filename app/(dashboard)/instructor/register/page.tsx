@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { Badge } from "@/components/ui/badge";
 import { GraduationCap, ShieldCheck } from "lucide-react";
 import { InstructorProfileForm } from "./_components/instructor-profile-form";
@@ -9,14 +10,16 @@ export default function InstructorRegisterPage() {
         {/* LEFT COLUMN: HERO INFO */}
         <div className="lg:col-span-5 lg:sticky lg:top-12 space-y-8 animate-in fade-in slide-in-from-left-8 duration-1000 ease-out">
           {/* LOGO UNIWISE CỐ ĐỊNH BÊN TRÁI */}
-      <div className="flex items-center gap-3 mb-16 animate-in fade-in slide-in-from-top-4 duration-700 group w-fit">
-        <div className="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform duration-500">
-          <GraduationCap className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-xl font-black tracking-tighter bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent uppercase">
-          Uniwise
-        </span>
-      </div>
+          <div className="mb-16 animate-in fade-in slide-in-from-top-4 duration-700 w-fit">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-black tracking-tighter bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
+                UNIWISE
+              </span>
+            </Link>
+          </div>
           <div className="space-y-6">
             <Badge className="bg-indigo-50 text-indigo-600 border-indigo-100 px-4 py-1 rounded-full font-bold tracking-[0.2em] uppercase text-[10px]">
               Instructor Partnership

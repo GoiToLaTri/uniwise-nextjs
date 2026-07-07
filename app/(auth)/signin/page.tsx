@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GraduationCap } from "lucide-react";
 import { LoginForm } from "./_components";
 
@@ -11,13 +12,15 @@ export default function SigninPage() {
         <div className="absolute top-0 left-0 w-full h-full opacity-20 bg-[radial-gradient(circle_at_center,var(--tw-gradient-from)_0%,transparent_70%)] from-white" />
 
         <div className="relative z-10 p-12 text-white max-w-xl">
-          <div className="flex items-center gap-3 mb-12 animate-in fade-in slide-in-from-left-8 duration-700">
-            <div className="bg-white p-2 rounded-xl">
-              <GraduationCap className="w-8 h-8 text-indigo-600" />
-            </div>
-            <span className="text-3xl font-black tracking-tighter">
-              UNIWISE
-            </span>
+          <div className="mb-12 animate-in fade-in slide-in-from-left-8 duration-700">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="bg-white/20 p-1.5 rounded-lg shadow-lg group-hover:scale-110 transition-transform backdrop-blur-md">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-black tracking-tighter text-white">
+                UNIWISE
+              </span>
+            </Link>
           </div>
 
           <h1 className="text-5xl font-black tracking-tighter leading-[1.1] mb-6 animate-in fade-in slide-in-from-left-10 duration-1000 delay-150">

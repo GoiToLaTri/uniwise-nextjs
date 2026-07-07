@@ -50,8 +50,7 @@ export default function CourseDetailPage() {
   // State điều khiển mở rộng/thu gọn danh sách chương học (Syllabus Accordion)
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({});
 
-  // State giả lập trạng thái "Đã đăng ký học" phục vụ Demo/Kiểm thử
-  const [isEnrolledOverride, setIsEnrolledOverride] = React.useState<boolean | undefined>(undefined);
+
 
   // Modal xem thử bài học (Preview Lesson)
   const [previewLesson, setPreviewLesson] = React.useState<{ title: string; type: string; url: string } | null>(null);
@@ -69,8 +68,8 @@ export default function CourseDetailPage() {
     }
   }, [course]);
 
-  // Xác định trạng thái đã đăng ký (Ưu tiên override của demo mode)
-  const isEnrolled = isEnrolledOverride !== undefined ? isEnrolledOverride : (course?.isEnrolled || false);
+  // Xác định trạng thái đã đăng ký
+  const isEnrolled = course?.isEnrolled || false;
 
   // Format hiển thị giá tiền
   const priceDisplay = React.useMemo(() => {
@@ -219,21 +218,7 @@ export default function CourseDetailPage() {
               <ArrowLeft className="w-4 h-4 transition-transform group-hover:-translate-x-1" /> Quay lại danh sách khóa học
             </Link>
 
-            {/* Developer Demo Tool */}
-            <div className="flex items-center gap-2 bg-white/10 backdrop-blur-md px-3 py-1.5 rounded-full border border-white/10 text-xs font-bold shadow-xs">
-              <span className="text-indigo-200">Developer Demo Mode:</span>
-              <button 
-                onClick={() => setIsEnrolledOverride(prev => prev === true ? false : true)}
-                className={`px-3 py-1 rounded-full text-[10px] font-black uppercase transition-all duration-300 ${
-                  isEnrolled 
-                    ? "bg-emerald-500 hover:bg-emerald-600 text-white" 
-                    : "bg-amber-500 hover:bg-amber-600 text-white"
-                }`}
-                title="Click để chuyển đổi giữa giao diện Đã mua và Chưa mua để kiểm thử"
-              >
-                {isEnrolled ? "Đã sở hữu (Enrolled)" : "Chưa sở hữu (Not Enrolled)"}
-              </button>
-            </div>
+
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">

@@ -1,3 +1,4 @@
+import Link from "next/link";
 import { GraduationCap, CheckCircle2 } from "lucide-react";
 import { SignupForm } from "./_components";
 
@@ -9,13 +10,15 @@ export default function SignupPage() {
         <div className="absolute inset-0 bg-linear-to-br from-blue-700 via-indigo-600 to-purple-600" />
 
         <div className="relative z-10 p-12 text-white max-w-xl">
-          <div className="flex items-center gap-3 mb-12 animate-in fade-in slide-in-from-left-8 duration-700">
-            <div className="bg-white p-2 rounded-xl">
-              <GraduationCap className="w-8 h-8 text-indigo-600" />
-            </div>
-            <span className="text-3xl font-black tracking-tighter">
-              UNIWISE
-            </span>
+          <div className="mb-12 animate-in fade-in slide-in-from-left-8 duration-700">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="bg-white/20 p-1.5 rounded-lg shadow-lg group-hover:scale-110 transition-transform backdrop-blur-md">
+                <GraduationCap className="w-6 h-6 text-white" />
+              </div>
+              <span className="text-xl font-black tracking-tighter text-white">
+                UNIWISE
+              </span>
+            </Link>
           </div>
 
           <h1 className="text-5xl font-black tracking-tighter leading-[1.1] mb-8 animate-in fade-in slide-in-from-left-10 duration-1000 delay-150">

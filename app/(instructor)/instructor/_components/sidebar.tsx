@@ -18,13 +18,15 @@ export function Sidebar() {
 
   return (
     <div className="h-full flex flex-col">
-      <div className="p-8 flex items-center gap-x-3">
-        <div className="w-10 h-10 rounded-xl bg-linear-to-r from-indigo-600 to-purple-500 flex items-center justify-center shadow-lg shadow-indigo-200">
-          <GraduationCap className="text-white w-6 h-6" />
-        </div>
-        <span className="text-2xl font-black tracking-tighter text-slate-900">
-          UNIWISE<span className="text-indigo-600">.</span>
-        </span>
+      <div className="p-8">
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+            <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xl font-black tracking-tighter bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
+            UNIWISE
+          </span>
+        </Link>
       </div>
 
       <div className="flex flex-col w-full px-4 gap-y-2">

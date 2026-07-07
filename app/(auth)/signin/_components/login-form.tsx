@@ -48,13 +48,15 @@ export function LoginForm() {
   return (
     <Card className="border-slate-200 shadow-[0_20px_50px_rgba(79,70,229,0.08)] bg-white/90 backdrop-blur-md rounded-xl">
       <CardHeader className="space-y-1 pb-8">
-        <div className="lg:hidden flex items-center gap-2 mb-4">
-          <div className="bg-indigo-600 p-1 rounded-lg">
-            <GraduationCap className="w-5 h-5 text-white" />
-          </div>
-          <span className="text-xl font-black tracking-tighter text-indigo-600">
-            UNIWISE
-          </span>
+        <div className="lg:hidden mb-4">
+          <Link href="/" className="flex items-center gap-2 group">
+            <div className="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+              <GraduationCap className="w-6 h-6 text-white" />
+            </div>
+            <span className="text-xl font-black tracking-tighter bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
+              UNIWISE
+            </span>
+          </Link>
         </div>
         <CardTitle className="text-3xl font-black tracking-tight">
           Chào mừng trở lại
