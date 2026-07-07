@@ -79,17 +79,17 @@ export default function MyCoursesPage() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className={cn(
-              "!h-11 rounded-xl border-slate-200 bg-white font-semibold focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden w-full md:w-[180px]"
+              "!h-11 rounded-xl border-slate-200 bg-white focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden w-full md:w-[180px]"
             )}>
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-slate-400" />
                 <SelectValue placeholder="Trạng thái" />
               </div>
             </SelectTrigger>
-            <SelectContent className="rounded-xl border-slate-200 shadow-2xl">
-              <SelectItem value="ALL" className="font-semibold text-slate-700 cursor-pointer">Tất cả trạng thái</SelectItem>
-              <SelectItem value="DRAFT" className="font-semibold text-slate-600 cursor-pointer">Bản nháp</SelectItem>
-              <SelectItem value="PUBLISHED" className="font-semibold text-emerald-600 cursor-pointer">Công khai</SelectItem>
+            <SelectContent className="rounded-xl border-slate-200">
+              <SelectItem value="ALL" className="rounded-lg cursor-pointer py-2.5 px-3">Tất cả trạng thái</SelectItem>
+              <SelectItem value="DRAFT" className="rounded-lg cursor-pointer py-2.5 px-3">Bản nháp</SelectItem>
+              <SelectItem value="PUBLISHED" className="rounded-lg cursor-pointer py-2.5 px-3">Công khai</SelectItem>
             </SelectContent>
           </Select>
 

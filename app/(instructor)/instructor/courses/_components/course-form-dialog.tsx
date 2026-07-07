@@ -191,7 +191,7 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
             <Input
               {...register("title")}
               placeholder="VD: Lập trình Web Fullstack với Next.js & Spring Boot"
-              className={cn("h-11 rounded-xl border-slate-200", errors.title && "border-rose-500 focus-visible:ring-rose-500/10")}
+              className={cn("h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500", errors.title && "border-rose-500 focus-visible:ring-rose-500/10")}
               disabled={isPending}
             />
             {errors.title && (
@@ -209,7 +209,7 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
             <Textarea
               {...register("description")}
               placeholder="Nhập mô tả tóm tắt nội dung chính và giá trị học viên nhận được từ khóa học..."
-              className={cn("min-h-[100px] rounded-xl border-slate-200 resize-none", errors.description && "border-rose-500 focus-visible:ring-rose-500/10")}
+              className={cn("min-h-[100px] rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 resize-none", errors.description && "border-rose-500 focus-visible:ring-rose-500/10")}
               disabled={isPending}
             />
             {errors.description && (
@@ -315,15 +315,15 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
                     value={priceTierId || "empty"}
                     onValueChange={(v) => setValue("priceTierId", v === "empty" ? "" : v)}
                   >
-                    <SelectTrigger className={cn("!h-11 rounded-xl border-slate-200 bg-white font-semibold w-full", errors.priceTierId && "border-rose-500")}>
+                    <SelectTrigger className={cn("!h-11 rounded-xl border-slate-200 bg-white w-full", errors.priceTierId && "border-rose-500")}>
                       <SelectValue placeholder="Chọn mức giá..." />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-slate-200">
-                      <SelectItem value="empty" className="font-semibold text-slate-400 italic cursor-pointer">
+                      <SelectItem value="empty" className="rounded-lg cursor-pointer py-2.5 px-3">
                         Chưa định giá (Miễn phí)
                       </SelectItem>
                       {priceTiers.map((tier) => (
-                        <SelectItem key={tier.id} value={tier.id} className="font-semibold cursor-pointer">
+                        <SelectItem key={tier.id} value={tier.id} className="rounded-lg cursor-pointer py-2.5 px-3">
                           {tier.tierName} ({new Intl.NumberFormat().format(tier.priceAmount)} {tier.currency})
                         </SelectItem>
                       ))}
@@ -346,12 +346,12 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
                     value={status}
                     onValueChange={(v) => setValue("status", v)}
                   >
-                    <SelectTrigger className={cn("!h-11 rounded-xl border-slate-200 bg-white font-semibold w-full", errors.status && "border-rose-500")}>
+                    <SelectTrigger className={cn("!h-11 rounded-xl border-slate-200 bg-white w-full", errors.status && "border-rose-500")}>
                       <SelectValue placeholder="Chọn trạng thái..." />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-slate-200">
-                      <SelectItem value="DRAFT" className="font-semibold text-slate-600 cursor-pointer">Bản nháp (DRAFT)</SelectItem>
-                      <SelectItem value="PUBLISHED" className="font-semibold text-emerald-600 cursor-pointer">Công khai (PUBLISHED)</SelectItem>
+                      <SelectItem value="DRAFT" className="rounded-lg cursor-pointer py-2.5 px-3">Bản nháp (DRAFT)</SelectItem>
+                      <SelectItem value="PUBLISHED" className="rounded-lg cursor-pointer py-2.5 px-3">Công khai (PUBLISHED)</SelectItem>
                     </SelectContent>
                   </Select>
                   {errors.status && (
