@@ -57,7 +57,7 @@ export default function MyCoursesPage() {
         </div>
         
         <CourseFormDialog onSuccess={refetch}>
-          <Button className="h-12 px-6 rounded-xl font-black bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2">
+          <Button className="h-11 px-6 rounded-xl font-black bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200 transition-all active:scale-95 flex items-center gap-2">
             <Plus className="w-5 h-5" />
             TẠO KHÓA HỌC MỚI
           </Button>
@@ -70,7 +70,7 @@ export default function MyCoursesPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input 
             placeholder="Tìm kiếm theo tiêu đề khóa học..." 
-            className="pl-11 h-12 rounded-xl border-slate-200 bg-white shadow-sm focus-visible:ring-indigo-500/20 transition-all font-medium"
+            className="border-slate-200 bg-white shadow-sm transition-all font-medium pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -79,7 +79,7 @@ export default function MyCoursesPage() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className={cn(
-              "!h-12 rounded-xl border-slate-200 bg-white font-semibold focus:ring-1 focus:ring-indigo-500/30 focus:border-indigo-500 outline-hidden w-full md:w-[180px]"
+              "!h-11 rounded-xl border-slate-200 bg-white font-semibold focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden w-full md:w-[180px]"
             )}>
               <div className="flex items-center gap-2">
                 <Filter className="w-4 h-4 text-slate-400" />
@@ -97,7 +97,7 @@ export default function MyCoursesPage() {
             variant="outline" 
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-12 px-5 rounded-xl border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-600 font-bold flex items-center gap-2 shrink-0"
+            className="h-11 px-5 rounded-xl border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-600 font-bold flex items-center gap-2 shrink-0 focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
           >
             {isFetching ? (
               <Loader2 className="w-4 h-4 animate-spin text-slate-400" />

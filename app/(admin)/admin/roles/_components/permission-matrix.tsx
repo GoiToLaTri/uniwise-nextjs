@@ -189,7 +189,7 @@ export function PermissionMatrix({
               placeholder="Tìm kiếm quyền..." 
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              className="pl-10 h-10 rounded-xl bg-white border-slate-200 text-xs font-bold focus-visible:ring-indigo-500/20"
+              className="bg-white border-slate-200 text-xs font-bold pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
             />
           </div>
         </SheetHeader>

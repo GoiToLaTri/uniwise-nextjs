@@ -119,8 +119,8 @@ export function SignupForm() {
               <Input
                 placeholder="Nguyễn Văn A"
                 className={cn(
-                  "pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30",
-                  errors.name && "border-destructive",
+                  "pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0",
+                  errors.name && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
                 )}
                 {...register("name")}
               />
@@ -142,8 +142,8 @@ export function SignupForm() {
               <Input
                 placeholder="name@example.com"
                 className={cn(
-                  "pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30",
-                  errors.email && "border-destructive",
+                  "pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0",
+                  errors.email && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
                 )}
                 {...register("email")}
               />
@@ -165,8 +165,8 @@ export function SignupForm() {
               <Input
                 type={showPassword ? "text" : "password"}
                 className={cn(
-                  "pl-10 pr-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30",
-                  errors.password && "border-destructive",
+                  "pl-10 pr-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0",
+                  errors.password && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
                 )}
                 {...register("password")}
               />
@@ -199,8 +199,8 @@ export function SignupForm() {
               <Input
                 type={showPassword ? "text" : "password"}
                 className={cn(
-                  "pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30",
-                  errors.confirmPassword && "border-destructive",
+                  "pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0",
+                  errors.confirmPassword && "border-destructive focus-visible:border-destructive focus-visible:ring-destructive/20",
                 )}
                 {...register("confirmPassword")}
               />

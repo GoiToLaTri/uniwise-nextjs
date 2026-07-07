@@ -65,9 +65,9 @@ export default function CoursesPage() {
           placeholder="Tìm kiếm tên khóa học hoặc mô tả..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="pl-12 h-12 rounded-xl border-slate-200 bg-white font-semibold text-slate-700 shadow-xs focus:border-indigo-500 focus:ring-indigo-500"
+          className="pl-10 h-11 rounded-xl border-slate-200 bg-white font-semibold text-slate-700 shadow-xs focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
         />
-        <Search className="absolute left-4 top-3.5 w-5 h-5 text-slate-400" />
+        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
       </div>
 
       {/* Danh sách khóa học */}

@@ -70,7 +70,7 @@ export default function InstructorManagementPage() {
           <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
           <Input 
             placeholder="Tìm kiếm theo tên hoặc tiêu đề chuyên môn..." 
-            className="pl-11 h-12 rounded-xl border-slate-200 bg-white shadow-sm focus-visible:ring-indigo-500/20 transition-all font-medium"
+            className="border-slate-200 bg-white shadow-sm transition-all font-medium pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
             value={search}
             onChange={(e) => setSearch(e.target.value)}
           />
@@ -78,8 +78,8 @@ export default function InstructorManagementPage() {
         
         <Select value={status} onValueChange={setStatus}>
           <SelectTrigger className={cn(
-                        "!h-12 rounded-xl border-slate-200 bg-white font-medium focus:ring-1 focus:ring-indigo-500/30 focus:border-indigo-500 outline-hidden"
-                      )}>
+            "!h-11 rounded-xl border-slate-200 bg-white font-medium focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden"
+          )}>
             <div className="flex items-center gap-2">
               <Filter className="w-4 h-4 text-slate-400" />
               <SelectValue placeholder="Trạng thái" />
@@ -96,7 +96,7 @@ export default function InstructorManagementPage() {
         <Button 
           variant="outline" 
           onClick={() => refetch()}
-          className="h-12 px-6 rounded-xl border-slate-200 font-black uppercase tracking-widest text-[10px] bg-white hover:bg-slate-50 transition-all"
+          className="h-11 px-6 rounded-xl border-slate-200 font-black uppercase tracking-widest text-[10px] bg-white hover:bg-slate-50 transition-all focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
         >
           Làm mới
         </Button>
