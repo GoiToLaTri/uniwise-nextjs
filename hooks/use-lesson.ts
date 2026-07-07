@@ -93,3 +93,34 @@ export function useDeleteLesson() {
     },
   });
 }
+
+// Hook reorder lessons
+export function useReorderLessons() {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async (variables: {
+      sectionId: string;
+      courseId: string;
+      data: { items: { id: string; sortOrder: number }[] };
+    }): Promise<boolean> => {
+      try {
+        await apiClient.put(
+          `/course-service/api/v1/lessons/section/${variables.sectionId}/reorder`,
+          variables.data
+        );
+        toast.success("Cập nhật thứ tự bài giảng thành công!");
+        return true;
+      } catch (error: unknown) {
+        const err = error as { response?: { data?: { message?: string } } };
+        const message = err.response?.data?.message || "Không thể cập nhật thứ tự bài giảng.";
+        toast.error(message);
+        throw error;
+      }
+    },
+    onSuccess: (_, { courseId }) => {
+      queryClient.invalidateQueries({ queryKey: COURSE_DETAIL_QUERY_KEY(courseId) });
+    },
+  });
+}
+

@@ -5,7 +5,7 @@ import { useParams } from "next/navigation";
 import { 
   ArrowLeft, Plus, Trash2, Edit3, ChevronDown, ChevronUp, 
   Layers, PlayCircle, Loader2, BookOpen, AlertCircle,
-  X, CheckCircle2, XCircle, AlertTriangle
+  X, CheckCircle2, XCircle, AlertTriangle, Save, XOctagon
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -13,8 +13,9 @@ import { Card } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useCourse } from "@/hooks/use-course";
-import { useDeleteSection, useUpdateSection } from "@/hooks/use-section";
-import { useDeleteLesson, useUpdateLesson } from "@/hooks/use-lesson";
+import { useDeleteSection, useUpdateSection, useReorderSections } from "@/hooks/use-section";
+import { useDeleteLesson, useUpdateLesson, useReorderLessons } from "@/hooks/use-lesson";
+import { CourseSection } from "@/interfaces/course.interface";
 import { SectionDialog } from "./_components/section-dialog";
 import { LessonDialog } from "./_components/lesson-dialog";
 import Link from "next/link";
@@ -49,14 +50,28 @@ export default function CourseCurriculumPage() {
 
   const deleteSectionMutation = useDeleteSection();
   const updateSectionMutation = useUpdateSection();
+  const reorderSectionsMutation = useReorderSections();
   const deleteLessonMutation = useDeleteLesson();
   const updateLessonMutation = useUpdateLesson();
+  const reorderLessonsMutation = useReorderLessons();
   const [actionId, setActionId] = React.useState<string | null>(null);
 
-  // Sắp xếp các sections theo sortOrder tăng dần
-  const sortedSections = React.useMemo(() => {
-    if (!course?.sections) return [];
-    return [...course.sections].sort((a, b) => a.sortOrder - b.sortOrder);
+  const [localSections, setLocalSections] = React.useState<CourseSection[]>([]);
+  const [isOrderChanged, setIsOrderChanged] = React.useState(false);
+  const [isSavingOrder, setIsSavingOrder] = React.useState(false);
+
+  // Sync state from server response
+  React.useEffect(() => {
+    if (course?.sections) {
+      const sorted = [...course.sections]
+        .sort((a, b) => a.sortOrder - b.sortOrder)
+        .map(sec => ({
+          ...sec,
+          lessons: sec.lessons ? [...sec.lessons].sort((a, b) => a.sortOrder - b.sortOrder) : []
+        }));
+      setLocalSections(sorted);
+      setIsOrderChanged(false);
+    }
   }, [course]);
 
   // Xóa chương học
@@ -85,91 +100,93 @@ export default function CourseCurriculumPage() {
     }
   };
 
-  // Hoán đổi sortOrder của hai Lesson (Di chuyển lên/xuống)
-  const handleMoveLesson = async (
-    sectionLessons: CourseLesson[],
-    index: number,
+  // Thay đổi vị trí bài giảng (Local State)
+  const handleMoveLesson = (
+    sectionIndex: number,
+    lessonIndex: number,
     direction: "up" | "down"
   ) => {
+    const section = localSections[sectionIndex];
+    if (!section.lessons) return;
+
+    const targetIndex = direction === "up" ? lessonIndex - 1 : lessonIndex + 1;
+    if (targetIndex < 0 || targetIndex >= section.lessons.length) return;
+
+    const newLessons = [...section.lessons];
+    const temp = newLessons[lessonIndex];
+    newLessons[lessonIndex] = newLessons[targetIndex];
+    newLessons[targetIndex] = temp;
+
+    // Cập nhật lại sortOrder theo vị trí mới (phải clone object để không sửa trực tiếp vào cache của React Query)
+    const updatedLessons = newLessons.map((lesson, i) => ({
+      ...lesson,
+      sortOrder: i + 1,
+    }));
+
+    const newSections = [...localSections];
+    newSections[sectionIndex] = { ...section, lessons: updatedLessons };
+
+    setLocalSections(newSections);
+    setIsOrderChanged(true);
+  };
+
+  // Thay đổi vị trí của Section (Local State)
+  const handleMoveSection = (index: number, direction: "up" | "down") => {
     const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= sectionLessons.length) return;
+    if (targetIndex < 0 || targetIndex >= localSections.length) return;
 
-    const currentLesson = sectionLessons[index];
-    const targetLesson = sectionLessons[targetIndex];
+    const newSections = [...localSections];
+    const temp = newSections[index];
+    newSections[index] = newSections[targetIndex];
+    newSections[targetIndex] = temp;
 
-    const currentOrder = currentLesson.sortOrder;
-    const targetOrder = targetLesson.sortOrder;
+    // Cập nhật lại sortOrder (clone object)
+    const updatedSections = newSections.map((sec, i) => ({
+      ...sec,
+      sortOrder: i + 1,
+    }));
 
-    const tempTargetOrder = currentOrder === targetOrder ? targetOrder + (direction === "up" ? -1 : 1) : targetOrder;
+    setLocalSections(updatedSections);
+    setIsOrderChanged(true);
+  };
 
-    setActionId(currentLesson.publicId || currentLesson.id);
+  // Lưu toàn bộ thay đổi thứ tự
+  const handleSaveOrder = async () => {
+    setIsSavingOrder(true);
     try {
-      await Promise.all([
-        updateLessonMutation.mutateAsync({
-          id: currentLesson.publicId || currentLesson.id,
-          courseId,
-          data: {
-            title: currentLesson.title,
-            lessonType: currentLesson.lessonType,
-            contentReference: currentLesson.contentReference,
-            sortOrder: tempTargetOrder,
-          },
-        }),
-        updateLessonMutation.mutateAsync({
-          id: targetLesson.publicId || targetLesson.id,
-          courseId,
-          data: {
-            title: targetLesson.title,
-            lessonType: targetLesson.lessonType,
-            contentReference: targetLesson.contentReference,
-            sortOrder: currentOrder,
-          },
-        }),
-      ]);
+      const sectionsPayload = localSections.map(sec => ({
+        id: sec.publicId || sec.id,
+        sortOrder: sec.sortOrder
+      }));
+      
+      const promises: Promise<any>[] = [];
+      
+      promises.push(reorderSectionsMutation.mutateAsync({
+        courseId,
+        data: { items: sectionsPayload }
+      }));
+
+      localSections.forEach(sec => {
+        if (sec.lessons && sec.lessons.length > 0) {
+          promises.push(reorderLessonsMutation.mutateAsync({
+            courseId,
+            sectionId: sec.publicId || sec.id,
+            data: { items: sec.lessons.map(l => ({ id: l.publicId || l.id, sortOrder: l.sortOrder })) }
+          }));
+        }
+      });
+
+      await Promise.all(promises);
+      toast.success("Đã lưu thứ tự mới thành công!");
+      setIsOrderChanged(false);
       refetch();
     } catch {
-      toast.error("Không thể thay đổi vị trí bài giảng");
+      toast.error("Có lỗi xảy ra khi lưu thứ tự.");
     } finally {
-      setActionId(null);
+      setIsSavingOrder(false);
     }
   };
 
-  // Hoán đổi sortOrder của hai Section (Di chuyển lên/xuống)
-  const handleMoveSection = async (index: number, direction: "up" | "down") => {
-    const targetIndex = direction === "up" ? index - 1 : index + 1;
-    if (targetIndex < 0 || targetIndex >= sortedSections.length) return;
-
-    const currentSection = sortedSections[index];
-    const targetSection = sortedSections[targetIndex];
-
-    // Hoán đổi sortOrder thực tế
-    const currentOrder = currentSection.sortOrder;
-    const targetOrder = targetSection.sortOrder;
-
-    // Tránh trùng lặp sortOrder nếu backend so sánh nghiêm ngặt
-    const tempTargetOrder = currentOrder === targetOrder ? targetOrder + (direction === "up" ? -1 : 1) : targetOrder;
-
-    setActionId(currentSection.publicId || currentSection.id);
-    try {
-      await Promise.all([
-        updateSectionMutation.mutateAsync({
-          id: currentSection.publicId || currentSection.id,
-          courseId,
-          data: { title: currentSection.title, sortOrder: tempTargetOrder },
-        }),
-        updateSectionMutation.mutateAsync({
-          id: targetSection.publicId || targetSection.id,
-          courseId,
-          data: { title: targetSection.title, sortOrder: currentOrder },
-        }),
-      ]);
-      refetch();
-    } catch {
-      toast.error("Không thể thay đổi vị trí chương học");
-    } finally {
-      setActionId(null);
-    }
-  };
 
   if (isLoading) {
     return (
@@ -255,7 +272,7 @@ export default function CourseCurriculumPage() {
         </div>
 
         <div className="flex items-center gap-3 w-full md:w-auto border-t md:border-t-0 pt-4 md:pt-0 justify-end">
-          <SectionDialog courseId={courseId} courseDbId={course.id} nextSortOrder={sortedSections.length} onSuccess={refetch}>
+          <SectionDialog courseId={courseId} courseDbId={course.id} nextSortOrder={localSections.length} onSuccess={refetch}>
             <Button className="h-11 rounded-xl font-black bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-100 transition-all active:scale-95 flex items-center gap-2">
               <Plus className="w-4 h-4" />
               THÊM CHƯƠNG MỚI
@@ -278,7 +295,7 @@ export default function CourseCurriculumPage() {
           )}
         </div>
 
-        {sortedSections.length === 0 ? (
+        {localSections.length === 0 ? (
           <div className="bg-slate-50/50 rounded-[2rem] border border-dashed border-slate-200 p-16 flex flex-col justify-center items-center text-center max-w-xl mx-auto">
             <div className="w-12 h-12 rounded-xl bg-slate-100 text-slate-400 flex items-center justify-center mb-4">
               <Layers className="w-6 h-6" />
@@ -295,7 +312,7 @@ export default function CourseCurriculumPage() {
           </div>
         ) : (
           <div className="space-y-4">
-            {sortedSections.map((section, index) => {
+            {localSections.map((section, index) => {
               const isActionPending = actionId === (section.publicId || section.id);
               return (
                 <Card 
@@ -331,7 +348,7 @@ export default function CourseCurriculumPage() {
                         variant="ghost"
                         size="icon"
                         onClick={() => handleMoveSection(index, "down")}
-                        disabled={index === sortedSections.length - 1 || isActionPending}
+                        disabled={index === localSections.length - 1 || isActionPending}
                         className="h-8 w-8 rounded-lg hover:bg-slate-100 text-slate-500 disabled:opacity-30"
                       >
                         <ChevronDown className="w-4 h-4" />
@@ -394,8 +411,7 @@ export default function CourseCurriculumPage() {
                       </p>
                     ) : (
                       <div className="space-y-2">
-                        {[...section.lessons]
-                          .sort((a, b) => a.sortOrder - b.sortOrder)
+                        {section.lessons
                           .map((lesson, idx, arr) => {
                             const isLessonPending = actionId === (lesson.publicId || lesson.id);
                             return (
@@ -425,7 +441,7 @@ export default function CourseCurriculumPage() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => handleMoveLesson(arr, idx, "up")}
+                                    onClick={() => handleMoveLesson(index, idx, "up")}
                                     disabled={idx === 0 || isLessonPending}
                                     className="h-7 w-7 rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
                                   >
@@ -434,7 +450,7 @@ export default function CourseCurriculumPage() {
                                   <Button
                                     variant="ghost"
                                     size="icon"
-                                    onClick={() => handleMoveLesson(arr, idx, "down")}
+                                    onClick={() => handleMoveLesson(index, idx, "down")}
                                     disabled={idx === arr.length - 1 || isLessonPending}
                                     className="h-7 w-7 rounded-lg hover:bg-slate-100 text-slate-400 disabled:opacity-30"
                                   >
@@ -481,6 +497,50 @@ export default function CourseCurriculumPage() {
           </div>
         )}
       </div>
+
+      {/* Floating Save Order Panel */}
+      {isOrderChanged && (
+        <div className="fixed bottom-6 left-1/2 -translate-x-1/2 z-50 flex items-center gap-3 bg-white/80 backdrop-blur-xl border border-indigo-100 shadow-2xl shadow-indigo-500/10 px-4 py-3 rounded-full animate-in slide-in-from-bottom-8">
+          <div className="flex flex-col mx-2">
+            <span className="text-sm font-bold text-slate-800">Lưu thay đổi vị trí?</span>
+            <span className="text-[10px] text-slate-500 font-medium">Bạn có thay đổi chưa được lưu.</span>
+          </div>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => {
+              // Hủy thay đổi: Khôi phục lại từ server course
+              if (course?.sections) {
+                const sorted = [...course.sections]
+                  .sort((a, b) => a.sortOrder - b.sortOrder)
+                  .map(sec => ({
+                    ...sec,
+                    lessons: sec.lessons ? [...sec.lessons].sort((a, b) => a.sortOrder - b.sortOrder) : []
+                  }));
+                setLocalSections(sorted);
+                setIsOrderChanged(false);
+              }
+            }}
+            disabled={isSavingOrder}
+            className="rounded-full px-4 h-9 hover:bg-slate-100"
+          >
+            Hủy
+          </Button>
+          <Button
+            size="sm"
+            onClick={handleSaveOrder}
+            disabled={isSavingOrder}
+            className="rounded-full px-5 h-9 bg-indigo-600 hover:bg-indigo-700 text-white shadow-lg shadow-indigo-200"
+          >
+            {isSavingOrder ? (
+              <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            Xác nhận lưu
+          </Button>
+        </div>
+      )}
 
       {/* 4. Floating Background Uploads Monitor Panel */}
       {Object.keys(uploads).length > 0 && (
