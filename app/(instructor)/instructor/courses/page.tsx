@@ -79,10 +79,9 @@ export default function MyCoursesPage() {
         <div className="flex items-center gap-3 w-full md:w-auto">
           <Select value={status} onValueChange={setStatus}>
             <SelectTrigger className={cn(
-              "!h-11 rounded-xl border-slate-200 bg-white focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden w-full md:w-[180px]"
+              "!h-11 rounded-xl border-slate-200 bg-white focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden !w-full md:w-[180px]"
             )}>
               <div className="flex items-center gap-2">
-                <Filter className="w-4 h-4 text-slate-400" />
                 <SelectValue placeholder="Trạng thái" />
               </div>
             </SelectTrigger>
@@ -97,13 +96,8 @@ export default function MyCoursesPage() {
             variant="outline" 
             onClick={() => refetch()}
             disabled={isFetching}
-            className="h-11 px-5 rounded-xl border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-600 font-bold flex items-center gap-2 shrink-0 focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
+            className="h-11 px-5 rounded-xl border-slate-200 bg-white hover:bg-slate-50 transition-all text-slate-600 flex items-center gap-2 shrink-0 focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
           >
-            {isFetching ? (
-              <Loader2 className="w-4 h-4 animate-spin text-slate-400" />
-            ) : (
-              <RefreshCcw className="w-4 h-4" />
-            )}
             Làm mới
           </Button>
         </div>
