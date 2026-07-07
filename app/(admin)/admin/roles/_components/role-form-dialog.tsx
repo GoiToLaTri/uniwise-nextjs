@@ -121,7 +121,7 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 rounded-[1.25rem] border-none shadow-2xl overflow-hidden bg-white outline-hidden">
-        <div className="h-2 bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500" />
+        <div className={cn("h-2", isEditMode ? "bg-amber-500" : "h-2 bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500")} />
 
         <DialogHeader className="px-8 pt-8">
           <DialogTitle className="text-2xl font-black tracking-tight flex items-center gap-2">
@@ -147,7 +147,7 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
               placeholder="Ví dụ: Quản trị viên"
               disabled={isSubmitting || isEditMode}
               className={cn(
-                "h-12 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
+                "h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
                 errors.displayName && "border-rose-500 focus-visible:ring-rose-500/20",
                 isEditMode && "bg-slate-50 text-slate-500"
               )}
@@ -171,7 +171,7 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
                 placeholder="ADMIN_PRO"
                 disabled={isSubmitting || isEditMode}
                 className={cn(
-                  "h-12 pl-14 rounded-xl font-mono border-slate-200 bg-slate-50",
+                  "h-11 pl-14 rounded-xl font-mono border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
                   errors.name && "border-rose-500",
                   isEditMode && "opacity-70"
                 )}
@@ -194,7 +194,7 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
               placeholder="Giải thích quyền hạn của vai trò này..."
               disabled={isSubmitting}
               className={cn(
-                "min-h-[100px] rounded-xl border-slate-200 resize-none",
+                "min-h-[100px] rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 resize-none",
                 errors.description && "border-rose-500"
               )}
             />
@@ -231,26 +231,25 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
               variant="ghost" 
               onClick={() => setOpen(false)}
               disabled={isSubmitting}
-              className="font-bold rounded-xl h-12 text-slate-500"
+              className="font-bold rounded-xl h-11 text-slate-500"
             >
               Hủy bỏ
             </Button>
             <Button 
               type="submit" 
               disabled={isSubmitting}
-              className="bg-indigo-600 hover:bg-indigo-700 font-black rounded-xl h-12 px-8 active:scale-95 transition-all shadow-lg shadow-indigo-100 min-w-[160px]"
+              className={cn(
+                "font-black rounded-xl h-11 px-8 shadow-lg transition-all active:scale-95 min-w-[120px]",
+                isEditMode ? "bg-amber-500 hover:bg-amber-600 shadow-amber-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
+              )}
             >
               {isSubmitting ? (
                 <>
                   <Loader2 className="w-4 h-4 mr-2 animate-spin" />
                   ĐANG XỬ LÝ...
                 </>
-              ) : (
-                <>
-                  <Save className="w-4 h-4 mr-2" />
-                  {isEditMode ? "LƯU CẬP NHẬT" : "XÁC NHẬN TẠO"}
-                </>
-              )}
+              ) : "XÁC NHẬN"
+              }
             </Button>
           </DialogFooter>
         </form>

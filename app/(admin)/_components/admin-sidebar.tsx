@@ -2,10 +2,10 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { 
-  LayoutDashboard, BookOpen, Users, BarChart3, 
-  Settings, ShieldCheck, Key, GraduationCap, 
-  ChevronRight, Home, LogOut, UserCircle2, ChevronsUpDown, 
+import {
+  LayoutDashboard, BookOpen, Users, BarChart3,
+  Settings, ShieldCheck, Key, GraduationCap,
+  ChevronRight, Home, LogOut, UserCircle2, ChevronsUpDown,
   Banknote
 } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,13 +30,13 @@ const routes = [
   { label: "Giảng viên", icon: GraduationCap, href: "/admin/instructors" },
   { label: "Vai trò", icon: ShieldCheck, href: "/admin/roles" },
   { label: "Quyền hạn", icon: Key, href: "/admin/permissions" },
-  { label: "Mức giá", icon: Banknote , href: "/admin/price-tiers" },
+  { label: "Mức giá", icon: Banknote, href: "/admin/price-tiers" },
   { label: "Doanh thu", icon: BarChart3, href: "/admin/analytics" },
   { label: "Cài đặt", icon: Settings, href: "/admin/settings" },
 ];
 
 export function AdminSidebar() {
-  const {mutate: logout, isPending} = useLogout()
+  const { mutate: logout, isPending } = useLogout()
   const pathname = usePathname();
   const { data: profile, isLoading } = useProfile();
 
@@ -52,27 +52,31 @@ export function AdminSidebar() {
     <div className="h-full border-r border-slate-200 bg-white flex flex-col">
       {/* 1. Logo Section */}
       <div className="p-6 flex items-center gap-3">
-        <div className="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-100">
-          <GraduationCap className="w-6 h-6 text-white" />
-        </div>
-        <span className="text-xl font-black tracking-tighter text-slate-900 uppercase">Uniwise</span>
+        <Link href="/" className="flex items-center gap-2 group">
+          <div className="bg-indigo-600 p-1.5 rounded-lg shadow-lg shadow-indigo-200 group-hover:scale-110 transition-transform">
+            <GraduationCap className="w-6 h-6 text-white" />
+          </div>
+          <span className="text-xl font-black tracking-tighter bg-linear-to-r from-indigo-600 to-blue-500 bg-clip-text text-transparent">
+            UNIWISE
+          </span>
+        </Link>
       </div>
 
       {/* 2. Menu Section */}
       <nav className="flex-1 px-4 space-y-1">
         <p className="px-4 text-[10px] font-black uppercase tracking-[0.2em] text-slate-400 mb-4">Hệ thống</p>
         {routes.map((route) => {
-          const isActive = route.href === "/admin" 
-          ? pathname === "/admin" 
-          : pathname.startsWith(route.href);
+          const isActive = route.href === "/admin"
+            ? pathname === "/admin"
+            : pathname.startsWith(route.href);
           return (
             <Link
               key={route.href}
               href={route.href}
               className={cn(
                 "group flex items-center justify-between px-4 py-3 text-sm font-bold rounded-xl transition-all active:scale-95",
-                isActive 
-                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-200" 
+                isActive
+                  ? "bg-indigo-600 text-white shadow-md shadow-indigo-200"
                   : "text-slate-500 hover:bg-slate-50 hover:text-indigo-600"
               )}
             >
@@ -118,20 +122,20 @@ export function AdminSidebar() {
               </div>
             </DropdownMenuTrigger>
 
-            <DropdownMenuContent 
-              side="top" 
-              align="start" 
+            <DropdownMenuContent
+              side="top"
+              align="start"
               sideOffset={12}
               className="w-64 rounded-2xl p-2 border-slate-200 shadow-[0_10px_40px_rgba(0,0,0,0.08)] bg-white animate-in slide-in-from-bottom-2"
             >
               <DropdownMenuLabel className="px-3 py-2">
-                 <div className="flex flex-col gap-0.5">
-                    <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Quyền quản trị</span>
-                    <span className="text-xs font-bold text-slate-500">Mã: {profile.publicId}</span>
-                 </div>
+                <div className="flex flex-col gap-0.5">
+                  <span className="text-[10px] font-black uppercase tracking-widest text-indigo-600">Quyền quản trị</span>
+                  <span className="text-xs font-bold text-slate-500">Mã: {profile.publicId}</span>
+                </div>
               </DropdownMenuLabel>
               <DropdownMenuSeparator className="bg-slate-100" />
-              
+
               <Link href="/">
                 <DropdownMenuItem className="rounded-xl px-3 py-2.5 font-bold text-slate-600 focus:bg-indigo-50 focus:text-indigo-600 cursor-pointer group">
                   <Home className="w-4 h-4 mr-3 text-slate-400 group-focus:text-indigo-600" />
@@ -145,8 +149,8 @@ export function AdminSidebar() {
               </DropdownMenuItem>
 
               <DropdownMenuSeparator className="bg-slate-100" />
-              
-              <DropdownMenuItem 
+
+              <DropdownMenuItem
                 onClick={handleLogout}
                 className="rounded-xl px-3 py-2.5 font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer group"
               >

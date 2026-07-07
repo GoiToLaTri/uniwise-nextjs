@@ -76,10 +76,10 @@ export default function PriceTiersPage() {
               <Filter className="w-4 h-4 mr-2 text-slate-400" />
               <SelectValue placeholder="Loại tiền tệ" />
             </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="ALL">Tất cả tiền tệ</SelectItem>
-              <SelectItem value="VND">VND (VN Đồng)</SelectItem>
-              <SelectItem value="USD">USD (Đô la Mỹ)</SelectItem>
+            <SelectContent className="rounded-xl border-slate-200 !w-full">
+              <SelectItem value="ALL" className="rounded-lg cursor-pointer py-2.5 px-3">Tất cả tiền tệ</SelectItem>
+              <SelectItem value="VND" className="rounded-lg cursor-pointer py-2.5 px-3">VND (VN Đồng)</SelectItem>
+              <SelectItem value="USD" className="rounded-lg cursor-pointer py-2.5 px-3">USD (Đô la Mỹ)</SelectItem>
             </SelectContent>
           </Select>
         </div>

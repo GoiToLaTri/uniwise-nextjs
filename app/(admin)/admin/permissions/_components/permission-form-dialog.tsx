@@ -100,7 +100,7 @@ export function PermissionFormDialog({ children, initialData, onSuccess }: { chi
                 {...register("name")}
                 placeholder="ví dụ: instructors:apply"
                 className={cn(
-                  "h-12 rounded-xl font-mono text-sm border-slate-200 focus-visible:ring-indigo-500/20",
+                  "h-11 rounded-xl font-mono text-sm border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500",
                   errors.name && "border-rose-500 focus-visible:ring-rose-500/20"
                 )}
                 disabled={isPending || isEdit} // Không cho sửa tên quyền khi edit
@@ -123,7 +123,7 @@ export function PermissionFormDialog({ children, initialData, onSuccess }: { chi
               {...register("description")}
               placeholder="Ví dụ: Cho phép người dùng gửi đơn đăng ký làm giảng viên."
               className={cn(
-                "min-h-[100px] rounded-xl border-slate-200 resize-none focus-visible:ring-indigo-500/20",
+                "min-h-[100px] rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 resize-none",
                 errors.description && "border-rose-500"
               )}
               disabled={isPending}

@@ -89,7 +89,7 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
             <Input
               {...register("tierName")}
               placeholder="VD: Premium Package"
-              className={cn("h-12 rounded-xl border-slate-200", errors.tierName && "border-rose-500 focus-visible:ring-rose-500/10")}
+              className={cn("h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500", errors.tierName && "border-rose-500 focus-visible:ring-rose-500/10")}
               disabled={isPending}
             />
             {errors.tierName && (
@@ -113,7 +113,7 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
                     type="number"
                     {...register("priceAmount", {valueAsNumber: true})}
                     className={cn(
-                      "h-12 rounded-xl border-slate-200 pl-10 font-mono font-bold w-full",
+                      "h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 pl-10 font-mono font-bold w-full",
                       errors.priceAmount && "border-rose-500 focus-visible:ring-rose-500/10"
                     )}
                     disabled={isPending}
@@ -132,14 +132,14 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
                   onValueChange={(v) => setValue("currency", v)}
                 >
                   <SelectTrigger className={cn(
-                    "!h-12 rounded-xl border-slate-200 bg-slate-50/50 font-bold w-full",
+                    "!h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 bg-slate-50/50 font-bold w-full",
                     errors.currency && "border-rose-500"
                   )}>
                     <SelectValue />
                   </SelectTrigger>
-                  <SelectContent className="rounded-xl">
-                    <SelectItem value="VND" className="font-bold cursor-pointer">VND (₫)</SelectItem>
-                    <SelectItem value="USD" className="font-bold cursor-pointer">USD ($)</SelectItem>
+                  <SelectContent className="rounded-xl border-slate-200">
+                    <SelectItem value="VND" className="rounded-lg cursor-pointer py-2.5 px-3">VND (₫)</SelectItem>
+                    <SelectItem value="USD" className="rounded-lg cursor-pointer py-2.5 px-3">USD ($)</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -184,7 +184,7 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
                 isEdit ? "bg-amber-500 hover:bg-amber-600 shadow-amber-100" : "bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100"
               )}
             >
-              {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "LƯU THÔNG TIN"}
+              {isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : "XÁC NHẬN"}
             </Button>
           </DialogFooter>
         </form>
