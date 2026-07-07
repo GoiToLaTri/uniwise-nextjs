@@ -182,7 +182,7 @@ export function LessonDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[500px] p-0 rounded-[1.5rem] border-none shadow-2xl overflow-hidden bg-white outline-hidden">
-        <div className={cn("h-2", isEdit ? "bg-amber-500" : "bg-indigo-600")} />
+        <div className={cn("h-2", isEdit ? "bg-amber-500" : "bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500")} />
 
         <DialogHeader className="px-8 pt-8 text-left">
           <div className="flex items-center gap-3">
@@ -209,7 +209,7 @@ export function LessonDialog({
             <Input
               {...register("title")}
               placeholder="VD: Bài 1: Giới thiệu khóa học"
-              className={cn("h-11 rounded-xl border-slate-200", errors.title && "border-rose-500 focus-visible:ring-rose-500/10")}
+              className={cn("h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500", errors.title && "border-rose-500 focus-visible:ring-rose-500/10")}
               disabled={isPending}
             />
             {errors.title && (
@@ -232,13 +232,13 @@ export function LessonDialog({
                 if (v !== "VIDEO") setSelectedFile(null);
               }}
             >
-              <SelectTrigger className="w-full !h-11 rounded-xl border-slate-200 bg-white font-semibold">
+              <SelectTrigger className="w-full !h-11 rounded-xl border-slate-200 bg-white">
                 <SelectValue placeholder="Chọn loại bài..." />
               </SelectTrigger>
               <SelectContent className="rounded-xl border-slate-200">
-                <SelectItem value="VIDEO" className="font-semibold cursor-pointer">Video (VIDEO)</SelectItem>
-                <SelectItem value="DOCUMENT" className="font-semibold cursor-pointer">Tài liệu (DOCUMENT)</SelectItem>
-                <SelectItem value="QUIZ" className="font-semibold cursor-pointer">Trắc nghiệm (QUIZ)</SelectItem>
+                <SelectItem value="VIDEO" className="rounded-lg cursor-pointer py-2.5 px-3">Video (VIDEO)</SelectItem>
+                <SelectItem value="DOCUMENT" className="rounded-lg cursor-pointer py-2.5 px-3">Tài liệu (DOCUMENT)</SelectItem>
+                <SelectItem value="QUIZ" className="rounded-lg cursor-pointer py-2.5 px-3">Trắc nghiệm (QUIZ)</SelectItem>
               </SelectContent>
             </Select>
           </div>

@@ -97,7 +97,7 @@ export function SectionDialog({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{children}</DialogTrigger>
       <DialogContent className="sm:max-w-[480px] p-0 rounded-[1.5rem] border-none shadow-2xl overflow-hidden bg-white outline-hidden">
-        <div className={cn("h-2", isEdit ? "bg-amber-500" : "bg-indigo-600")} />
+        <div className={cn("h-2", isEdit ? "bg-amber-500" : "bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500")} />
 
         <DialogHeader className="px-8 pt-8 text-left">
           <div className="flex items-center gap-3">
@@ -123,7 +123,7 @@ export function SectionDialog({
             <Input
               {...register("title")}
               placeholder="VD: Chương 1: Tổng quan và cài đặt môi trường"
-              className={cn("h-11 rounded-xl border-slate-200", errors.title && "border-rose-500 focus-visible:ring-rose-500/10")}
+              className={cn("h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500", errors.title && "border-rose-500 focus-visible:ring-rose-500/10")}
               disabled={isPending}
             />
             {errors.title && (
