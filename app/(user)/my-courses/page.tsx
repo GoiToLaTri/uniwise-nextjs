@@ -85,7 +85,7 @@ export default function MyCoursesPage() {
             key={course.courseId}
             className="group border-slate-200 bg-white rounded-2xl overflow-hidden hover:shadow-[0_20px_50px_rgba(79,70,229,0.1)] transition-all duration-500 flex flex-col h-full hover:-translate-y-1"
           >
-            <Link href={`/course/${course.courseId}/learn`} className="block relative aspect-video overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center">
+            <Link href={`/course/${course.publicId}/learn`} className="block relative aspect-video overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center">
               {course.thumbnail ? (
                 <img 
                   src={course.thumbnail} 
@@ -114,7 +114,7 @@ export default function MyCoursesPage() {
             <CardContent className="p-5 flex-1 flex flex-col justify-between">
               <div>
                 <h3 className="text-lg font-black tracking-tight mb-3 text-slate-800 line-clamp-2 leading-snug group-hover:text-indigo-600 transition-colors">
-                  <Link href={`/course/${course.courseId}/learn`}>
+                  <Link href={`/course/${course.publicId}/learn`}>
                     {course.title}
                   </Link>
                 </h3>
@@ -141,7 +141,7 @@ export default function MyCoursesPage() {
             </CardContent>
 
             <CardFooter className="px-5 pb-5 pt-0">
-              <Link href={`/course/${course.courseId}/learn`} className="w-full">
+              <Link href={`/course/${course.publicId}/learn`} className="w-full">
                 <button className="w-full h-11 rounded-xl bg-slate-50 hover:bg-indigo-600 text-slate-700 hover:text-white transition-all active:scale-95 text-sm font-bold flex items-center justify-center gap-2 cursor-pointer border border-slate-200 hover:border-indigo-600 group-hover:bg-indigo-600 group-hover:text-white">
                   <PlayCircle className="w-4 h-4" />
                   {course.progressPercentage === 0 ? "Bắt đầu học" : course.progressPercentage === 100 ? "Học lại" : "Tiếp tục học"}

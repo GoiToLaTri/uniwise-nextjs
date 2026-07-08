@@ -115,13 +115,9 @@ export default function CourseDetailPage() {
       url = `/api/proxy/media-service/api/v1/streaming/lessons/${lessonId}/playlist.m3u8`;
     }
 
-    if (isEnrolled) {
-      // Đã mua: hiển thị bài học trực tiếp (hoặc báo mở thành công)
-      setPreviewLesson({
-        title: lesson.title,
-        type: lesson.lessonType,
-        url: url
-      });
+    if (isEnrolled && course) {
+      // Đã mua: chuyển hướng sang Learning Workspace
+      router.push(`/course/${course.publicId}/learn?lessonId=${lesson.id}`);
       return;
     }
 
@@ -542,9 +538,9 @@ export default function CourseDetailPage() {
                         // Tìm bài giảng đầu tiên để vào học
                         const firstLesson = course.sections?.flatMap(s => s.lessons || [])?.[0];
                         if (firstLesson) {
-                          handleOpenLesson(firstLesson);
+                          router.push(`/course/${course.publicId}/learn?lessonId=${firstLesson.id}`);
                         } else {
-                          toast.info("Khóa học chưa có bài giảng nào.");
+                          router.push(`/course/${course.publicId}/learn`);
                         }
                       }}
                       className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md"

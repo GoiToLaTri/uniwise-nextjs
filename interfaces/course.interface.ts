@@ -93,6 +93,7 @@ export interface UpdateLessonRequest {
 
 export interface UserCourseDto {
   courseId: string;
+  publicId: string;
   title: string;
   thumbnail?: string;
   enrolledAt: string;
