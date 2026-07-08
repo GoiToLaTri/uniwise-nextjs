@@ -73,7 +73,6 @@ export default function PriceTiersPage() {
         <div className="w-full md:w-48">
           <Select value={currency} onValueChange={(v) => { setCurrency(v); setPage(0); }}>
             <SelectTrigger className="!h-11 w-full rounded-xl border-slate-200 bg-white font-medium focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0">
-              <Filter className="w-4 h-4 mr-2 text-slate-400" />
               <SelectValue placeholder="Loại tiền tệ" />
             </SelectTrigger>
             <SelectContent className="rounded-xl border-slate-200 !w-full">
