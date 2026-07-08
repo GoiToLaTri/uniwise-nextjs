@@ -91,3 +91,16 @@ export interface UpdateLessonRequest {
   sortOrder?: number;
 }
 
+export interface UserCourseDto {
+  courseId: string;
+  title: string;
+  thumbnail?: string;
+  enrolledAt: string;
+  isPaid: boolean;
+  progressPercentage: number;
+}
+
+export interface MyCoursesResponse extends ListResponse {
+  content: UserCourseDto[];
+}
+
