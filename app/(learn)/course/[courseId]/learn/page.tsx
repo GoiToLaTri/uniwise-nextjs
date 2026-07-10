@@ -84,6 +84,7 @@ export default function LearningWorkspacePage() {
           <LessonContent 
             lesson={activeLesson}
             videoUrl={videoUrl}
+            courseId={courseId}
           />
         </div>
 

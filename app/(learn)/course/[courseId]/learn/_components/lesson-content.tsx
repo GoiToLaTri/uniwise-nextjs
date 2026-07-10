@@ -1,16 +1,44 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { VideoPlayer } from "@/components/shared/video-player";
 import { FileText, MessageCircle, FileBox } from "lucide-react";
+import { useSyncVideoPosition, useCompleteLesson } from "@/hooks/use-learning-progress";
+import { toast } from "sonner";
 
 interface LessonContentProps {
   lesson: any | null;
   videoUrl: string;
+  courseId: string;
 }
 
-export function LessonContent({ lesson, videoUrl }: LessonContentProps) {
+export function LessonContent({ lesson, videoUrl, courseId }: LessonContentProps) {
   const [activeTab, setActiveTab] = useState("overview");
+  
+  // Hooks cho việc cập nhật tiến độ
+  const { mutate: syncPosition } = useSyncVideoPosition(lesson?.id || "");
+  const { mutate: completeLesson } = useCompleteLesson(lesson?.id || "", courseId);
+
+  const lastSyncedTimeRef = useRef<number>(0);
+
+  const handleTimeUpdate = (time: number) => {
+    if (!lesson?.id) return;
+    
+    // Đồng bộ mỗi 10 giây
+    if (Math.abs(time - lastSyncedTimeRef.current) >= 10) {
+      syncPosition(Math.floor(time));
+      lastSyncedTimeRef.current = time;
+    }
+  };
+
+  const handleVideoEnd = () => {
+    if (!lesson?.id) return;
+    completeLesson(undefined, {
+      onSuccess: () => {
+        toast.success("Chúc mừng bạn đã hoàn thành bài học!");
+      }
+    });
+  };
 
   return (
     <div className="w-full h-full flex flex-col bg-slate-50">
@@ -19,7 +47,13 @@ export function LessonContent({ lesson, videoUrl }: LessonContentProps) {
         <div className="w-full h-full bg-black rounded-2xl overflow-hidden flex items-center justify-center">
           {lesson ? (
             lesson.lessonType === "VIDEO" && videoUrl ? (
-              <VideoPlayer src={videoUrl} title={lesson.title} />
+              <VideoPlayer 
+                src={videoUrl} 
+                title={lesson.title} 
+                onTimeUpdate={handleTimeUpdate}
+                onEnd={handleVideoEnd}
+                initialTime={lesson.lastWatchedPosition || 0}
+              />
             ) : (
               <div className="text-slate-400 flex flex-col items-center">
                 <FileText className="w-16 h-16 mb-4 text-slate-600" />
