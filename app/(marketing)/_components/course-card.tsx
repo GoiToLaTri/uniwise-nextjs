@@ -11,9 +11,10 @@ import Link from "next/link";
 interface CourseCardProps {
   course: CourseResponse;
   priceTiers: PriceTierResponse[];
+  isSearchResult?: boolean;
 }
 
-export function CourseCard({ course, priceTiers }: CourseCardProps) {
+export function CourseCard({ course, priceTiers, isSearchResult = false }: CourseCardProps) {
   // Tải thông tin giảng viên dựa trên creatorId (accountId)
   const { data: instructorProfile } = useProfileByAccountId(course.creatorId);
   const instructorName = instructorProfile?.name || "Giảng viên UniWise";
@@ -55,13 +56,15 @@ export function CourseCard({ course, priceTiers }: CourseCardProps) {
       
       <CardContent className="p-6 flex-1 flex flex-col justify-between">
         <div>
-          <div className="flex items-center gap-2 mb-3 text-slate-400">
-            <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
-            <span className="text-sm font-bold text-slate-600">5.0</span>
-            <span className="text-slate-200">•</span>
-            <Users className="w-4 h-4" />
-            <span className="text-sm font-medium">{totalLessons} bài học</span>
-          </div>
+          {!isSearchResult && (
+            <div className="flex items-center gap-2 mb-3 text-slate-400">
+              <Star className="w-4 h-4 fill-amber-400 text-amber-400" />
+              <span className="text-sm font-bold text-slate-600">5.0</span>
+              <span className="text-slate-200">•</span>
+              <Users className="w-4 h-4" />
+              <span className="text-sm font-medium">{totalLessons} bài học</span>
+            </div>
+          )}
           
           <h3 className="text-xl font-black tracking-tight mb-2 group-hover:text-indigo-600 transition-colors line-clamp-2 leading-tight">
             <Link href={`/courses/${course.publicId}`}>

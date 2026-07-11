@@ -16,7 +16,7 @@ export const COURSE_DETAIL_QUERY_KEY = (id: string) => ["course", id];
 export const PUBLISHED_COURSES_QUERY_KEY = ["published-courses"];
 
 // Hook lấy danh sách các courses đã được published (dành cho trang chủ/public)
-export function usePublishedCourses(pageNumber = 0, pageSize = 10, sortBy = "createdAt", sortDir = "desc") {
+export function usePublishedCourses(pageNumber = 0, pageSize = 10, sortBy = "createdAt", sortDir = "desc", enabled = true) {
   return useQuery({
     queryKey: [...PUBLISHED_COURSES_QUERY_KEY, pageNumber, pageSize, sortBy, sortDir],
     queryFn: async (): Promise<CourseListResponse | null> => {
@@ -33,6 +33,7 @@ export function usePublishedCourses(pageNumber = 0, pageSize = 10, sortBy = "cre
       );
       return response.data;
     },
+    enabled,
   });
 }
 
@@ -70,7 +71,7 @@ export function useMyCourses(pageNumber = 0, pageSize = 10, search?: string, sta
       if (!tokenResponse) return null;
 
       const params: Record<string, any> = { page: pageNumber, size: pageSize };
-      if (search) params.search = search;
+      if (search) params.keyword = search;
       if (status && status !== "ALL") params.status = status;
 
       // Gọi API
