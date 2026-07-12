@@ -14,7 +14,6 @@ import {
 import { CourseCard } from "./_components/course-card";
 import { CourseFormDialog } from "./_components/course-form-dialog";
 import { DataTablePagination } from "@/app/(admin)/admin/roles/_components/data-table-pagination";
-import { useMyCourses } from "@/hooks/use-course";
 import { useSearchCreatorCourses } from "@/hooks/use-search";
 import { usePriceTiers } from "@/hooks/use-price-tier";
 import { useDebounce } from "@/hooks/use-debounce";
@@ -27,33 +26,15 @@ export default function MyCoursesPage() {
   const [search, setSearch] = React.useState("");
   const debouncedSearch = useDebounce(search, 400);
   const pageSize = 6; // Đặt kích thước trang là 6 để hiển thị lưới 3 cột đẹp mắt
-  const isSearching = debouncedSearch.trim().length > 0;
 
-  // Lấy danh sách mặc định thông qua course-service
-  const { data: defaultData, isLoading: isLoadingDefault, refetch: refetchDefault, isFetching: isFetchingDefault } = useMyCourses(
-    page, 
-    pageSize, 
-    undefined, 
-    status === "ALL" ? undefined : status,
-    !isSearching
-  );
-
-  // Lấy danh sách tìm kiếm thông qua search-service
-  const { data: searchData, isLoading: isLoadingSearch, refetch: refetchSearch, isFetching: isFetchingSearch } = useSearchCreatorCourses(
+  // Lấy danh sách khóa học của tôi thông qua search-service (100% Elasticsearch)
+  const { data, isLoading, refetch, isFetching } = useSearchCreatorCourses(
     debouncedSearch,
     status === "ALL" ? undefined : status,
     page,
     pageSize,
-    isSearching
+    true
   );
-
-  const data = isSearching ? searchData : defaultData;
-  const isLoading = isSearching ? isLoadingSearch : isLoadingDefault;
-  const isFetching = isSearching ? isFetchingSearch : isFetchingDefault;
-  const refetch = () => {
-    refetchDefault();
-    refetchSearch();
-  };
 
   // Lấy các price tier để map hiển thị giá
   const { data: priceTiersData } = usePriceTiers(0, 100);
