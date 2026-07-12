@@ -3,7 +3,6 @@
 import * as React from "react";
 import { CourseCard } from "../_components/course-card";
 import { useSearchPublishedCourses } from "@/hooks/use-search";
-import { usePublishedCourses } from "@/hooks/use-course";
 import { usePriceTiers } from "@/hooks/use-price-tier";
 import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
@@ -26,21 +25,12 @@ export default function CoursesPage() {
     debouncedSearch, 0, 5, debouncedSearch.trim().length > 0
   );
 
-  // Lấy dữ liệu mặc định (khi không tìm kiếm)
-  const { data: defaultCoursesData, isLoading: isLoadingDefault, isError: isErrorDefault } = usePublishedCourses(
-    currentPage, pageSize, "createdAt", "desc", !isSearching
-  );
-
-  // Lấy dữ liệu tìm kiếm chính (khi có submit search)
-  const { data: searchCoursesData, isLoading: isLoadingSearch, isError: isErrorSearch } = useSearchPublishedCourses(
-    submittedSearch, currentPage, pageSize, isSearching
+  // Lấy danh sách khóa học chính (sử dụng 100% search-service)
+  const { data: coursesData, isLoading: isLoadingCourses, isError: isErrorCourses } = useSearchPublishedCourses(
+    submittedSearch, currentPage, pageSize, true
   );
 
   const { data: priceTiersData, isLoading: isLoadingTiers } = usePriceTiers(0, 100);
-
-  const isLoadingCourses = isSearching ? isLoadingSearch : isLoadingDefault;
-  const isErrorCourses = isSearching ? isErrorSearch : isErrorDefault;
-  const coursesData = isSearching ? searchCoursesData : defaultCoursesData;
 
   const isLoading = isLoadingCourses || isLoadingTiers;
   const isError = isErrorCourses;
@@ -107,23 +97,22 @@ export default function CoursesPage() {
               <ul className="max-h-[300px] overflow-y-auto">
                 {autocompleteCourses.map(course => (
                   <li key={course.id}>
-                    <Link
-                      href={`/courses/${course.publicId}`}
-                      className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-none"
-                      onMouseDown={(e) => e.preventDefault()} // Ngăn mất focus khi click
+                    <div
+                      className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-none cursor-pointer group"
+                      onMouseDown={(e) => {
+                        e.preventDefault(); // Ngăn mất focus khi click
+                        setSearchQuery(course.title);
+                        setSubmittedSearch(course.title);
+                        setIsFocused(false);
+                      }}
                     >
-                      {course.thumbnailUrl ? (
-                        <img src={course.thumbnailUrl} alt={course.title} className="w-10 h-10 object-cover rounded-md flex-shrink-0" />
-                      ) : (
-                        <div className="w-10 h-10 bg-indigo-50 rounded-md flex items-center justify-center flex-shrink-0">
-                          <BookOpen className="w-5 h-5 text-indigo-300" />
-                        </div>
-                      )}
+                      <Search className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" />
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-bold text-slate-800 truncate">{course.title}</p>
-                        <p className="text-xs text-slate-500 font-medium truncate">{course.description || "Không có mô tả"}</p>
+                        <p className="text-sm font-semibold text-slate-700 truncate group-hover:text-indigo-700 transition-colors">
+                          {course.title}
+                        </p>
                       </div>
-                    </Link>
+                    </div>
                   </li>
                 ))}
               </ul>
@@ -169,7 +158,7 @@ export default function CoursesPage() {
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {courses.map((course) => (
-              <CourseCard key={course.id} course={course} priceTiers={priceTiers} isSearchResult={isSearching} />
+              <CourseCard key={course.id} course={course} priceTiers={priceTiers} />
             ))}
           </div>
 

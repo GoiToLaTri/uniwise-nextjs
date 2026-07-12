@@ -62,7 +62,7 @@ export function useCourses(pageNumber = 0, pageSize = 10, search?: string, statu
 }
 
 // Hook lấy danh sách courses của tôi (do giảng viên hiện tại tạo - có phân trang, tìm kiếm & lọc theo trạng thái)
-export function useMyCourses(pageNumber = 0, pageSize = 10, search?: string, status?: string) {
+export function useMyCourses(pageNumber = 0, pageSize = 10, search?: string, status?: string, enabled = true) {
   return useQuery({
     queryKey: [...MY_COURSES_QUERY_KEY, pageNumber, pageSize, search, status],
     queryFn: async (): Promise<CourseListResponse | null> => {
@@ -82,6 +82,7 @@ export function useMyCourses(pageNumber = 0, pageSize = 10, search?: string, sta
 
       return response.data;
     },
+    enabled,
   });
 }
 

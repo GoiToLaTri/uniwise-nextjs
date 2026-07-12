@@ -35,9 +35,11 @@ export function CourseCard({ course, priceTiers, onRefresh }: CourseCardProps) {
     ? `${new Intl.NumberFormat().format(priceTier.priceAmount)} ${priceTier.currency}`
     : "Miễn phí / Chưa định giá";
 
-  const totalLessons = course.sections?.reduce(
+  const totalLessons = course.totalLessons || course.totalLessonsCount || course.sections?.reduce(
     (total, sec) => total + (sec.lessons?.length || 0), 0
   ) || 0;
+
+  const totalSections = course.totalSections || course.sections?.length || 0;
 
   const handleDelete = async () => {
     if (confirm(`Bạn có chắc chắn muốn xóa khóa học "${course.title}"?`)) {
@@ -153,7 +155,7 @@ export function CourseCard({ course, priceTiers, onRefresh }: CourseCardProps) {
           <div className="flex items-center justify-between text-[11px] text-slate-400 font-bold uppercase tracking-wider">
             <span className="flex items-center gap-1">
               <Layers className="w-3.5 h-3.5 text-indigo-400" />
-              {course.sections?.length || 0} Chương
+              {totalSections} Chương
             </span>
             <span className="flex items-center gap-1">
               <PlayCircle className="w-3.5 h-3.5 text-blue-400" />

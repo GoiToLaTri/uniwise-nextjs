@@ -41,6 +41,11 @@ export interface CourseResponse {
   totalLessonsCount?: number;
   completedLessonsCount?: number;
   progressPercentage?: number;
+  studentCount?: number;
+  averageRating?: number;
+  totalReviews?: number;
+  totalLessons?: number;
+  totalSections?: number;
 }
 
 export interface CreateCourseRequest {

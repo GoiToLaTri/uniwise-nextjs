@@ -15,7 +15,9 @@ import { CourseCard } from "./_components/course-card";
 import { CourseFormDialog } from "./_components/course-form-dialog";
 import { DataTablePagination } from "@/app/(admin)/admin/roles/_components/data-table-pagination";
 import { useMyCourses } from "@/hooks/use-course";
+import { useSearchCreatorCourses } from "@/hooks/use-search";
 import { usePriceTiers } from "@/hooks/use-price-tier";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 
@@ -23,15 +25,35 @@ export default function MyCoursesPage() {
   const [page, setPage] = React.useState(0);
   const [status, setStatus] = React.useState<string>("ALL");
   const [search, setSearch] = React.useState("");
+  const debouncedSearch = useDebounce(search, 400);
   const pageSize = 6; // Đặt kích thước trang là 6 để hiển thị lưới 3 cột đẹp mắt
+  const isSearching = debouncedSearch.trim().length > 0;
 
-  // Lấy danh sách khóa học của tôi
-  const { data, isLoading, refetch, isFetching } = useMyCourses(
+  // Lấy danh sách mặc định thông qua course-service
+  const { data: defaultData, isLoading: isLoadingDefault, refetch: refetchDefault, isFetching: isFetchingDefault } = useMyCourses(
     page, 
     pageSize, 
-    search || undefined, 
-    status === "ALL" ? undefined : status
+    undefined, 
+    status === "ALL" ? undefined : status,
+    !isSearching
   );
+
+  // Lấy danh sách tìm kiếm thông qua search-service
+  const { data: searchData, isLoading: isLoadingSearch, refetch: refetchSearch, isFetching: isFetchingSearch } = useSearchCreatorCourses(
+    debouncedSearch,
+    status === "ALL" ? undefined : status,
+    page,
+    pageSize,
+    isSearching
+  );
+
+  const data = isSearching ? searchData : defaultData;
+  const isLoading = isSearching ? isLoadingSearch : isLoadingDefault;
+  const isFetching = isSearching ? isFetchingSearch : isFetchingDefault;
+  const refetch = () => {
+    refetchDefault();
+    refetchSearch();
+  };
 
   // Lấy các price tier để map hiển thị giá
   const { data: priceTiersData } = usePriceTiers(0, 100);
@@ -40,7 +62,7 @@ export default function MyCoursesPage() {
   // Reset về trang 0 khi thay đổi tìm kiếm hoặc bộ lọc
   React.useEffect(() => {
     setPage(0);
-  }, [search, status]);
+  }, [debouncedSearch, status]);
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
