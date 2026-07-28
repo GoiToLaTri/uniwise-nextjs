@@ -8,6 +8,7 @@ import {
   CourseSection,
 } from "@/interfaces/course.interface";
 import { COURSE_DETAIL_QUERY_KEY } from "./use-course";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 // Hook tạo mới một section
 export function useCreateSection() {
@@ -26,9 +27,7 @@ export function useCreateSection() {
         toast.success("Tạo chương học mới thành công!");
         return response.data;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể tạo chương học mới.";
-        toast.error(message);
+        toast.error(getApiErrorMessage(error, "Không thể tạo chương học mới."));
         throw error;
       }
     },
@@ -57,9 +56,7 @@ export function useUpdateSection() {
         toast.success("Cập nhật chương học thành công!");
         return response.data;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể cập nhật chương học.";
-        toast.error(message);
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật chương học."));
         throw error;
       }
     },
@@ -83,9 +80,7 @@ export function useDeleteSection() {
         toast.success("Xóa chương học thành công!");
         return true;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể xóa chương học.";
-        toast.error(message);
+        toast.error(getApiErrorMessage(error, "Không thể xóa chương học."));
         throw error;
       }
     },
@@ -112,9 +107,9 @@ export function useReorderSections() {
         toast.success("Cập nhật thứ tự chương học thành công!");
         return true;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể cập nhật thứ tự chương học.";
-        toast.error(message);
+        toast.error(
+          getApiErrorMessage(error, "Không thể cập nhật thứ tự chương học."),
+        );
         throw error;
       }
     },

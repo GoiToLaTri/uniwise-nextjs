@@ -4,5 +4,5 @@ export interface TokenResponse {
   sessionId: string;
   scope: string;
   tokenType: string;
-  expiresAt: Date;
+  expiresAt: string;
 }

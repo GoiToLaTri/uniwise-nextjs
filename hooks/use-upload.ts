@@ -2,6 +2,7 @@ import { ApiResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export interface UploadResponse {
   url: string;
@@ -16,7 +17,11 @@ export function useUploadThumbnail() {
       formData.append("file", file);
 
       try {
-        const response = await apiClient.post<any, ApiResponse<UploadResponse>>(
+        const response = await apiClient.post<
+          never,
+          ApiResponse<UploadResponse>,
+          FormData
+        >(
           "/media-service/api/v1/uploads/thumbnail",
           formData,
           {
@@ -26,9 +31,8 @@ export function useUploadThumbnail() {
           }
         );
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Lỗi khi tải ảnh lên.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Lỗi khi tải ảnh lên."));
         throw error;
       }
     },

@@ -5,6 +5,7 @@ import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner"; // or your toast library
 import { ROLES_QUERY_KEY } from "./use-role";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export interface AccountResponse {
   id: string;
@@ -82,8 +83,8 @@ export function useUpdateAccount() {
         );
         toast.success("Cập nhật account thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể cập nhật account.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật account."));
         throw error;
       }
     },
@@ -118,8 +119,10 @@ export function useAssignRolesToAccount() {
         );
         toast.success(`Gán ${roleNames.length} role(s) thành công!`);
         return response.data;
-      } catch (error) {
-        toast.error("Không thể gán roles cho account.");
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể gán roles cho account."),
+        );
         throw error;
       }
     },
@@ -168,8 +171,10 @@ export function useRevokeRolesFromAccount() {
         );
         toast.success(`Thu hồi ${roleNames.length} role(s) thành công!`);
         return response.data;
-      } catch (error) {
-        toast.error("Không thể thu hồi roles từ account.");
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể thu hồi roles từ account."),
+        );
         throw error;
       }
     },

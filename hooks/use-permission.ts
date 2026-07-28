@@ -4,6 +4,7 @@ import apiClient from "@/lib/api-client";
 import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { toast } from "sonner"; // or your toast library
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 // Types
 export interface PermissionResponse {
@@ -86,8 +87,8 @@ export function useCreatePermission() {
         );
         toast.success("Tạo permission thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể tạo permission mới.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể tạo permission mới."));
         throw error;
       }
     },
@@ -124,8 +125,8 @@ export function useUpdatePermission() {
         );
         toast.success("Cập nhật permission thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể cập nhật permission.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật permission."));
         throw error;
       }
     },
@@ -163,8 +164,8 @@ export function useDeletePermission() {
         await apiClient.delete(`/identity-service/api/v1/permissions/${id}`);
         toast.success("Xóa permission thành công!");
         return true;
-      } catch (error) {
-        toast.error("Không thể xóa permission.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể xóa permission."));
         throw error;
       }
     },

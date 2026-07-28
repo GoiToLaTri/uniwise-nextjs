@@ -3,3 +3,9 @@ export interface ApiResponse<T> {
   message: string;
   data: T;
 }
+
+export interface EmptyApiResponse {
+  code: string;
+  message: string;
+  data?: never;
+}

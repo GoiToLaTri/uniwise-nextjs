@@ -4,6 +4,7 @@ import apiClient from "@/lib/api-client";
 import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/auth-error";
 import { PermissionResponse } from "./use-permission";
 
 export const ROLES_QUERY_KEY = ["roles"];
@@ -66,8 +67,8 @@ export function useCreateRole() {
         );
         toast.success("Tạo role thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể tạo role mới.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể tạo role mới."));
         throw error;
       }
     },
@@ -102,8 +103,8 @@ export function useUpdateRole() {
         );
         toast.success("Cập nhật role thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể cập nhật role.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật role."));
         throw error;
       }
     },
@@ -129,8 +130,8 @@ export function useDeleteRole() {
         await apiClient.delete(`/identity-service/api/v1/roles/${id}`);
         toast.success("Xóa role thành công!");
         return true;
-      } catch (error) {
-        toast.error("Không thể xóa role.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể xóa role."));
         throw error;
       }
     },
@@ -158,8 +159,10 @@ export function useToggleRoleActive() {
           response.data.isActive ? "Kích hoạt role thành công!" : "Vô hiệu hóa role thành công!"
         );
         return response.data;
-      } catch (error) {
-        toast.error("Không thể thay đổi trạng thái role.");
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể thay đổi trạng thái role."),
+        );
         throw error;
       }
     },
@@ -284,8 +287,10 @@ export function useAssignPermissions() {
         );
         toast.success(`Đã cấp ${permissionNames.length} quyền thành công!`);
         return response.data;
-      } catch (error) {
-        toast.error("Không thể cấp quyền cho vai trò.");
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể cấp quyền cho vai trò."),
+        );
         throw error;
       }
     },
@@ -326,8 +331,10 @@ export function useRevokePermissions() {
         );
         toast.success(`Đã thu hồi ${permissionNames.length} quyền thành công!`);
         return response.data;
-      } catch (error) {
-        toast.error("Không thể thu hồi quyền của vai trò.");
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể thu hồi quyền của vai trò."),
+        );
         throw error;
       }
     },

@@ -6,6 +6,7 @@ import { ProfileResponse } from "@/interfaces/response/profile-response.interfac
 import { getCachedProfile, setCachedProfile } from "@/stores/profile-store";
 import { getTokenResponse, isTokenExpired } from "@/stores/token-store";
 import { ProfileListResponse } from "@/interfaces/response/profile-list-response.interface";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export const PROFILE_QUERY_KEY = ["profile", "me", "profiles"];
 // Tạo query key riêng cho public profile
@@ -56,8 +57,10 @@ export function useRefreshProfile() {
       queryClient.setQueryData(PROFILE_QUERY_KEY, response.data);
 
       return response.data;
-    } catch {
-      toast.error("Không thể tải lại thông tin người dùng.");
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(error, "Không thể tải lại thông tin người dùng."),
+      );
       return null;
     }
   };
@@ -114,8 +117,10 @@ export function usePublicProfile(publicId?: string) {
         >(`/user-service/api/v1/profiles/public/${publicId}`);
 
         return response.data;
-      } catch (error) {
-        toast.error("Không thể tải thông tin người dùng.");
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể tải thông tin người dùng."),
+        );
         throw error;
       }
     },

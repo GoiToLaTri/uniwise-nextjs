@@ -20,6 +20,8 @@ import {
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { useLogin } from "@/hooks/use-auth";
+import { consumePendingAuthError } from "@/lib/auth-error";
+import { toast } from "sonner";
 
 // 1. Schema Validation với Zod
 const loginSchema = z.object({
@@ -32,6 +34,11 @@ type LoginFormValues = z.infer<typeof loginSchema>;
 export function LoginForm() {
   const { mutate: login, isPending } = useLogin();
   const [showPassword, setShowPassword] = React.useState(false);
+
+  React.useEffect(() => {
+    const pendingMessage = consumePendingAuthError();
+    if (pendingMessage) toast.error(pendingMessage);
+  }, []);
 
   const {
     register,

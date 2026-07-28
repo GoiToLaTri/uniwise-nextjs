@@ -2,6 +2,7 @@ import axios, { CancelTokenSource } from "axios";
 import { create } from "zustand";
 import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export interface UploadItem {
   lessonId: string;
@@ -106,8 +107,10 @@ export const useUploadStore = create<UploadStore>((set, get) => ({
         }));
         toast.warning(`Đã hủy tải lên video cho bài học "${lessonTitle}".`);
       } else {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Lỗi kết nối tải lên video.";
+        const message = getApiErrorMessage(
+          error,
+          "Lỗi kết nối tải lên video.",
+        );
         set((state) => ({
           uploads: {
             ...state.uploads,

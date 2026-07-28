@@ -1,6 +1,7 @@
 import { refreshAccessToken } from "@/lib/api-client";
 import { removeCachedProfile } from "@/stores/profile-store";
 import { getTokenResponse, isTokenExpired, removeToken } from "@/stores/token-store";
+import { getApiErrorMessage } from "@/lib/auth-error";
 import { useEffect, useRef } from "react";
 
 const CHECK_INTERVAL_MS = 60 * 1000; // Kiểm tra mỗi 1 phút
@@ -32,7 +33,14 @@ export function useTokenRefresh() {
         // Dùng refreshAccessToken từ api-client — singleton refreshPromise
         // đảm bảo dù interceptor cũng đang refresh thì chỉ có 1 request duy nhất
         // console.info("[useTokenRefresh] Token sắp hết hạn, đang refresh ngầm...");
-        await refreshAccessToken();
+        try {
+          await refreshAccessToken();
+        } catch (error) {
+          console.error(
+            "[useTokenRefresh] Không thể làm mới phiên:",
+            getApiErrorMessage(error),
+          );
+        }
       }
    
       checkAndRefresh();

@@ -1,6 +1,8 @@
 import { InstructorProfile, ApplyInstructorRequest, UpdateInstructorRequest, Degree, Expertise, InstructorApplicationListResponse } from "@/interfaces/instructor.interface";
 import { ApiResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
+import { isAppApiError } from "@/lib/api-error";
+import { getApiErrorMessage } from "@/lib/auth-error";
 import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
@@ -22,9 +24,9 @@ export function useInstructorProfile() {
           "/user-service/api/v1/instructors/me"
         );
         return response.data;
-      } catch (error: any) {
+      } catch (error: unknown) {
         // Nếu chưa đăng ký instructor, API trả về 404 hoặc lỗi
-        if (error?.response?.status === 404) {
+        if (isAppApiError(error) && error.httpStatus === 404) {
           return null;
         }
         throw error;
@@ -46,9 +48,8 @@ export function useApplyInstructor() {
         );
         toast.success("Đăng ký giảng viên thành công! Vui lòng chờ xét duyệt.");
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể đăng ký giảng viên.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể đăng ký giảng viên."));
         throw error;
       }
     },
@@ -77,9 +78,10 @@ export function useUpdateInstructorProfile() {
         );
         toast.success("Cập nhật hồ sơ giảng viên thành công!");
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể cập nhật hồ sơ giảng viên.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể cập nhật hồ sơ giảng viên."),
+        );
         throw error;
       }
     },
@@ -129,8 +131,10 @@ export function useRefreshInstructorProfile() {
       queryClient.setQueryData(INSTRUCTOR_QUERY_KEY, response.data);
       toast.success("Đã cập nhật thông tin giảng viên!");
       return response.data;
-    } catch (error) {
-      toast.error("Không thể tải lại thông tin giảng viên.");
+    } catch (error: unknown) {
+      toast.error(
+        getApiErrorMessage(error, "Không thể tải lại thông tin giảng viên."),
+      );
       return null;
     }
   };
@@ -149,8 +153,8 @@ export function useAddDegree() {
         );
         toast.success("Thêm bằng cấp thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể thêm bằng cấp.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể thêm bằng cấp."));
         throw error;
       }
     },
@@ -171,8 +175,8 @@ export function useDeleteDegree() {
         await apiClient.delete(`/user-service/api/v1/instructors/me/degrees/${degreeId}`);
         toast.success("Xóa bằng cấp thành công!");
         return true;
-      } catch (error) {
-        toast.error("Không thể xóa bằng cấp.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể xóa bằng cấp."));
         throw error;
       }
     },
@@ -195,8 +199,8 @@ export function useAddExpertise() {
         );
         toast.success("Thêm chuyên môn thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể thêm chuyên môn.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể thêm chuyên môn."));
         throw error;
       }
     },
@@ -216,8 +220,8 @@ export function useDeleteExpertise() {
         await apiClient.delete(`/user-service/api/v1/instructors/me/expertises/${expertiseId}`);
         toast.success("Xóa chuyên môn thành công!");
         return true;
-      } catch (error) {
-        toast.error("Không thể xóa chuyên môn.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể xóa chuyên môn."));
         throw error;
       }
     },
@@ -241,7 +245,7 @@ export function useInstructorApplications(
       if (!tokenResponse) return null;
 
       // Gọi API
-      const params: Record<string, any> = {
+      const params: Record<string, string | number> = {
         page: pageNumber,
         size: pageSize,
       };
@@ -292,9 +296,8 @@ export function useApproveInstructorApplication() {
         );
         toast.success("Đã duyệt đơn đăng ký giảng viên!");
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể duyệt đơn đăng ký.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể duyệt đơn đăng ký."));
         throw error;
       }
     },
@@ -335,9 +338,8 @@ export function useRejectInstructorApplication() {
         );
         toast.success("Đã từ chối đơn đăng ký giảng viên!");
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể từ chối đơn đăng ký.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể từ chối đơn đăng ký."));
         throw error;
       }
     },
@@ -374,9 +376,10 @@ export function useSuspendInstructor() {
         );
         toast.success("Đã tạm ngưng giảng viên!");
         return true;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể tạm ngưng giảng viên.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể tạm ngưng giảng viên."),
+        );
         throw error;
       }
     },
@@ -406,9 +409,10 @@ export function useReactivateInstructor() {
         );
         toast.success("Đã kích hoạt lại giảng viên!");
         return true;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể kích hoạt lại giảng viên.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(
+          getApiErrorMessage(error, "Không thể kích hoạt lại giảng viên."),
+        );
         throw error;
       }
     },
@@ -435,8 +439,8 @@ export function usePublicInstructorProfile(profileId?: string) {
           `/user-service/api/v1/instructors/public/${profileId}`
         );
         return response.data;
-      } catch (error: any) {
-        if (error?.response?.status === 404) {
+      } catch (error: unknown) {
+        if (isAppApiError(error) && error.httpStatus === 404) {
           return null;
         }
         throw error;

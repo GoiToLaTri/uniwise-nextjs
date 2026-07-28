@@ -8,6 +8,7 @@ import {
   CourseLesson,
 } from "@/interfaces/course.interface";
 import { COURSE_DETAIL_QUERY_KEY } from "./use-course";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 // Hook tạo bài giảng mới
 export function useCreateLesson() {
@@ -26,9 +27,7 @@ export function useCreateLesson() {
         toast.success("Tạo bài giảng mới thành công!");
         return response.data;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể tạo bài giảng mới.";
-        toast.error(message);
+        toast.error(getApiErrorMessage(error, "Không thể tạo bài giảng mới."));
         throw error;
       }
     },
@@ -56,9 +55,7 @@ export function useUpdateLesson() {
         toast.success("Cập nhật bài giảng thành công!");
         return response.data;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể cập nhật bài giảng.";
-        toast.error(message);
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật bài giảng."));
         throw error;
       }
     },
@@ -82,9 +79,7 @@ export function useDeleteLesson() {
         toast.success("Xóa bài giảng thành công!");
         return true;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể xóa bài giảng.";
-        toast.error(message);
+        toast.error(getApiErrorMessage(error, "Không thể xóa bài giảng."));
         throw error;
       }
     },
@@ -112,9 +107,9 @@ export function useReorderLessons() {
         toast.success("Cập nhật thứ tự bài giảng thành công!");
         return true;
       } catch (error: unknown) {
-        const err = error as { response?: { data?: { message?: string } } };
-        const message = err.response?.data?.message || "Không thể cập nhật thứ tự bài giảng.";
-        toast.error(message);
+        toast.error(
+          getApiErrorMessage(error, "Không thể cập nhật thứ tự bài giảng."),
+        );
         throw error;
       }
     },
@@ -123,4 +118,3 @@ export function useReorderLessons() {
     },
   });
 }
-

@@ -9,6 +9,11 @@ import {
 import { TokenResponse } from "@/interfaces/response/token-response.interface";
 import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { clearAccessTokenCookie, syncAccessTokenCookie } from "./token";
+import { normalizeApiError } from "./api-error";
+import {
+  isAuthenticationServiceUnavailable,
+  rememberPendingAuthError,
+} from "./auth-error";
 
 // Routes không cần token — bỏ qua refresh interceptor
 const AUTH_ROUTES = [
@@ -59,11 +64,22 @@ export async function refreshAccessToken(): Promise<TokenResponse | null> {
       // console.info("[api-client] Token refreshed successfully");
       return newToken;
     } catch (error) {
-      console.error("[api-client] Refresh token failed:", error);
-      await removeToken();
-      await clearAccessTokenCookie();
-      window.location.href = "/signin";
-      return null;
+      const apiError = normalizeApiError(error);
+      console.error("[api-client] Refresh token failed:", apiError);
+
+      // Edge 503 là lỗi hạ tầng tạm thời, không được coi là sai credential.
+      if (isAuthenticationServiceUnavailable(apiError)) {
+        throw apiError;
+      }
+
+      rememberPendingAuthError(apiError);
+      await Promise.allSettled([removeToken(), clearAccessTokenCookie()]);
+
+      if (typeof window !== "undefined") {
+        window.location.replace("/signin");
+      }
+
+      throw apiError;
     } finally {
       refreshPromise = null;
     }
@@ -93,19 +109,27 @@ apiClient.interceptors.request.use(async (config) => {
 
 // ─── Response interceptor ─────────────────────────────────────────────────────
 apiClient.interceptors.response.use(
-  (response) => response.data,
-  async (error) => {
-    const originalRequest = error.config as AxiosRequestConfig & { _retry?: boolean };
+  (response) => (response.status === 204 ? undefined : response.data),
+  async (error: unknown) => {
+    if (!axios.isAxiosError(error)) {
+      return Promise.reject(normalizeApiError(error));
+    }
+
+    const originalRequest = error.config as
+      | (AxiosRequestConfig & { _retry?: boolean })
+      | undefined;
 
     // Bỏ qua auth routes — tránh refresh loop khi chính request refresh bị lỗi
-    if (isAuthRoute(originalRequest.url)) {
-      const data = error.response?.data;
-      error.message = data?.detail || data?.message || "Đã có lỗi xảy ra";
-      return Promise.reject(error);
+    if (isAuthRoute(originalRequest?.url)) {
+      return Promise.reject(normalizeApiError(error));
     }
 
     // 401 và chưa retry → refresh rồi retry request gốc
-    if (error.response?.status === 401 && !originalRequest._retry) {
+    if (
+      error.response?.status === 401 &&
+      originalRequest &&
+      !originalRequest._retry
+    ) {
       originalRequest._retry = true;
       const newToken = await refreshAccessToken();
 
@@ -118,9 +142,7 @@ apiClient.interceptors.response.use(
       }
     }
 
-    const data = error.response?.data;
-    error.message = data?.detail || data?.message || "Đã có lỗi xảy ra";
-    return Promise.reject(error);
+    return Promise.reject(normalizeApiError(error));
   },
 );
 

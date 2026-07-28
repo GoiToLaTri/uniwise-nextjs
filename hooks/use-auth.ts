@@ -11,6 +11,7 @@ import { removeCachedProfile } from "@/stores/profile-store";
 import { clearAccessTokenCookie, syncAccessTokenCookie } from "@/lib/token";
 import { startTransition } from "react";
 import { PROFILE_QUERY_KEY } from "./use-profile";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export function useLogin() {
   const queryClient = useQueryClient();
@@ -52,8 +53,8 @@ export function useLogin() {
       console.log("[use-auth] :::: path: ", window.location.pathname);
       });
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Không thể đăng nhập."));
     },
   });
 }
@@ -69,8 +70,8 @@ export function useSignup() {
       toast.success("Đăng ký thành công! Hãy đăng nhập.");
       router.push("/signin");
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Không thể đăng ký."));
     },
   });
 }
@@ -106,8 +107,8 @@ export function useLogout() {
       router.refresh();
       // router.push("/signin");
     },
-    onError: (error: Error) => {
-      toast.error(error.message);
+    onError: (error: unknown) => {
+      toast.error(getApiErrorMessage(error, "Không thể đăng xuất."));
     },
   });
 }

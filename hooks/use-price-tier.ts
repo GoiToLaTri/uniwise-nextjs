@@ -1,9 +1,9 @@
 // use-price-tier.ts
 import { ApiResponse, ListResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
-import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 // Types
 export interface CreatePriceTierRequest {
@@ -90,8 +90,8 @@ export function useCreatePriceTier() {
         );
         toast.success("Tạo price tier thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể tạo price tier mới.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể tạo price tier mới."));
         throw error;
       }
     },
@@ -126,8 +126,8 @@ export function useUpdatePriceTier() {
         );
         toast.success("Cập nhật price tier thành công!");
         return response.data;
-      } catch (error) {
-        toast.error("Không thể cập nhật price tier.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật price tier."));
         throw error;
       }
     },
@@ -153,8 +153,8 @@ export function useDeletePriceTier() {
         await apiClient.delete(`/course-service/api/v1/price-tiers/${id}`);
         toast.success("Xóa price tier thành công!");
         return true;
-      } catch (error) {
-        toast.error("Không thể xóa price tier.");
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể xóa price tier."));
         throw error;
       }
     },

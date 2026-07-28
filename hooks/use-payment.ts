@@ -4,6 +4,7 @@ import { getTokenResponse } from "@/stores/token-store";
 import { ApiResponse } from "@/interfaces/response";
 import { PaymentCreateRequest, PaymentResponse } from "@/interfaces/payment.interface";
 import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export const PAYMENT_DETAIL_QUERY_KEY = (id: string) => ["payment", id];
 
@@ -24,9 +25,8 @@ export function useCreatePayment() {
           data
         );
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể khởi tạo thanh toán.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể khởi tạo thanh toán."));
         throw error;
       }
     },

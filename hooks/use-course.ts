@@ -9,6 +9,7 @@ import {
   CreateCourseRequest,
   UpdateCourseRequest,
 } from "@/interfaces/course.interface";
+import { getApiErrorMessage } from "@/lib/auth-error";
 
 export const COURSES_QUERY_KEY = ["courses"];
 export const MY_COURSES_QUERY_KEY = ["my-courses"];
@@ -46,7 +47,7 @@ export function useCourses(pageNumber = 0, pageSize = 10, search?: string, statu
       const tokenResponse = await getTokenResponse();
       if (!tokenResponse) return null;
 
-      const params: Record<string, any> = { page: pageNumber, size: pageSize };
+      const params: Record<string, string | number> = { page: pageNumber, size: pageSize };
       if (search) params.search = search;
       if (status && status !== "ALL") params.status = status;
 
@@ -70,7 +71,7 @@ export function useMyCourses(pageNumber = 0, pageSize = 10, search?: string, sta
       const tokenResponse = await getTokenResponse();
       if (!tokenResponse) return null;
 
-      const params: Record<string, any> = { page: pageNumber, size: pageSize };
+      const params: Record<string, string | number> = { page: pageNumber, size: pageSize };
       if (search) params.keyword = search;
       if (status && status !== "ALL") params.status = status;
 
@@ -116,9 +117,8 @@ export function useCreateCourse() {
         );
         toast.success("Tạo khóa học thành công!");
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể tạo khóa học mới.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể tạo khóa học mới."));
         throw error;
       }
     },
@@ -154,9 +154,8 @@ export function useUpdateCourse() {
         );
         toast.success("Cập nhật khóa học thành công!");
         return response.data;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể cập nhật khóa học.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể cập nhật khóa học."));
         throw error;
       }
     },
@@ -183,9 +182,8 @@ export function useDeleteCourse() {
         await apiClient.delete(`/course-service/api/v1/courses/${id}`);
         toast.success("Xóa khóa học thành công!");
         return true;
-      } catch (error: any) {
-        const message = error?.response?.data?.message || "Không thể xóa khóa học.";
-        toast.error(message);
+      } catch (error: unknown) {
+        toast.error(getApiErrorMessage(error, "Không thể xóa khóa học."));
         throw error;
       }
     },
