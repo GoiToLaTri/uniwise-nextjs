@@ -1,14 +1,10 @@
 "use client";
 
 import { 
-  User, 
-  Mail, 
-  Fingerprint, 
   LogOut, 
   BookOpen, 
   Settings, 
   Shield, 
-  X,
   Loader2,
   LayoutDashboard,
   Presentation
@@ -20,17 +16,14 @@ import {
   DialogTitle,
   DialogDescription, // Thêm Description để fix triệt để lỗi a11y
   DialogTrigger,
-  DialogClose,
 } from "@/components/ui/dialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { toast } from "sonner";
-import { useRouter } from "next/navigation";
 import { useLogout } from "@/hooks/use-auth";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { getTokenResponse } from "@/stores/token-store";
-import { useState, useEffect } from "react";
+import { useSessionSnapshot } from "@/hooks/use-session-snapshot";
+import { parseScope } from "@/lib/scope";
 
 interface UserProfile {
   id: string;
@@ -43,34 +36,15 @@ interface UserProfile {
 }
 
 export function UserAccountDialog({ user }: { user: UserProfile }) {
-  const router = useRouter();
   const {mutate: logout, isPending} = useLogout()
-  const [roles, setRoles] = useState<string[]>([]);
-  const [loadingToken, setLoadingToken] = useState(true);
+  const session = useSessionSnapshot();
+  const roles = parseScope(session?.tokenResponse.scope);
+  const loadingToken = session === undefined;
 
-  // 1. Lấy và phân tách Scope từ Token
-  useEffect(() => {
-    async function fetchRoles() {
-      try {
-        const tokenData = await getTokenResponse();
-        if (tokenData?.scope) {
-          // Chuyển chuỗi "ROLE_USER ROLE_ADMIN" -> ["ROLE_USER", "ROLE_ADMIN"]
-          const roleArray = tokenData.scope.split(" ");
-          setRoles(roleArray);
-        }
-      } catch (error) {
-        console.error("Lỗi lấy token:", error);
-      } finally {
-        setLoadingToken(false);
-      }
-    }
-    fetchRoles();
-  }, []);
+  const isAdmin = roles.has("ROLE_ADMIN");
+  const isInstructor = roles.has("ROLE_INSTRUCTOR");
 
-  const isAdmin = roles.includes("ROLE_ADMIN");
-  const isInstructor = roles.includes("ROLE_INSTRUCTOR");
-
-  // 2. Cấu hình Action Button dựa trên Role cao nhất
+  // Chọn nút điều hướng theo vai trò cao nhất của người dùng.
   const getRoleAction = () => {
     if (isAdmin) {
       return {

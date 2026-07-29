@@ -1,26 +1,33 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter, usePathname } from "next/navigation";
-import { getTokenResponse } from "@/stores/token-store";
 import { useTokenRefresh } from "@/hooks/use-token";
 import { UserNavbar } from "./_components/user-navbar";
+import { useSessionSnapshot } from "@/hooks/use-session-snapshot";
+import { hasScope } from "@/lib/scope";
 
 export default function UserLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
-  const [authorized, setAuthorized] = useState(false);
+  const session = useSessionSnapshot();
+  const authorized =
+    session !== undefined &&
+    session !== null &&
+    hasScope(session.tokenResponse.scope, "ROLE_USER");
 
   useEffect(() => {
-    getTokenResponse().then((token) => {
-      const isUser = token?.scope?.includes("ROLE_USER") ?? false;
-      if (!isUser) {
-        router.replace("/forbidden");
-      } else {
-        setAuthorized(true);
-      }
-    });
-  }, [router]);
+    if (session === undefined) return;
+
+    if (!session) {
+      router.replace("/signin");
+      return;
+    }
+
+    if (!authorized) {
+      router.replace("/forbidden");
+    }
+  }, [authorized, router, session]);
 
   useTokenRefresh();
   

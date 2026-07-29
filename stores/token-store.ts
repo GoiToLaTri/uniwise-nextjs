@@ -1,12 +1,10 @@
 import { TokenResponse } from "@/interfaces/response/token-response.interface";
-import { getDB, STORE } from "@/lib/db";
-
-const TOKEN_KEY = "session";
+import { readSessionSnapshot } from "@/lib/session-repository";
 
 export async function getTokenResponse(): Promise<TokenResponse | null> {
   try {
-    const db = await getDB();
-    return (await db.get(STORE.AUTH, TOKEN_KEY)) ?? null;
+    const snapshot = await readSessionSnapshot();
+    return snapshot?.tokenResponse ?? null;
   } catch {
     return null;
   }
@@ -17,23 +15,22 @@ export async function getToken(): Promise<string | null> {
   return tokenResponse?.accessToken ?? null;
 }
 
-export async function setTokenResponse(tokenResponse: TokenResponse): Promise<void> {
-  const db = await getDB();
-  await db.put(STORE.AUTH, tokenResponse, TOKEN_KEY);
-}
-
-export async function removeToken(): Promise<void> {
-  const db = await getDB();
-  await db.delete(STORE.AUTH, TOKEN_KEY);
-}
-
-// Buffer 30s để tránh race condition: token còn hạn ở client
-// nhưng request bay lên thì Redis đã expire
+// Xem token là hết hạn sớm 30 giây để nó không hết hạn giữa lúc gửi request.
 const EXPIRY_BUFFER_MS = 30 * 1000;
- 
+
+/**
+ * Kiểm tra TokenResponse đã hết hạn hoặc còn dưới 30 giây hay chưa.
+ * Hàm nhận token có sẵn nên không cần đọc lại IndexedDB.
+ */
+export function isTokenResponseExpired(
+  tokenResponse: TokenResponse,
+): boolean {
+  const expiresAt = new Date(tokenResponse.expiresAt).getTime();
+  return expiresAt - EXPIRY_BUFFER_MS <= Date.now();
+}
+
 export async function isTokenExpired(): Promise<boolean> {
   const tokenResponse = await getTokenResponse();
   if (!tokenResponse) return true;
-  const expiresAt = new Date(tokenResponse.expiresAt).getTime();
-  return expiresAt - EXPIRY_BUFFER_MS <= Date.now();
+  return isTokenResponseExpired(tokenResponse);
 }

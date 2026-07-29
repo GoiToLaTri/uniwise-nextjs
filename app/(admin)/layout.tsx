@@ -1,25 +1,30 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getTokenResponse } from "@/stores/token-store";
 import { useTokenRefresh } from "@/hooks/use-token";
+import { useSessionSnapshot } from "@/hooks/use-session-snapshot";
+import { hasScope } from "@/lib/scope";
 
 export default function AdminLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
-  // console.log("[AdminLayout] :::: authorized", authorized);
+  const session = useSessionSnapshot();
+  const authorized =
+    session !== undefined &&
+    session !== null &&
+    hasScope(session.tokenResponse.scope, "ROLE_ADMIN");
   useEffect(() => {
-    getTokenResponse().then(async (token) => {
-      // console.log("[AdminLayout] :::: token", await getTokenResponse());
-      const isAdmin = token?.scope?.includes("ROLE_ADMIN") ?? false;
-      if (!isAdmin) {
-        router.replace("/forbidden");
-      } else {
-        setAuthorized(true);
-      }
-    });
-  }, [router]);
+    if (session === undefined) return;
+
+    if (!session) {
+      router.replace("/signin");
+      return;
+    }
+
+    if (!authorized) {
+      router.replace("/forbidden");
+    }
+  }, [authorized, router, session]);
 
   useTokenRefresh();
   

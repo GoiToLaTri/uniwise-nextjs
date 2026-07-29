@@ -1,24 +1,31 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import { getTokenResponse } from "@/stores/token-store";
 import { useTokenRefresh } from "@/hooks/use-token";
+import { useSessionSnapshot } from "@/hooks/use-session-snapshot";
+import { hasScope } from "@/lib/scope";
 
 export default function InstructorLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
-  const [authorized, setAuthorized] = useState(false);
+  const session = useSessionSnapshot();
+  const authorized =
+    session !== undefined &&
+    session !== null &&
+    hasScope(session.tokenResponse.scope, "ROLE_INSTRUCTOR");
 
   useEffect(() => {
-    getTokenResponse().then((token) => {
-      const isUser = token?.scope?.includes("ROLE_INSTRUCTOR") ?? false;
-      if (!isUser) {
-        router.replace("/forbidden");
-      } else {
-        setAuthorized(true);
-      }
-    });
-  }, [router]);
+    if (session === undefined) return;
+
+    if (!session) {
+      router.replace("/signin");
+      return;
+    }
+
+    if (!authorized) {
+      router.replace("/forbidden");
+    }
+  }, [authorized, router, session]);
 
   useTokenRefresh();
   
