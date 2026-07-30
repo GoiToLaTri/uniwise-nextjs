@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, ShieldCheck, Mail, Fingerprint, Ban, UserCheck } from "lucide-react";
+import { MoreHorizontal, ShieldCheck, Mail, Fingerprint, Ban } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";

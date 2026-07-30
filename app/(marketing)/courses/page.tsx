@@ -9,7 +9,6 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CoursesPagination } from "./_components/courses-pagination";
 import { Search, BookOpen, AlertCircle } from "lucide-react";
-import Link from "next/link";
 
 export default function CoursesPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
@@ -18,7 +17,6 @@ export default function CoursesPage() {
   const [isFocused, setIsFocused] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(0);
   const pageSize = 9;
-  const isSearching = submittedSearch.trim().length > 0;
 
   // Lấy dữ liệu cho Autocomplete (chỉ khi có text)
   const { data: autocompleteData, isLoading: isLoadingAutocomplete } = useSearchPublishedCourses(
@@ -41,16 +39,16 @@ export default function CoursesPage() {
   const totalPages = coursesData?.totalPages || 0;
   const priceTiers = priceTiersData?.content || [];
 
-  // Reset trang về 0 khi submit search thay đổi
-  React.useEffect(() => {
+  const submitSearch = (keyword: string) => {
+    setSubmittedSearch(keyword);
     setCurrentPage(0);
-  }, [submittedSearch]);
+    setIsFocused(false);
+  };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    if (e.key === "Enter") {
-      setSubmittedSearch(searchQuery);
-      setIsFocused(false);
-      (e.target as HTMLInputElement).blur();
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      submitSearch(searchQuery);
+      event.currentTarget.blur();
     }
   };
 
@@ -80,10 +78,7 @@ export default function CoursesPage() {
         />
         <Search 
           className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 cursor-pointer hover:text-indigo-600 transition-colors" 
-          onClick={() => {
-            setSubmittedSearch(searchQuery);
-            setIsFocused(false);
-          }}
+          onClick={() => submitSearch(searchQuery)}
         />
         
         {/* Autocomplete Dropdown */}
@@ -96,14 +91,13 @@ export default function CoursesPage() {
             ) : (
               <ul className="max-h-[300px] overflow-y-auto">
                 {autocompleteCourses.map(course => (
-                  <li key={course.id}>
+                  <li key={course.publicId}>
                     <div
                       className="flex items-center gap-3 p-3 hover:bg-slate-50 transition-colors border-b border-slate-100 last:border-none cursor-pointer group"
                       onMouseDown={(e) => {
                         e.preventDefault(); // Ngăn mất focus khi click
                         setSearchQuery(course.title);
-                        setSubmittedSearch(course.title);
-                        setIsFocused(false);
+                        submitSearch(course.title);
                       }}
                     >
                       <Search className="w-4 h-4 text-slate-400 group-hover:text-indigo-600 transition-colors flex-shrink-0" />
@@ -158,7 +152,7 @@ export default function CoursesPage() {
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {courses.map((course) => (
-              <CourseCard key={course.id} course={course} priceTiers={priceTiers} />
+              <CourseCard key={course.publicId} course={course} priceTiers={priceTiers} />
             ))}
           </div>
 

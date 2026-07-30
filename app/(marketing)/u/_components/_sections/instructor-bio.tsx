@@ -1,11 +1,22 @@
 "use client";
 
-import * as React from "react";
-import { InstructorProfile } from "@/interfaces/instructor.interface";
+import { PublicInstructorProfileResponse } from "@/interfaces/instructor.interface";
 import { Award, Briefcase, GraduationCap, Sparkles } from "lucide-react";
 
 interface InstructorBioProps {
-  profile: InstructorProfile;
+  profile: PublicInstructorProfileResponse;
+}
+
+function formatIssuedDate(issuedDate: string | null) {
+  if (!issuedDate) return null;
+
+  const date = new Date(`${issuedDate}T00:00:00`);
+  if (Number.isNaN(date.getTime())) return issuedDate;
+
+  return new Intl.DateTimeFormat("vi-VN", {
+    month: "2-digit",
+    year: "numeric",
+  }).format(date);
 }
 
 export function InstructorBio({ profile }: InstructorBioProps) {
@@ -28,7 +39,7 @@ export function InstructorBio({ profile }: InstructorBioProps) {
             <div className="pt-3 border-t border-slate-100 space-y-1">
               <p className="text-slate-500 text-sm font-semibold">Châm ngôn / Lĩnh vực chính</p>
               <p className="text-slate-700 text-sm font-bold leading-relaxed">
-                "{profile.headline}"
+                “{profile.headline}”
               </p>
             </div>
           )}
@@ -54,7 +65,7 @@ export function InstructorBio({ profile }: InstructorBioProps) {
         )}
       </div>
 
-      {/* Cột phải: Tiểu sử chi tiết & Bằng cấp */}
+      {/* Cột phải: Tiểu sử chi tiết */}
       <div className="lg:col-span-2 space-y-6">
         {/* Tiểu sử */}
         <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-xs space-y-4">
@@ -64,50 +75,60 @@ export function InstructorBio({ profile }: InstructorBioProps) {
           </p>
         </div>
 
-        {/* Bằng cấp & Chứng chỉ */}
-        {profile.degrees && profile.degrees.length > 0 && (
+        {/* Bằng cấp công khai */}
+        {profile.degrees.length > 0 && (
           <div className="rounded-2xl border border-slate-200 bg-white p-6 md:p-8 shadow-xs space-y-6">
-            <h3 className="text-xl font-bold text-slate-900 flex items-center gap-2">
-              <GraduationCap className="w-6 h-6 text-indigo-600" />
+            <h3 className="flex items-center gap-2 text-xl font-bold text-slate-900">
+              <GraduationCap className="h-6 w-6 text-indigo-600" />
               Học vị & Bằng cấp
             </h3>
-            <div className="relative border-l border-slate-200 pl-6 ml-3 space-y-8">
-              {profile.degrees.map((deg, idx) => (
-                <div key={idx} className="relative">
-                  {/* Icon Node */}
-                  <div className="absolute -left-[35px] top-1 bg-white p-1 rounded-full border border-slate-200 text-slate-500 shadow-xs">
-                    <Award className="w-4 h-4 text-indigo-600" />
-                  </div>
-                  <div className="space-y-1.5">
-                    <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
-                      <h4 className="text-lg font-bold text-slate-900 leading-snug">
-                        {deg.name}
-                      </h4>
-                      <span className="inline-block px-2 py-0.5 rounded-lg bg-indigo-50 text-[10px] font-black uppercase text-indigo-600 tracking-wider">
-                        {deg.type}
+
+            <div className="relative ml-3 space-y-8 border-l-2 border-slate-100 pl-8">
+              {profile.degrees.map((degree, index) => {
+                const formattedIssuedDate = formatIssuedDate(degree.issuedDate);
+                const degreeKey = [
+                  degree.type,
+                  degree.name,
+                  degree.institution,
+                  degree.issuedDate,
+                ].join("-");
+
+                return (
+                  <div
+                    key={`${degreeKey}-${index}`}
+                    className="relative space-y-2"
+                  >
+                    <div className="absolute -left-[45px] top-0 flex h-7 w-7 items-center justify-center rounded-full border-4 border-white bg-indigo-100 text-indigo-600">
+                      <Award className="h-4 w-4" />
+                    </div>
+
+                    <div className="flex flex-wrap items-center gap-2">
+                      <h4 className="font-bold text-slate-900">{degree.name}</h4>
+                      <span className="rounded-full bg-indigo-50 px-2.5 py-1 text-[10px] font-black uppercase tracking-wider text-indigo-700">
+                        {degree.type}
                       </span>
                     </div>
-                    <p className="text-slate-500 text-sm font-semibold">
-                      {deg.institution} {deg.issuedDate && <span>• Nhận năm {deg.issuedDate}</span>}
-                    </p>
-                    {deg.description && (
-                      <p className="text-slate-600 text-sm font-medium leading-relaxed mt-2 bg-slate-50 p-3 rounded-xl border border-slate-100">
-                        {deg.description}
+
+                    {(degree.institution || formattedIssuedDate) && (
+                      <p className="text-sm font-semibold text-slate-600">
+                        {degree.institution}
+                        {degree.institution && formattedIssuedDate && " • "}
+                        {formattedIssuedDate && (
+                        <span className="text-slate-400">
+                          Cấp {formattedIssuedDate}
+                        </span>
+                      )}
                       </p>
                     )}
-                    {deg.credentialUrl && (
-                      <a 
-                        href={deg.credentialUrl}
-                        target="_blank"
-                        rel="noreferrer"
-                        className="inline-block text-xs font-bold text-indigo-600 hover:text-indigo-700 hover:underline pt-1"
-                      >
-                        Xem chứng chỉ trực tuyến →
-                      </a>
+
+                    {degree.description && (
+                      <p className="text-sm font-medium leading-relaxed text-slate-500">
+                        {degree.description}
+                      </p>
                     )}
                   </div>
-                </div>
-              ))}
+                );
+              })}
             </div>
           </div>
         )}

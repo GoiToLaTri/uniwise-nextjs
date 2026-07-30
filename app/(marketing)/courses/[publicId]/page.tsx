@@ -4,9 +4,9 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import Link from "next/link";
 import { useCourse } from "@/hooks/use-course";
-import { useProfileByAccountId } from "@/hooks/use-profile";
 import { usePriceTier } from "@/hooks/use-price-tier";
 import { useCreatePayment } from "@/hooks/use-payment";
+import { CourseLesson } from "@/interfaces/course.interface";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { toast } from "sonner";
@@ -39,18 +39,19 @@ export default function CourseDetailPage() {
   // 1. Fetch dữ liệu khóa học
   const { data: course, isLoading: isLoadingCourse, isError: isErrorCourse } = useCourse(publicId);
 
-  // 2. Fetch thông tin giảng viên (creatorId)
-  const creatorId = course?.creatorId || "";
-  const { data: instructorProfile, isLoading: isLoadingInstructor } = useProfileByAccountId(creatorId);
+  // 2. Thông tin công khai của giảng viên đã nằm trong course response.
+  const instructor = course?.instructor;
 
   // 3. Fetch bảng định giá (priceTierId)
   const priceTierId = course?.priceTierId || "";
   const { data: priceTier, isLoading: isLoadingPrice } = usePriceTier(priceTierId);
 
   // State điều khiển mở rộng/thu gọn danh sách chương học (Syllabus Accordion)
-  const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean>>({});
-
-
+  // `null` biểu thị trạng thái mặc định: chỉ mở section đầu tiên.
+  const [expandedSections, setExpandedSections] = React.useState<Record<
+    string,
+    boolean
+  > | null>(null);
 
   // Modal xem thử bài học (Preview Lesson)
   const [previewLesson, setPreviewLesson] = React.useState<{ title: string; type: string; url: string } | null>(null);
@@ -58,15 +59,6 @@ export default function CourseDetailPage() {
   // Modal thanh toán/đăng ký học
   const [showCheckoutModal, setShowCheckoutModal] = React.useState(false);
   const createPayment = useCreatePayment();
-
-  // Tự động mở rộng section đầu tiên khi load xong dữ liệu
-  React.useEffect(() => {
-    if (course?.sections && course.sections.length > 0) {
-      setExpandedSections({
-        [course.sections[0].id]: true
-      });
-    }
-  }, [course]);
 
   // Xác định trạng thái đã đăng ký
   const isEnrolled = course?.isEnrolled || false;
@@ -86,14 +78,21 @@ export default function CourseDetailPage() {
 
   // Toggle thu gọn/mở rộng từng Section
   const toggleSection = (sectionId: string) => {
-    setExpandedSections((prev) => ({
-      ...prev,
-      [sectionId]: !prev[sectionId]
-    }));
+    setExpandedSections((previousSections) => {
+      const defaultSections = course?.sections[0]
+        ? { [course.sections[0].id]: true }
+        : {};
+      const currentSections = previousSections ?? defaultSections;
+
+      return {
+        ...currentSections,
+        [sectionId]: !currentSections[sectionId],
+      };
+    });
   };
 
   // Mở bài học để học (Học thử hoặc Vào học chính thức)
-  const handleOpenLesson = (lesson: any) => {
+  const handleOpenLesson = (lesson: CourseLesson) => {
     let url = lesson.contentReference || "";
     
     if (lesson.lessonType === "VIDEO" && lesson.contentReference) {
@@ -260,23 +259,23 @@ export default function CourseDetailPage() {
               {/* Giảng viên */}
               <div className="flex items-center gap-3 pt-2">
                 <div className="w-10 h-10 rounded-full bg-indigo-500 flex items-center justify-center font-bold text-white shadow-md overflow-hidden">
-                  {instructorProfile?.avatarUrl ? (
-                    <img src={instructorProfile.avatarUrl} alt={instructorProfile.name} className="w-full h-full object-cover" />
+                  {instructor?.avatarUrl ? (
+                    <img src={instructor.avatarUrl} alt={instructor.name} className="w-full h-full object-cover" />
                   ) : (
-                    instructorProfile?.name?.charAt(0) || "U"
+                    instructor?.name?.charAt(0) || "U"
                   )}
                 </div>
                 <div>
                   <span className="text-xs text-slate-400 block font-bold uppercase tracking-wider">Giảng viên</span>
-                  {instructorProfile ? (
-                    <Link 
-                      href={`/u/${instructorProfile.publicId}`} 
+                  {instructor?.publicId ? (
+                    <Link
+                      href={`/u/${instructor.publicId}`}
                       className="text-white hover:text-indigo-400 transition-colors font-bold text-base hover:underline"
                     >
-                      {instructorProfile.name}
+                      {instructor.name}
                     </Link>
                   ) : (
-                    <span className="text-slate-200 font-bold">Đang tải thông tin giảng viên...</span>
+                    <span className="text-slate-200 font-bold">Giảng viên UniWise</span>
                   )}
                 </div>
               </div>
@@ -340,7 +339,13 @@ export default function CourseDetailPage() {
                 {/* Nút thu gọn / mở rộng nhanh */}
                 <button 
                   onClick={() => {
-                    const allExpanded = Object.keys(expandedSections).length === course.sections?.length;
+                    const allExpanded =
+                      course.sections.length > 0 &&
+                      course.sections.every((section, sectionIndex) =>
+                        expandedSections === null
+                          ? sectionIndex === 0
+                          : expandedSections[section.id] === true,
+                      );
                     if (allExpanded) {
                       setExpandedSections({});
                     } else {
@@ -351,7 +356,14 @@ export default function CourseDetailPage() {
                   }}
                   className="text-xs font-bold text-indigo-600 hover:text-indigo-700 bg-indigo-50 hover:bg-indigo-100 px-3 py-1.5 rounded-lg transition-colors cursor-pointer"
                 >
-                  {Object.keys(expandedSections).length === course.sections?.length ? "Thu gọn tất cả" : "Mở rộng tất cả"}
+                  {course.sections.length > 0 &&
+                  course.sections.every((section, sectionIndex) =>
+                    expandedSections === null
+                      ? sectionIndex === 0
+                      : expandedSections[section.id] === true,
+                  )
+                    ? "Thu gọn tất cả"
+                    : "Mở rộng tất cả"}
                 </button>
               </div>
 
@@ -359,7 +371,10 @@ export default function CourseDetailPage() {
               <div className="space-y-3">
                 {course.sections && course.sections.length > 0 ? (
                   course.sections.map((section, sectionIndex) => {
-                    const isSectionExpanded = !!expandedSections[section.id];
+                    const isSectionExpanded =
+                      expandedSections === null
+                        ? sectionIndex === 0
+                        : expandedSections[section.id] === true;
                     const numLessons = section.lessons?.length || 0;
                     
                     return (
@@ -680,33 +695,51 @@ export default function CourseDetailPage() {
         </div>
       )}
 
-      {/* ─── MODAL 2: CHECKOUT DIALOG (MOCK) ─────────────────────────────────── */}
+      {/* ─── MODAL 2: VNPAY CHECKOUT DIALOG ──────────────────────────────────── */}
       {showCheckoutModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-xs p-4 animate-in fade-in duration-300">
-          <div className="bg-white rounded-2xl w-full max-w-md overflow-hidden shadow-2xl p-6 space-y-6">
-            
+          <div className="bg-white rounded-3xl w-full max-w-md overflow-hidden shadow-2xl">
+            <div className="h-1.5 bg-linear-to-r from-blue-700 via-red-500 to-blue-700" />
+
+            <div className="p-6 sm:p-7 space-y-6">
             <div className="text-center space-y-2">
-              <div className="w-12 h-12 rounded-full bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-2">
+              <div className="w-12 h-12 rounded-2xl bg-indigo-50 text-indigo-600 flex items-center justify-center mx-auto mb-3">
                 <Sparkles className="w-6 h-6" />
               </div>
-              <h3 className="text-2xl font-black text-slate-900">Đăng ký khóa học</h3>
+              <h3 className="text-2xl font-black text-slate-900">Xác nhận thanh toán</h3>
               <p className="text-slate-500 text-sm font-semibold">
-                Bạn đang thực hiện đăng ký khóa học:
+                Bạn đang đăng ký khóa học
               </p>
-              <p className="font-bold text-indigo-600 text-base line-clamp-2">
+              <p className="font-bold text-slate-900 text-base line-clamp-2">
                 {course.title}
               </p>
             </div>
 
-            <div className="bg-slate-50 rounded-xl p-4 space-y-3 border border-slate-100">
+            <div className="bg-slate-50 rounded-2xl p-4 space-y-4 border border-slate-200">
               <div className="flex justify-between items-center text-sm">
                 <span className="text-slate-500 font-semibold">Giá khóa học</span>
-                <span className="font-bold text-slate-900">{priceDisplay}</span>
+                <span className="font-black text-lg text-slate-900">{priceDisplay}</span>
               </div>
-              <div className="flex justify-between items-center text-sm border-t border-slate-200/60 pt-3">
+              <div className="flex justify-between items-center gap-4 text-sm border-t border-slate-200 pt-4">
                 <span className="text-slate-500 font-semibold">Hình thức thanh toán</span>
-                <span className="font-bold text-indigo-600 bg-indigo-50 px-2 py-0.5 rounded text-xs">Mô phỏng (Mock Checkout)</span>
+                <div className="shrink-0 flex items-center gap-2 rounded-xl border border-blue-100 bg-white px-3 py-2 shadow-sm">
+                  <span className="font-black italic tracking-tight">
+                    <span className="text-blue-700">VN</span>
+                    <span className="text-red-500">PAY</span>
+                  </span>
+                  <span className="h-4 w-px bg-slate-200" />
+                  <span className="text-[10px] font-black uppercase tracking-wider text-slate-500">
+                    Sandbox
+                  </span>
+                </div>
               </div>
+            </div>
+
+            <div className="flex items-start gap-3 rounded-2xl border border-indigo-100 bg-indigo-50/70 p-4">
+              <Lock className="mt-0.5 h-4 w-4 shrink-0 text-indigo-600" />
+              <p className="text-xs font-semibold leading-5 text-slate-600">
+                Bạn sẽ được chuyển đến cổng VNPay Sandbox để hoàn tất thanh toán an toàn.
+              </p>
             </div>
 
             <div className="flex gap-3">
@@ -721,10 +754,11 @@ export default function CourseDetailPage() {
                 disabled={createPayment.isPending}
                 className="flex-1 h-11 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 disabled:opacity-50 cursor-pointer text-sm flex items-center justify-center gap-2"
               >
-                {createPayment.isPending ? "Đang xử lý..." : "Xác nhận đăng ký"}
+                {createPayment.isPending ? "Đang chuyển hướng..." : "Thanh toán qua VNPay"}
               </button>
             </div>
 
+            </div>
           </div>
         </div>
       )}

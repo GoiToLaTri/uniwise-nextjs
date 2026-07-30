@@ -12,18 +12,36 @@ import { StudentCerts } from "./_sections/student-certs";
 import { StudentActivity } from "./_sections/student-activity";
 import { AdminPosts } from "./_sections/admin-posts";
 
-import { InstructorProfile } from "@/interfaces/instructor.interface";
+import { PublicInstructorProfileResponse } from "@/interfaces/instructor.interface";
+
+const TABS_CONFIG = [
+  { id: "ins-courses", label: "Khóa học đang dạy", role: "INSTRUCTOR" },
+  { id: "ins-reviews", label: "Đánh giá", role: "INSTRUCTOR" },
+  { id: "ins-bio", label: "Giới thiệu", role: "INSTRUCTOR" },
+  { id: "stu-courses", label: "Khóa học", role: "STUDENT" },
+  { id: "stu-certs", label: "Chứng chỉ", role: "STUDENT" },
+  { id: "stu-activity", label: "Hoạt động", role: "STUDENT" },
+  { id: "admin-posts", label: "Thông báo & Bài viết", role: "ADMIN" },
+] as const;
 
 interface ProfileTabsProps {
   roles: string[];
-  instructorProfile?: InstructorProfile | null;
+  instructorProfile?: PublicInstructorProfileResponse | null;
+  profilePublicId?: string;
 }
 
-export function ProfileTabs({ roles, instructorProfile }: ProfileTabsProps) {
+export function ProfileTabs({
+  roles,
+  instructorProfile,
+  profilePublicId,
+}: ProfileTabsProps) {
   // 1. Mapping Component theo ID
   const COMPONENT_MAP: Record<string, React.ReactNode> = {
-    "ins-courses": instructorProfile ? (
-      <InstructorCourses accountId={instructorProfile.accountId} />
+    "ins-courses": profilePublicId ? (
+      <InstructorCourses
+        key={profilePublicId}
+        profilePublicId={profilePublicId}
+      />
     ) : null,
     "ins-reviews": <InstructorReviews />,
     "ins-bio": instructorProfile ? (
@@ -34,17 +52,6 @@ export function ProfileTabs({ roles, instructorProfile }: ProfileTabsProps) {
     "stu-activity": <StudentActivity />,
     "admin-posts": <AdminPosts />,
   };
-
-  // 2. Cấu hình mảng Tab
-  const TABS_CONFIG = [
-    { id: "ins-courses", label: "Khóa học đang dạy", role: "INSTRUCTOR" },
-    { id: "ins-reviews", label: "Đánh giá", role: "INSTRUCTOR" },
-    { id: "ins-bio", label: "Giới thiệu", role: "INSTRUCTOR" },
-    { id: "stu-courses", label: "Khóa học", role: "STUDENT" },
-    { id: "stu-certs", label: "Chứng chỉ", role: "STUDENT" },
-    { id: "stu-activity", label: "Hoạt động", role: "STUDENT" },
-    { id: "admin-posts", label: "Thông báo & Bài viết", role: "ADMIN" },
-  ];
 
   const activeTabs = React.useMemo(() => TABS_CONFIG.filter(t => roles.includes(t.role)), [roles]);
 

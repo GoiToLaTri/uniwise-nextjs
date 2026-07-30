@@ -1,15 +1,17 @@
 import { cn } from "@/lib/utils";
 
-export type Role = "STUDENT" | "INSTRUCTOR" | "ADMIN";
+export type Role = "USER" | "STUDENT" | "INSTRUCTOR" | "ADMIN";
 
 export function RoleBadge({ role }: { role: Role | string }) {
   const variants = {
+    USER: "bg-emerald-50 text-emerald-600 border-emerald-100",
     STUDENT: "bg-emerald-50 text-emerald-600 border-emerald-100",
     INSTRUCTOR: "bg-indigo-50 text-indigo-600 border-indigo-100",
     ADMIN: "bg-red-50 text-red-600 border-red-100",
   };
 
   const labels = {
+    USER: "Học viên",
     STUDENT: "Học viên",
     INSTRUCTOR: "Giảng viên",
     ADMIN: "Quản trị viên",

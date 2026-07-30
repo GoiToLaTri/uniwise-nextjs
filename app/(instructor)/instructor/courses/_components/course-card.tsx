@@ -3,7 +3,7 @@
 import * as React from "react";
 import { 
   MoreVertical, Edit3, Trash2, BookOpen, Layers, 
-  PlayCircle, Clock, Eye, AlertCircle, Loader2, Sparkles
+  PlayCircle, Loader2
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -13,14 +13,14 @@ import {
   DropdownMenuTrigger, DropdownMenuSeparator
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
-import { CourseResponse } from "@/interfaces/course.interface";
+import { CourseSearchResponse } from "@/interfaces/course.interface";
 import { PriceTierResponse } from "@/hooks/use-price-tier";
 import { useDeleteCourse } from "@/hooks/use-course";
 import { CourseFormDialog } from "./course-form-dialog";
 import Link from "next/link";
 
 interface CourseCardProps {
-  course: CourseResponse;
+  course: CourseSearchResponse;
   priceTiers: PriceTierResponse[];
   onRefresh: () => void;
 }
@@ -35,11 +35,9 @@ export function CourseCard({ course, priceTiers, onRefresh }: CourseCardProps) {
     ? `${new Intl.NumberFormat().format(priceTier.priceAmount)} ${priceTier.currency}`
     : "Miễn phí / Chưa định giá";
 
-  const totalLessons = course.totalLessons || course.totalLessonsCount || course.sections?.reduce(
-    (total, sec) => total + (sec.lessons?.length || 0), 0
-  ) || 0;
+  const totalLessons = course.totalLessons || 0;
 
-  const totalSections = course.totalSections || course.sections?.length || 0;
+  const totalSections = course.totalSections || 0;
 
   const handleDelete = async () => {
     if (confirm(`Bạn có chắc chắn muốn xóa khóa học "${course.title}"?`)) {

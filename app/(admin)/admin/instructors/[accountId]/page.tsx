@@ -4,9 +4,9 @@ import * as React from "react";
 import { useParams, useRouter } from "next/navigation";
 import { 
   ArrowLeft, CheckCircle2, XCircle, Clock, 
-  GraduationCap, Mail, Calendar, Award, 
+  GraduationCap, Calendar, Award,
   Cpu, ShieldCheck, MessageSquare, User,
-  ExternalLink, Loader2,
+  Loader2,
   AlertCircle
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -20,8 +20,9 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 
 // Hooks
-import { useProfileByAccountId } from "@/hooks/use-profile";
+import { useAccount } from "@/hooks/use-account";
 import { useApproveInstructorApplication, useInstructorProfileByAccountId, useRejectInstructorApplication } from "@/hooks/use-instructor";
+import { Degree, Expertise } from "@/interfaces/instructor.interface";
 
 // Schema validation cho từ chối
 const rejectSchema = z.object({
@@ -35,10 +36,8 @@ type RejectFormData = z.infer<typeof rejectSchema>;
 export default function InstructorDetailsPage() {
   const { accountId } = useParams<{ accountId: string }>();
   const router = useRouter();
-  const [reviewComment, setReviewComment] = React.useState("");
-  const [isRejectDialogOpen, setIsRejectDialogOpen] = React.useState(false);
 
-  const { data: profile, isLoading: isLoadingProfile } = useProfileByAccountId(accountId);
+  const { data: account, isLoading: isLoadingAccount } = useAccount(accountId);
   const { data: instructor, isLoading: isLoadingInstructor } = useInstructorProfileByAccountId(accountId);
   
   const approveMutation = useApproveInstructorApplication();
@@ -49,7 +48,6 @@ export default function InstructorDetailsPage() {
     handleSubmit,
     formState: { errors, isSubmitting },
     reset,
-    setValue
   } = useForm<RejectFormData>({
     resolver: zodResolver(rejectSchema),
     defaultValues: {
@@ -57,7 +55,7 @@ export default function InstructorDetailsPage() {
     }
   });
 
-  const isPending = isLoadingProfile || isLoadingInstructor;
+  const isPending = isLoadingAccount || isLoadingInstructor;
 
   // Mapping trạng thái UI
   const statusConfig = {
@@ -101,7 +99,6 @@ export default function InstructorDetailsPage() {
         loading: 'Đang xử lý từ chối...',
         success: () => {
           router.refresh();
-          setIsRejectDialogOpen(false);
           reset();
           return 'Đã từ chối hồ sơ giảng viên!';
         },
@@ -182,7 +179,7 @@ export default function InstructorDetailsPage() {
                 <div className="space-y-3">
                    <h3 className="text-[11px] font-black text-slate-400 uppercase tracking-[0.2em]">Tiểu sử chuyên gia</h3>
                    <p className="text-slate-600 font-medium leading-relaxed text-lg italic">
-                      "{instructor.biography}"
+                      “{instructor.biography}”
                    </p>
                 </div>
              </div>
@@ -204,8 +201,8 @@ export default function InstructorDetailsPage() {
                       </tr>
                    </thead>
                    <tbody className="divide-y divide-slate-50">
-                      {instructor.degrees.map((deg: any) => (
-                        <tr key={deg.id} className="group hover:bg-slate-50/50 transition-colors">
+                      {instructor.degrees.map((deg: Degree, index: number) => (
+                        <tr key={deg.id ?? `${deg.name}-${index}`} className="group hover:bg-slate-50/50 transition-colors">
                            <td className="px-8 py-5">
                               <p className="font-bold text-slate-800">{deg.name}</p>
                               <p className="text-[10px] font-black text-indigo-500 uppercase">{deg.type}</p>
@@ -225,8 +222,8 @@ export default function InstructorDetailsPage() {
           <div className="space-y-4">
              <h3 className="text-[12px] font-black text-slate-400 uppercase tracking-[0.2em] ml-2">Lĩnh vực chuyên môn</h3>
              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                {instructor.expertises.map((exp: any) => (
-                  <div key={exp.id} className="bg-white p-6 rounded-[1.5rem] border border-slate-200 shadow-sm flex items-start gap-4 hover:border-indigo-200 transition-all group">
+                {instructor.expertises.map((exp: Expertise, index: number) => (
+                  <div key={exp.id ?? `${exp.name}-${index}`} className="bg-white p-6 rounded-[1.5rem] border border-slate-200 shadow-sm flex items-start gap-4 hover:border-indigo-200 transition-all group">
                      <div className="p-3 bg-indigo-50 rounded-xl text-indigo-600 group-hover:bg-indigo-600 group-hover:text-white transition-colors">
                         <Cpu className="w-5 h-5" />
                      </div>
@@ -256,7 +253,7 @@ export default function InstructorDetailsPage() {
                    </div>
                    <div>
                       <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Email đăng ký</p>
-                      <p className="text-sm font-bold text-slate-800">{profile?.email}</p>
+                      <p className="text-sm font-bold text-slate-800">{account?.email}</p>
                    </div>
                 </div>
                 <div className="flex items-center gap-4">
@@ -341,7 +338,7 @@ export default function InstructorDetailsPage() {
           {(instructor.status === "REJECTED" || instructor.status === "APPROVED") && instructor.reviewComment && (
             <div className="bg-slate-50 border border-slate-200 rounded-[2rem] p-8 space-y-3">
                <p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Phản hồi từ Admin</p>
-               <p className="text-sm font-medium text-slate-600 italic">"{instructor.reviewComment}"</p>
+               <p className="text-sm font-medium text-slate-600 italic">“{instructor.reviewComment}”</p>
             </div>
           )}
         </div>

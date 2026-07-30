@@ -8,10 +8,9 @@ import { useProfiles } from "@/hooks/use-profile";
 
 export default function UsersPage() {
   const [page, setPage] = React.useState(0);
-  const [search, setSearch] = React.useState("");
   const pageSize = 10;
 
-  const { data: usersData, isLoading } = useProfiles(page, pageSize, search);
+  const { data: usersData, isLoading } = useProfiles(page, pageSize);
   return (
     <div className="space-y-8">
       {/* Header */}

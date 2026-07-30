@@ -3,37 +3,55 @@
 import * as React from "react";
 import { InstructorCard } from "./_components/instructor-card";
 import { InstructorsPagination } from "./_components/instructors-pagination";
-import { usePublicInstructors } from "@/hooks/use-profile";
+import { usePublicInstructors } from "@/hooks/use-instructor";
+import { useDebounce } from "@/hooks/use-debounce";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Search, Users, AlertCircle } from "lucide-react";
 
 export default function InstructorsPage() {
   const [searchQuery, setSearchQuery] = React.useState("");
-  const [debouncedSearchQuery, setDebouncedSearchQuery] = React.useState("");
+  const debouncedSearch = useDebounce(searchQuery, 400);
+  const [submittedSearch, setSubmittedSearch] = React.useState("");
+  const [isFocused, setIsFocused] = React.useState(false);
   const [currentPage, setCurrentPage] = React.useState(0);
   const pageSize = 9; // Hiển thị 9 giảng viên mỗi trang
 
-  // Debounce tìm kiếm để tránh gọi liên tục lên database
-  React.useEffect(() => {
-    const timer = setTimeout(() => {
-      setDebouncedSearchQuery(searchQuery);
-      setCurrentPage(0); // Reset về trang 0 khi thay đổi từ khóa
-    }, 400);
-
-    return () => clearTimeout(timer);
-  }, [searchQuery]);
-
-  // Fetch danh sách giảng viên đã được phân trang và tìm kiếm từ backend
-  const { data: profilesData, isLoading, isError } = usePublicInstructors(
-    currentPage,
-    pageSize,
-    debouncedSearchQuery
+  // Tải một nhóm kết quả nhỏ để gợi ý trong autocomplete.
+  const {
+    data: autocompleteData,
+    isLoading: isLoadingAutocomplete,
+  } = usePublicInstructors(
+    0,
+    5,
+    debouncedSearch,
+    debouncedSearch.trim().length > 0,
   );
 
-  const instructors = profilesData?.content || [];
-  const totalElements = profilesData?.totalElements || 0;
-  const totalPages = profilesData?.totalPages || 0;
+  // Search-service chỉ trả instructor APPROVED và dữ liệu được phép công khai.
+  const { data: instructorsData, isLoading, isError } = usePublicInstructors(
+    currentPage,
+    pageSize,
+    submittedSearch,
+  );
+
+  const autocompleteInstructors = autocompleteData?.content || [];
+  const instructors = instructorsData?.content || [];
+  const totalElements = instructorsData?.totalElements || 0;
+  const totalPages = instructorsData?.totalPages || 0;
+
+  const submitSearch = (keyword: string) => {
+    setSubmittedSearch(keyword);
+    setCurrentPage(0);
+    setIsFocused(false);
+  };
+
+  const handleKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
+    if (event.key === "Enter") {
+      submitSearch(searchQuery);
+      event.currentTarget.blur();
+    }
+  };
 
   return (
     <div className="container mx-auto px-4 pt-28 pb-16 flex flex-col gap-12 animate-in fade-in duration-700">
@@ -48,15 +66,73 @@ export default function InstructorsPage() {
       </div>
 
       {/* Thanh tìm kiếm */}
-      <div className="w-full max-w-md relative animate-in fade-in slide-in-from-bottom-2 duration-500">
+      <div className="relative z-10 w-full max-w-md animate-in fade-in slide-in-from-bottom-2 duration-500">
         <Input
           type="text"
-          placeholder="Tìm kiếm giảng viên bằng tên hoặc email..."
+          placeholder="Tìm theo tên, chuyên môn hoặc kinh nghiệm..."
           value={searchQuery}
-          onChange={(e) => setSearchQuery(e.target.value)}
+          onChange={(event) => setSearchQuery(event.target.value)}
+          onFocus={() => setIsFocused(true)}
+          onBlur={() => setIsFocused(false)}
+          onKeyDown={handleKeyDown}
           className="pl-10 h-11 rounded-xl border-slate-200 bg-white font-semibold text-slate-700 shadow-xs focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
         />
-        <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400" />
+        <Search
+          className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 cursor-pointer text-slate-400 transition-colors hover:text-indigo-600"
+          onClick={() => submitSearch(searchQuery)}
+        />
+
+        {/* Autocomplete Dropdown */}
+        {isFocused && searchQuery.trim().length > 0 && (
+          <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-slate-200 bg-white shadow-lg animate-in fade-in slide-in-from-top-2">
+            {isLoadingAutocomplete ? (
+              <div className="p-4 text-center text-sm font-medium text-slate-500">
+                Đang tìm kiếm...
+              </div>
+            ) : autocompleteInstructors.length === 0 ? (
+              <div className="p-4 text-center text-sm font-medium text-slate-500">
+                Không tìm thấy kết quả
+              </div>
+            ) : (
+              <ul className="max-h-[300px] overflow-y-auto">
+                {autocompleteInstructors.map((instructor) => {
+                  const displayName =
+                    instructor.professionalName || instructor.name;
+                  const supportingText =
+                    instructor.professionalName &&
+                    instructor.professionalName !== instructor.name
+                      ? instructor.name
+                      : instructor.expertises[0]?.name;
+
+                  return (
+                    <li key={instructor.publicId}>
+                      <div
+                        className="group flex cursor-pointer items-center gap-3 border-b border-slate-100 p-3 transition-colors last:border-none hover:bg-slate-50"
+                        onMouseDown={(event) => {
+                          event.preventDefault();
+                          setSearchQuery(displayName);
+                          submitSearch(displayName);
+                        }}
+                      >
+                        <Search className="h-4 w-4 shrink-0 text-slate-400 transition-colors group-hover:text-indigo-600" />
+                        <div className="min-w-0 flex-1">
+                          <p className="truncate text-sm font-semibold text-slate-700 transition-colors group-hover:text-indigo-700">
+                            {displayName}
+                          </p>
+                          {supportingText && (
+                            <p className="truncate text-xs font-medium text-slate-400">
+                              {supportingText}
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    </li>
+                  );
+                })}
+              </ul>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Danh sách giảng viên */}
@@ -89,8 +165,8 @@ export default function InstructorsPage() {
           <Users className="w-16 h-16 text-indigo-300" />
           <h3 className="text-xl font-bold text-slate-900">Không tìm thấy giảng viên nào</h3>
           <p className="text-slate-500 font-semibold max-w-md">
-            {searchQuery.trim()
-              ? `Không tìm thấy giảng viên nào khớp với từ khóa "${searchQuery}". Thử tìm kiếm với tên hoặc email khác.`
+            {submittedSearch.trim()
+              ? `Không tìm thấy giảng viên nào khớp với từ khóa "${submittedSearch}". Thử tìm kiếm bằng tên hoặc chuyên môn khác.`
               : "Danh mục hiện đang trống hoặc chưa có giảng viên nào đăng ký."}
           </p>
         </div>
@@ -98,7 +174,7 @@ export default function InstructorsPage() {
         <div className="flex flex-col gap-8">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
             {instructors.map((instructor) => (
-              <InstructorCard key={instructor.id} instructor={instructor} />
+              <InstructorCard key={instructor.publicId} instructor={instructor} />
             ))}
           </div>
 

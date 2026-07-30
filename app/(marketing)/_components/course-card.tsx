@@ -3,20 +3,17 @@
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Star, Users, BookOpen } from "lucide-react";
-import { CourseResponse } from "@/interfaces/course.interface";
+import { CourseSearchResponse } from "@/interfaces/course.interface";
 import { PriceTierResponse } from "@/hooks/use-price-tier";
-import { useProfileByAccountId } from "@/hooks/use-profile";
 import Link from "next/link";
 
 interface CourseCardProps {
-  course: CourseResponse;
+  course: CourseSearchResponse;
   priceTiers: PriceTierResponse[];
 }
 
 export function CourseCard({ course, priceTiers }: CourseCardProps) {
-  // Tải thông tin giảng viên dựa trên creatorId (accountId)
-  const { data: instructorProfile } = useProfileByAccountId(course.creatorId);
-  const instructorName = instructorProfile?.name || "Giảng viên UniWise";
+  const instructorName = course.instructor?.name || "Giảng viên UniWise";
 
   // Tìm thông tin định giá
   const priceTier = priceTiers.find((tier) => tier.id === course.priceTierId);
@@ -24,11 +21,12 @@ export function CourseCard({ course, priceTiers }: CourseCardProps) {
     ? `${new Intl.NumberFormat().format(priceTier.priceAmount)}đ`
     : "Miễn phí";
 
-  const totalLessons = course.totalLessons || course.totalLessonsCount || course.sections?.reduce(
-    (total, sec) => total + (sec.lessons?.length || 0), 0
-  ) || 0;
+  const totalLessons = course.totalLessons || 0;
 
-  const rating = course.averageRating ? course.averageRating.toFixed(1) : "5.0";
+  const rating =
+    course.averageRating !== null && (course.totalReviews ?? 0) > 0
+      ? course.averageRating.toFixed(1)
+      : "Mới";
 
   return (
     <Card className="group border-slate-200 bg-white/90 backdrop-blur-md rounded-xl overflow-hidden hover:shadow-[0_20px_50px_rgba(79,70,229,0.1)] transition-all duration-500 flex flex-col h-full">
@@ -73,9 +71,9 @@ export function CourseCard({ course, priceTiers }: CourseCardProps) {
         </div>
         <p className="text-slate-500 text-sm font-medium italic mt-2">
           Giảng viên:{" "}
-          {instructorProfile ? (
-            <Link 
-              href={`/u/${instructorProfile.publicId}`} 
+          {course.instructor?.publicId ? (
+            <Link
+              href={`/u/${course.instructor.publicId}`}
               className="text-indigo-600 hover:underline font-semibold not-italic"
             >
               {instructorName}

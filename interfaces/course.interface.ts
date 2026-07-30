@@ -1,5 +1,11 @@
 import { ListResponse } from "./response/list-response.interface";
 
+export interface InstructorSummaryResponse {
+  publicId: string;
+  name: string;
+  avatarUrl: string | null;
+}
+
 export interface CourseLesson {
   id: string;
   publicId: string;
@@ -26,7 +32,7 @@ export interface CourseSection {
 export interface CourseResponse {
   id: string;
   publicId: string;
-  creatorId: string;
+  instructor: InstructorSummaryResponse | null;
   priceTierId: string;
   title: string;
   description: string;
@@ -68,6 +74,26 @@ export interface UpdateCourseRequest {
 
 export interface CourseListResponse extends ListResponse {
   content: CourseResponse[];
+}
+
+export interface CourseSearchResponse {
+  id: string;
+  publicId: string;
+  title: string;
+  description: string | null;
+  instructor: InstructorSummaryResponse | null;
+  status: string;
+  thumbnailUrl: string | null;
+  priceTierId: string | null;
+  studentCount: number | null;
+  averageRating: number | null;
+  totalReviews: number | null;
+  totalLessons: number | null;
+  totalSections: number | null;
+}
+
+export interface CourseSearchListResponse extends ListResponse {
+  content: CourseSearchResponse[];
 }
 
 export interface CreateSectionRequest {

@@ -3,32 +3,41 @@ import { toast } from "sonner";
 import apiClient from "@/lib/api-client";
 import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { ProfileResponse } from "@/interfaces/response/profile-response.interface";
+import { PublicProfileResponse } from "@/interfaces/response/public-profile-response.interface";
 import { getCachedProfile, setCachedProfile } from "@/stores/profile-store";
 import { getTokenResponse, isTokenExpired } from "@/stores/token-store";
 import { ProfileListResponse } from "@/interfaces/response/profile-list-response.interface";
 import { getApiErrorMessage } from "@/lib/auth-error";
+import publicApiClient from "@/lib/public-api-client";
 
-export const PROFILE_QUERY_KEY = ["profile", "me", "profiles"];
-// Tạo query key riêng cho public profile
-export const PUBLIC_PROFILE_QUERY_KEY = ["profile", "public"];
+/** Profile đầy đủ của tài khoản đang đăng nhập. */
+export const PROFILE_QUERY_KEY = ["profile", "me"] as const;
+
+/** Danh sách profile đầy đủ, chỉ dùng cho Admin. */
+export const ADMIN_PROFILE_LIST_QUERY_KEY = ["profiles", "admin"] as const;
+
+/** Profile được tra bằng publicId. */
+export const PUBLIC_PROFILE_QUERY_KEY = ["profile", "public"] as const;
+
+/** Profile được tra bằng accountId trên endpoint có bảo vệ. */
+export const PROFILE_BY_ACCOUNT_ID_QUERY_KEY = [
+  "profile",
+  "by-account-id",
+] as const;
 
 export function useProfile() {
   return useQuery({
     queryKey: PROFILE_QUERY_KEY,
     queryFn: async (): Promise<ProfileResponse | null> => {
-      // Không có session → không gọi API
       const tokenResponse = await getTokenResponse();
       if (!tokenResponse) return null;
 
-      // Token còn hạn → ưu tiên cache IndexedDB
       const tokenExpired = await isTokenExpired();
       if (!tokenExpired) {
         const cached = await getCachedProfile();
         if (cached) return cached;
       }
 
-      // Token hết hạn hoặc chưa có cache → gọi API
-      // api-client interceptor tự refresh token trước khi gửi request
       const response = await apiClient.get<never, ApiResponse<ProfileResponse>>(
         "/user-service/api/v1/profiles/me",
       );
@@ -36,11 +45,6 @@ export function useProfile() {
       await setCachedProfile(response.data);
       return response.data;
     },
-    // staleTime: Infinity,
-    // gcTime: 10 * 60 * 1000,
-    // retry: false,
-    // refetchOnMount: false,
-    // refetchOnWindowFocus: false,
   });
 }
 
@@ -66,16 +70,19 @@ export function useRefreshProfile() {
   };
 }
 
-// Hook lấy danh sách profiles (có phân trang)
+/** Lấy danh sách profile đầy đủ cho giao diện Admin. */
 export function useProfiles(pageNumber = 0, pageSize = 10, search?: string) {
   return useQuery({
-    queryKey: [...PROFILE_QUERY_KEY, pageNumber, pageSize, search],
+    queryKey: [
+      ...ADMIN_PROFILE_LIST_QUERY_KEY,
+      pageNumber,
+      pageSize,
+      search,
+    ],
     queryFn: async (): Promise<ProfileListResponse | null> => {
-      // Không có session → không gọi API
       const tokenResponse = await getTokenResponse();
       if (!tokenResponse) return null;
 
-      // Gọi API
       const response = await apiClient.get<
         never,
         ApiResponse<ProfileListResponse>
@@ -85,35 +92,18 @@ export function useProfiles(pageNumber = 0, pageSize = 10, search?: string) {
 
       return response.data;
     },
-    // staleTime: Infinity,
-    // gcTime: 10 * 60 * 1000,
-    // retry: false,
-    // refetchOnMount: false,
-    // refetchOnWindowFocus: false,
-    // placeholderData: keepPreviousData
   });
 }
-
 export function usePublicProfile(publicId?: string) {
-  const queryClient = useQueryClient();
-  
-  // Log xem cache có gì trước khi query chạy
-  console.log(
-    "cache state:",
-    queryClient.getQueryData([...PUBLIC_PROFILE_QUERY_KEY, publicId])
-  );
-
   return useQuery({
     queryKey: [...PUBLIC_PROFILE_QUERY_KEY, publicId],
-    queryFn: async (): Promise<ProfileResponse | null> => {
-      console.log("queryFn running for:", publicId);
-      // Không có publicId → không gọi API
+    queryFn: async (): Promise<PublicProfileResponse | null> => {
       if (!publicId) return null;
 
       try {
-        const response = await apiClient.get<
+        const response = await publicApiClient.get<
           never,
-          ApiResponse<ProfileResponse>
+          ApiResponse<PublicProfileResponse>
         >(`/user-service/api/v1/profiles/public/${publicId}`);
 
         return response.data;
@@ -125,46 +115,26 @@ export function usePublicProfile(publicId?: string) {
       }
     },
     enabled: !!publicId,
-    // staleTime: 5 * 60 * 1000, // 5 phút
-    // gcTime: 10 * 60 * 1000, // 10 phút
-    // retry: 1,
-    // refetchOnMount: false,
-    // refetchOnWindowFocus: false,
   });
 }
 
 export function useProfileByAccountId(accountId: string) {
   return useQuery({
-    queryKey: [...PROFILE_QUERY_KEY, accountId],
-    queryFn: async (): Promise<ProfileResponse | null> => {
+    queryKey: [...PROFILE_BY_ACCOUNT_ID_QUERY_KEY, accountId],
+    queryFn: async (): Promise<PublicProfileResponse | null> => {
       if (!accountId) return null;
 
-      const response = await apiClient.get<never, ApiResponse<ProfileResponse>>(
-        `/user-service/api/v1/profiles/by-account-id/${accountId}`
-      );
+      // Endpoint này yêu cầu đăng nhập; trang public sẽ dùng fallback nếu chưa
+      // có session thay vì gửi một request chắc chắn nhận 401.
+      const tokenResponse = await getTokenResponse();
+      if (!tokenResponse) return null;
+
+      const response = await apiClient.get<
+        never,
+        ApiResponse<PublicProfileResponse>
+      >(`/user-service/api/v1/profiles/by-account-id/${accountId}`);
       return response.data;
     },
     enabled: !!accountId,
-  });
-}
-
-export function usePublicInstructors(pageNumber = 0, pageSize = 10, keyword?: string) {
-  return useQuery({
-    queryKey: ["profiles", "instructors", pageNumber, pageSize, keyword],
-    queryFn: async (): Promise<ProfileListResponse | null> => {
-      const response = await apiClient.get<
-        never,
-        ApiResponse<ProfileListResponse>
-      >("/user-service/api/v1/profiles", {
-        params: {
-          page: pageNumber,
-          size: pageSize,
-          keyword,
-          profileType: "INSTRUCTOR",
-        },
-      });
-
-      return response.data;
-    },
   });
 }

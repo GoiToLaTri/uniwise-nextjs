@@ -1,27 +1,43 @@
 "use client";
 
 import * as React from "react";
-import { usePublishedCourses } from "@/hooks/use-course";
+import { useSearchPublishedCourses } from "@/hooks/use-search";
 import { usePriceTiers } from "@/hooks/use-price-tier";
 import { CourseCard } from "../../../_components/course-card";
+import { CoursesPagination } from "../../../courses/_components/courses-pagination";
 import { Skeleton } from "@/components/ui/skeleton";
-import { BookOpen } from "lucide-react";
+import { AlertCircle, BookOpen } from "lucide-react";
 
 interface InstructorCoursesProps {
-  accountId: string;
+  profilePublicId: string;
 }
 
-export function InstructorCourses({ accountId }: InstructorCoursesProps) {
-  const { data: coursesData, isLoading: isLoadingCourses } = usePublishedCourses(0, 100);
-  const { data: priceTiersData, isLoading: isLoadingTiers } = usePriceTiers(0, 100);
+export function InstructorCourses({ profilePublicId }: InstructorCoursesProps) {
+  const [currentPage, setCurrentPage] = React.useState(0);
+  const pageSize = 9;
+  const {
+    data: coursesData,
+    isLoading: isLoadingCourses,
+    isError: isErrorCourses,
+  } = useSearchPublishedCourses(
+    "",
+    currentPage,
+    pageSize,
+    true,
+    profilePublicId,
+  );
+  const {
+    data: priceTiersData,
+    isLoading: isLoadingTiers,
+    isError: isErrorTiers,
+  } = usePriceTiers(0, 100);
 
   const isLoading = isLoadingCourses || isLoadingTiers;
-  const courses = coursesData?.content || [];
+  const isError = isErrorCourses || isErrorTiers;
   const priceTiers = priceTiersData?.content || [];
-
-  const instructorCourses = React.useMemo(() => {
-    return courses.filter((c) => c.creatorId === accountId);
-  }, [courses, accountId]);
+  const instructorCourses = coursesData?.content || [];
+  const totalElements = coursesData?.totalElements || 0;
+  const totalPages = coursesData?.totalPages || 0;
 
   if (isLoading) {
     return (
@@ -43,6 +59,20 @@ export function InstructorCourses({ accountId }: InstructorCoursesProps) {
     );
   }
 
+  if (isError) {
+    return (
+      <div className="mx-auto flex max-w-xl flex-col items-center justify-center gap-3 rounded-2xl border border-rose-100 bg-rose-50/50 p-8 py-16 text-center animate-in fade-in duration-500">
+        <AlertCircle className="h-12 w-12 text-rose-500" />
+        <h3 className="text-lg font-bold text-slate-900">
+          Không thể tải khóa học
+        </h3>
+        <p className="text-sm font-semibold text-slate-600">
+          Vui lòng tải lại trang hoặc thử lại sau.
+        </p>
+      </div>
+    );
+  }
+
   if (instructorCourses.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center text-center py-16 bg-white border border-slate-200 border-dashed rounded-2xl p-8 gap-4 shadow-xs">
@@ -56,10 +86,26 @@ export function InstructorCourses({ accountId }: InstructorCoursesProps) {
   }
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 animate-in fade-in duration-500">
-      {instructorCourses.map((course) => (
-        <CourseCard key={course.id} course={course} priceTiers={priceTiers} />
-      ))}
+    <div className="flex flex-col gap-8">
+      <div className="grid grid-cols-1 gap-8 animate-in fade-in duration-500 md:grid-cols-2 lg:grid-cols-3">
+        {instructorCourses.map((course) => (
+          <CourseCard
+            key={course.publicId}
+            course={course}
+            priceTiers={priceTiers}
+          />
+        ))}
+      </div>
+
+      {totalPages > 1 && (
+        <CoursesPagination
+          pageNumber={currentPage}
+          totalPages={totalPages}
+          totalElements={totalElements}
+          pageSize={pageSize}
+          onPageChange={setCurrentPage}
+        />
+      )}
     </div>
   );
 }

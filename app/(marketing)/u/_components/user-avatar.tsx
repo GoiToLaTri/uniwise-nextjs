@@ -3,7 +3,12 @@
 import Image from "next/image";
 import { cn } from "@/lib/utils";
 
-export function UserAvatar({ src, name, size = "xl" }: any) {
+interface UserAvatarProps {
+  src?: string | null;
+  name: string;
+}
+
+export function UserAvatar({ src, name }: UserAvatarProps) {
   const initials = name?.charAt(0).toUpperCase() || "U";
 
   return (

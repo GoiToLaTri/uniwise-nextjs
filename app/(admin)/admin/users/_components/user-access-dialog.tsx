@@ -1,6 +1,6 @@
 "use client";
 
-import { ShieldCheck, Info, User as UserIcon } from "lucide-react";
+import { ShieldCheck, User as UserIcon } from "lucide-react";
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -8,7 +8,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 import * as React from "react";
 import { useAccount, useAccountRoles } from "@/hooks/use-account";
-import { ProfileResponse, RoleResponse } from "@/interfaces/response";
+import { ProfileResponse } from "@/interfaces/response";
 import { useRoles } from "@/hooks/use-role";
 
 export function UserAccessDialog({ children, user }: { children: React.ReactNode, user: ProfileResponse }) {
@@ -16,23 +16,23 @@ export function UserAccessDialog({ children, user }: { children: React.ReactNode
     const { data: allRoles } = useRoles();
     const { assignRoles, revokeRoles, isAssigning, isRevoking } = useAccountRoles(user.accountId);
     const [open, setOpen] = React.useState(false);
-    const [selectedRoles, setSelectedRoles] = React.useState<string[]>([]);
-    const [currentRoles, setCurrentRoles] = React.useState<string[]>([]);
-  
-    // Khởi tạo roles từ account hiện tại
-    React.useEffect(() => {
-      if (account?.roles) {
-        const roleNames = account.roles.map(role => role.name);
-        setCurrentRoles(roleNames);
-        setSelectedRoles(roleNames);
-      }
-    }, [account]);
+    const [roleSelection, setRoleSelection] = React.useState<string[] | null>(null);
+    const currentRoles = React.useMemo(
+      () => account?.roles?.map((role) => role.name) ?? [],
+      [account?.roles],
+    );
+    const selectedRoles = roleSelection ?? currentRoles;
+
+    const handleOpenChange = (nextOpen: boolean) => {
+      setOpen(nextOpen);
+      setRoleSelection(null);
+    };
   
     const handleRoleToggle = (roleName: string) => {
-      setSelectedRoles(prev => 
-        prev.includes(roleName) 
-          ? prev.filter(name => name !== roleName)
-          : [...prev, roleName]
+      setRoleSelection(
+        selectedRoles.includes(roleName)
+          ? selectedRoles.filter((name) => name !== roleName)
+          : [...selectedRoles, roleName],
       );
     };
   
@@ -69,7 +69,7 @@ export function UserAccessDialog({ children, user }: { children: React.ReactNode
     };
   
     return (
-      <Dialog open={open} onOpenChange={setOpen}>
+      <Dialog open={open} onOpenChange={handleOpenChange}>
         <DialogTrigger asChild>{children}</DialogTrigger>
         <DialogContent className="sm:max-w-[450px] p-0 rounded-[1.25rem] border-none shadow-2xl overflow-hidden bg-white">
             <div className="h-2 bg-linear-to-r from-indigo-600 via-purple-500 to-blue-500" />

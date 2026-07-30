@@ -1,4 +1,13 @@
-import { InstructorProfile, ApplyInstructorRequest, UpdateInstructorRequest, Degree, Expertise, InstructorApplicationListResponse } from "@/interfaces/instructor.interface";
+import {
+  InstructorProfile,
+  ApplyInstructorRequest,
+  UpdateInstructorRequest,
+  Degree,
+  Expertise,
+  InstructorApplicationListResponse,
+  PublicInstructorListResponse,
+  PublicInstructorProfileResponse,
+} from "@/interfaces/instructor.interface";
 import { ApiResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
 import { isAppApiError } from "@/lib/api-error";
@@ -6,10 +15,21 @@ import { getApiErrorMessage } from "@/lib/auth-error";
 import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
+import publicApiClient from "@/lib/public-api-client";
 
 const INSTRUCTOR_QUERY_KEY = ["instructor", "me"];
 const INSTRUCTOR_APPLICATIONS_QUERY_KEY = ["instructor-applications"];
 const INSTRUCTORS_QUERY_KEY = ["instructors"];
+export const PUBLIC_INSTRUCTOR_SEARCH_QUERY_KEY = [
+  "instructors",
+  "public",
+  "search",
+] as const;
+export const PUBLIC_INSTRUCTOR_DETAIL_QUERY_KEY = [
+  "instructors",
+  "public",
+  "detail",
+] as const;
 // Hook lấy thông tin instructor hiện tại
 export function useInstructorProfile() {
   return useQuery({
@@ -429,15 +449,49 @@ export function useReactivateInstructor() {
   });
 }
 
-export function usePublicInstructorProfile(profileId?: string) {
+/** Tìm các instructor APPROVED trên search-service. */
+export function usePublicInstructors(
+  pageNumber = 0,
+  pageSize = 20,
+  keyword = "",
+  enabled = true,
+) {
   return useQuery({
-    queryKey: ["instructor", "public", profileId],
-    queryFn: async (): Promise<InstructorProfile | null> => {
-      if (!profileId) return null;
+    queryKey: [
+      ...PUBLIC_INSTRUCTOR_SEARCH_QUERY_KEY,
+      keyword,
+      pageNumber,
+      pageSize,
+    ],
+    queryFn: async (): Promise<PublicInstructorListResponse | null> => {
+      const response = await publicApiClient.get<
+        never,
+        ApiResponse<PublicInstructorListResponse>
+      >("/search-service/api/v1/search/instructors", {
+        params: {
+          keyword,
+          page: pageNumber,
+          size: pageSize,
+        },
+      });
+
+      return response.data;
+    },
+    enabled,
+  });
+}
+
+/** Lấy chi tiết instructor APPROVED bằng public ID của profile. */
+export function usePublicInstructorProfile(profilePublicId?: string) {
+  return useQuery({
+    queryKey: [...PUBLIC_INSTRUCTOR_DETAIL_QUERY_KEY, profilePublicId],
+    queryFn: async (): Promise<PublicInstructorProfileResponse | null> => {
+      if (!profilePublicId) return null;
       try {
-        const response = await apiClient.get<never, ApiResponse<InstructorProfile>>(
-          `/user-service/api/v1/instructors/public/${profileId}`
-        );
+        const response = await publicApiClient.get<
+          never,
+          ApiResponse<PublicInstructorProfileResponse>
+        >(`/user-service/api/v1/instructors/public/${profilePublicId}`);
         return response.data;
       } catch (error: unknown) {
         if (isAppApiError(error) && error.httpStatus === 404) {
@@ -446,6 +500,6 @@ export function usePublicInstructorProfile(profileId?: string) {
         throw error;
       }
     },
-    enabled: !!profileId,
+    enabled: !!profilePublicId,
   });
 }
