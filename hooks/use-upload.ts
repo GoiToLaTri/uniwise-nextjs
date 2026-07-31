@@ -2,7 +2,7 @@ import { ApiResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
 import { useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
-import { getApiErrorMessage } from "@/lib/auth-error";
+import { getUploadErrorMessage } from "@/lib/upload-error";
 
 export interface UploadResponse {
   url: string;
@@ -32,7 +32,7 @@ export function useUploadThumbnail() {
         );
         return response.data;
       } catch (error: unknown) {
-        toast.error(getApiErrorMessage(error, "Lỗi khi tải ảnh lên."));
+        toast.error(getUploadErrorMessage(error, "Lỗi khi tải ảnh lên."));
         throw error;
       }
     },

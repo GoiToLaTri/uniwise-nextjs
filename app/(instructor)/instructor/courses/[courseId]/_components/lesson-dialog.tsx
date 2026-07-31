@@ -19,6 +19,10 @@ import { cn } from "@/lib/utils";
 import { useCreateLesson, useUpdateLesson } from "@/hooks/use-lesson";
 import { useUploadStore } from "@/stores/upload-store";
 import { toast } from "sonner";
+import {
+  VIDEO_FILE_ACCEPT,
+  validateVideoFile,
+} from "@/lib/upload-validation";
 
 const lessonSchema = z.object({
   title: z.string().min(3, "Tên bài giảng phải có ít nhất 3 ký tự"),
@@ -56,6 +60,7 @@ export function LessonDialog({
 }: LessonDialogProps) {
   const [open, setOpen] = React.useState(false);
   const isEdit = !!initialData;
+  const videoFileInputId = React.useId();
 
   const createMutation = useCreateLesson();
   const updateMutation = useUpdateLesson();
@@ -103,16 +108,15 @@ export function LessonDialog({
     const file = e.target.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("video/")) {
-      toast.error("Vui lòng chọn tệp video hợp lệ (MP4, MKV, WEBM)");
-      return;
-    }
-    if (file.size > 500 * 1024 * 1024) { // Giới hạn 500MB
-      toast.error("Dung lượng video tối đa được phép là 500MB");
+    const validation = validateVideoFile(file);
+    if (!validation.isValid) {
+      toast.error(validation.message);
+      e.currentTarget.value = "";
       return;
     }
 
     setSelectedFile(file);
+    e.currentTarget.value = "";
   };
 
   const onSubmit = async (values: FormValues) => {
@@ -163,12 +167,26 @@ export function LessonDialog({
       }
 
       // 2. Nếu có tệp video và đã lưu bài học thành công, kích hoạt tiến trình upload nền
-      if (savedLesson && values.lessonType === "VIDEO" && selectedFile) {
+      if (values.lessonType === "VIDEO" && selectedFile) {
+        const savedLessonId = savedLesson.publicId?.trim();
+        if (!savedLessonId) {
+          toast.error(
+            "Đã lưu bài học nhưng chưa nhận được mã bài học để tải video. Vui lòng tải lại trang.",
+          );
+          setOpen(false);
+          onSuccess?.();
+          return;
+        }
+
         toast.info("Đang bắt đầu tải lên video ở chế độ chạy nền...");
         // Gọi action chạy nền của Zustand (không dùng await ở đây để dialog đóng ngay lập tức)
-        startUpload(savedLesson.publicId, savedLesson.title, selectedFile, () => {
-          if (onSuccess) onSuccess();
-        });
+        void startUpload(
+          savedLessonId,
+          savedLesson.title,
+          selectedFile,
+          () => onSuccess?.(),
+          () => onSuccess?.(),
+        );
       }
 
       setOpen(false);
@@ -263,7 +281,10 @@ export function LessonDialog({
                   </button>
                   <button
                     type="button"
-                    onClick={() => setUploadMode("url")}
+                    onClick={() => {
+                      setUploadMode("url");
+                      setSelectedFile(null);
+                    }}
                     className={cn(
                       "text-[9px] font-black px-2 py-1 rounded-md uppercase tracking-wider transition-all flex items-center gap-1",
                       uploadMode === "url" ? "bg-indigo-50 text-indigo-600 border border-indigo-100" : "bg-transparent text-slate-400 hover:text-slate-600"
@@ -277,16 +298,16 @@ export function LessonDialog({
               {uploadMode === "file" ? (
                 <div className="space-y-2">
                   <div
-                    onClick={() => document.getElementById("video-file-picker")?.click()}
+                    onClick={() => document.getElementById(videoFileInputId)?.click()}
                     className={cn(
                       "border-2 border-dashed border-slate-200 rounded-2xl p-5 flex flex-col items-center justify-center bg-slate-50 hover:bg-slate-100/50 hover:border-indigo-400 transition-all cursor-pointer",
                       selectedFile && "border-emerald-300 bg-emerald-50/10"
                     )}
                   >
                     <input
-                      id="video-file-picker"
+                      id={videoFileInputId}
                       type="file"
-                      accept="video/*"
+                      accept={VIDEO_FILE_ACCEPT}
                       className="hidden"
                       onChange={handleFileChange}
                       disabled={isPending}
@@ -310,7 +331,7 @@ export function LessonDialog({
                           <Video className="w-6 h-6" />
                         </div>
                         <p className="text-xs font-bold text-slate-600">Chọn video từ thiết bị của bạn</p>
-                        <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Hỗ trợ MP4, MKV, WEBM (Tối đa 500MB)</p>
+                        <p className="text-[9px] text-slate-400 font-semibold mt-0.5">Chỉ hỗ trợ MP4 (Tối đa 200 MB)</p>
                       </div>
                     )}
                   </div>

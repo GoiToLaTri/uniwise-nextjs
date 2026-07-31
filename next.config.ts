@@ -6,7 +6,9 @@ const nextConfig: NextConfig = {
     serverActions: {
       bodySizeLimit: "500mb",
     },
-    proxyClientMaxBodySize: "500mb",
+    // Proxy buffer 200 MB video và 5 MB metadata multipart; validation thật
+    // vẫn do frontend và media-service quyết định.
+    proxyClientMaxBodySize: "205mb",
   },
   output: "standalone",
   async rewrites() {

@@ -2,7 +2,11 @@ import axios, { CancelTokenSource } from "axios";
 import { create } from "zustand";
 import apiClient from "@/lib/api-client";
 import { toast } from "sonner";
-import { getApiErrorMessage } from "@/lib/auth-error";
+import {
+  getUploadErrorMessage,
+  isCanceledUploadError,
+  shouldRefreshCourseAfterUploadError,
+} from "@/lib/upload-error";
 
 export interface UploadItem {
   lessonId: string;
@@ -20,7 +24,8 @@ interface UploadStore {
     lessonId: string,
     lessonTitle: string,
     file: File,
-    onUploadSuccess: () => void
+    onUploadSuccess: () => void,
+    onUploadTargetChanged?: () => void,
   ) => Promise<void>;
   cancelUpload: (lessonId: string) => void;
   removeUpload: (lessonId: string) => void;
@@ -30,7 +35,13 @@ interface UploadStore {
 export const useUploadStore = create<UploadStore>((set, get) => ({
   uploads: {},
 
-  startUpload: async (lessonId, lessonTitle, file, onUploadSuccess) => {
+  startUpload: async (
+    lessonId,
+    lessonTitle,
+    file,
+    onUploadSuccess,
+    onUploadTargetChanged,
+  ) => {
     const cancelTokenSource = axios.CancelToken.source();
 
     // Khởi tạo trạng thái tải lên
@@ -94,7 +105,7 @@ export const useUploadStore = create<UploadStore>((set, get) => ({
       toast.success(`Tải lên video cho bài học "${lessonTitle}" hoàn tất!`);
       onUploadSuccess();
     } catch (error: unknown) {
-      if (axios.isCancel(error)) {
+      if (axios.isCancel(error) || isCanceledUploadError(error)) {
         // Tải lên bị hủy
         set((state) => ({
           uploads: {
@@ -107,7 +118,7 @@ export const useUploadStore = create<UploadStore>((set, get) => ({
         }));
         toast.warning(`Đã hủy tải lên video cho bài học "${lessonTitle}".`);
       } else {
-        const message = getApiErrorMessage(
+        const message = getUploadErrorMessage(
           error,
           "Lỗi kết nối tải lên video.",
         );
@@ -122,6 +133,10 @@ export const useUploadStore = create<UploadStore>((set, get) => ({
           },
         }));
         toast.error(`Tải lên video thất bại cho "${lessonTitle}": ${message}`);
+
+        if (shouldRefreshCourseAfterUploadError(error)) {
+          onUploadTargetChanged?.();
+        }
       }
     }
   },

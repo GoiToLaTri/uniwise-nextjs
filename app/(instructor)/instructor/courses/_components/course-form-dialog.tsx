@@ -4,10 +4,8 @@ import * as React from "react";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { Loader2, AlertCircle, BookOpen, Image as ImageIcon, Sparkles } from "lucide-react";
+import { Loader2, AlertCircle, BookOpen, Image as ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import apiClient from "@/lib/api-client";
-import { ApiResponse } from "@/interfaces/response";
 
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -24,6 +22,10 @@ import { cn } from "@/lib/utils";
 import { useCreateCourse, useUpdateCourse } from "@/hooks/use-course";
 import { usePriceTiers } from "@/hooks/use-price-tier";
 import { useUploadThumbnail } from "@/hooks/use-upload";
+import {
+  THUMBNAIL_FILE_ACCEPT,
+  validateThumbnailFile,
+} from "@/lib/upload-validation";
 
 // ─── ZOD SCHEMA ───
 const courseSchema = z.object({
@@ -39,13 +41,22 @@ type FormValues = z.infer<typeof courseSchema>;
 
 interface CourseFormDialogProps {
   children: React.ReactNode;
-  initialData?: any;
+  initialData?: {
+    publicId: string;
+    title: string;
+    description: string | null;
+    thumbnailUrl: string | null;
+    thumbnailName?: string;
+    priceTierId: string | null;
+    status: string;
+  };
   onSuccess?: () => void;
 }
 
 export function CourseFormDialog({ children, initialData, onSuccess }: CourseFormDialogProps) {
   const [open, setOpen] = React.useState(false);
   const isEdit = !!initialData;
+  const thumbnailFileInputId = React.useId();
 
   const createMutation = useCreateCourse();
   const updateMutation = useUpdateCourse();
@@ -84,15 +95,14 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
   const [showUrlInput, setShowUrlInput] = React.useState(false);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
+    const fileInput = e.currentTarget;
+    const file = fileInput.files?.[0];
     if (!file) return;
 
-    if (!file.type.startsWith("image/")) {
-      toast.error("Vui lòng chọn file hình ảnh hợp lệ (PNG, JPG, JPEG, WEBP)");
-      return;
-    }
-    if (file.size > 5 * 1024 * 1024) {
-      toast.error("Dung lượng ảnh tối đa là 5MB");
+    const validation = validateThumbnailFile(file);
+    if (!validation.isValid) {
+      toast.error(validation.message);
+      fileInput.value = "";
       return;
     }
 
@@ -101,15 +111,18 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
       const uploadedUrl = response?.url;
       const uploadedName = response?.fileName;
 
-      if (uploadedUrl) {
-        setValue("thumbnailUrl", uploadedUrl, { shouldValidate: true });
-        setValue("thumbnailName", uploadedName || "", { shouldValidate: true });
-        toast.success("Tải ảnh bìa lên thành công!");
-      } else {
-        throw new Error("Không lấy được đường dẫn ảnh từ phản hồi.");
+      if (!uploadedUrl) {
+        toast.error("Không lấy được đường dẫn ảnh từ phản hồi tải lên.");
+        return;
       }
-    } catch (error: any) {
-      console.error("Upload error:", error);
+
+      setValue("thumbnailUrl", uploadedUrl, { shouldValidate: true });
+      setValue("thumbnailName", uploadedName || "", { shouldValidate: true });
+      toast.success("Tải ảnh bìa lên thành công!");
+    } catch {
+      // useUploadThumbnail đã hiển thị thông báo tương ứng với lỗi backend.
+    } finally {
+      fileInput.value = "";
     }
   };
 
@@ -155,7 +168,7 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
       }
       setOpen(false);
       if (onSuccess) onSuccess();
-    } catch (error) {
+    } catch {
       // toast.error được handle trong hook mutation
     }
   };
@@ -235,12 +248,12 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
                     errors.thumbnailUrl && "border-rose-300 bg-rose-50/20",
                     isUploading && "pointer-events-none"
                   )}
-                  onClick={() => document.getElementById("thumbnail-file-input")?.click()}
+                  onClick={() => document.getElementById(thumbnailFileInputId)?.click()}
                 >
                   <input
-                    id="thumbnail-file-input"
+                    id={thumbnailFileInputId}
                     type="file"
-                    accept="image/*"
+                    accept={THUMBNAIL_FILE_ACCEPT}
                     className="hidden"
                     onChange={handleFileUpload}
                   />
@@ -269,7 +282,7 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
                         <ImageIcon className="w-6 h-6 text-slate-400" />
                       </div>
                       <p className="text-xs font-bold text-slate-700">Tải ảnh bìa lên</p>
-                      <p className="text-[10px] text-slate-400 font-semibold mt-1">Định dạng JPG, PNG, WEBP (Tối đa 5MB)</p>
+                      <p className="text-[10px] text-slate-400 font-semibold mt-1">Định dạng JPG, JPEG, PNG, WEBP (Tối đa 10 MB)</p>
                     </div>
                   )}
                 </div>
