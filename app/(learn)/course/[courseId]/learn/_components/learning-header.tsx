@@ -56,6 +56,7 @@ export function LearningHeader({
         
         <button 
           onClick={onToggleSidebar}
+          aria-expanded={sidebarOpen}
           className="flex items-center gap-2 px-3 py-2 rounded-lg bg-slate-800 hover:bg-slate-700 transition-colors text-sm font-bold cursor-pointer"
         >
           <Menu className="w-4 h-4" />

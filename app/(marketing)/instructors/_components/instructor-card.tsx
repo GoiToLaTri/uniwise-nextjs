@@ -5,6 +5,7 @@ import Link from "next/link";
 import { Briefcase, User, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { PublicInstructorSearchResponse } from "@/interfaces/instructor.interface";
+import { RemoteImage } from "@/components/shared/remote-image";
 
 interface InstructorCardProps {
   instructor: PublicInstructorSearchResponse;
@@ -30,10 +31,12 @@ function InstructorAvatar({ src, name }: InstructorAvatarProps) {
   }
 
   return (
-    <img
+    <RemoteImage
       src={src}
       alt={name}
-      className="object-cover w-full h-full"
+      fill
+      sizes="96px"
+      className="object-cover"
       onError={() => setHasError(true)}
     />
   );

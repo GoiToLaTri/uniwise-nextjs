@@ -1,13 +1,10 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
-import { 
-  Loader2, AlertCircle, Banknote, Coins, 
-  CreditCard, Sparkles 
-} from "lucide-react";
+import { Loader2, AlertCircle, CreditCard } from "lucide-react";
 
 import {
   Dialog, DialogContent, DialogDescription, DialogFooter,
@@ -20,7 +17,11 @@ import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue 
 } from "@/components/ui/select";
 import { cn } from "@/lib/utils";
-import { useCreatePriceTier, useUpdatePriceTier } from "@/hooks/use-price-tier";
+import {
+  type PriceTierResponse,
+  useCreatePriceTier,
+  useUpdatePriceTier,
+} from "@/hooks/use-price-tier";
 
 // ─── SCHEMA ───
 const priceTierSchema = z.object({
@@ -31,7 +32,13 @@ const priceTierSchema = z.object({
 
 type FormValues = z.infer<typeof priceTierSchema>;
 
-export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
+interface PriceTierFormDialogProps {
+  children: React.ReactNode;
+  initialData?: PriceTierResponse;
+  onSuccess: () => void;
+}
+
+export function PriceTierFormDialog({ children, initialData, onSuccess }: PriceTierFormDialogProps) {
   const [open, setOpen] = React.useState(false);
   const isEdit = !!initialData;
 
@@ -39,12 +46,13 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
   const updateMutation = useUpdatePriceTier();
   const isPending = createMutation.isPending || updateMutation.isPending;
 
-  const { register, handleSubmit, reset, setValue, watch, formState: { errors } } = useForm<FormValues>({
+  const { control, register, handleSubmit, reset, setValue, formState: { errors } } = useForm<FormValues>({
     resolver: zodResolver(priceTierSchema),
     defaultValues: initialData || { tierName: "", priceAmount: 0, currency: "VND" },
   });
 
-  const currency = watch("currency");
+  const currency = useWatch({ control, name: "currency" });
+  const priceAmount = useWatch({ control, name: "priceAmount" });
 
   React.useEffect(() => {
     if (open) reset(initialData || { tierName: "", priceAmount: 0, currency: "VND" });
@@ -167,7 +175,7 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: any) {
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Giá hiển thị thực tế:</span>
               <span className={cn("text-lg font-black", isEdit ? "text-amber-600" : "text-indigo-600")}>
-                {new Intl.NumberFormat().format(watch("priceAmount") || 0)} {currency}
+                {new Intl.NumberFormat().format(priceAmount || 0)} {currency}
               </span>
             </div>
           </div>

@@ -2,7 +2,7 @@
 
 import { 
   MoreHorizontal, Eye, CheckCircle2, XCircle, 
-  GraduationCap, Info, Calendar, ShieldAlert, Star, RefreshCcw,
+  GraduationCap, Info, Calendar, ShieldAlert, RefreshCcw,
   Loader2
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
@@ -15,7 +15,6 @@ import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { SuspensionDialog } from "./suspension-dialog";
 import { InstructorProfile } from "@/interfaces/instructor.interface";
-import { toast } from "sonner";
 import { useApproveInstructorApplication, useRejectInstructorApplication, useSuspendInstructor, useReactivateInstructor } from "@/hooks/use-instructor";
 
 export function InstructorListTable({ data, isLoading, onRefresh }: { data?: InstructorProfile[], isLoading: boolean, onRefresh: () => void }) {
@@ -78,10 +77,10 @@ export function InstructorListTable({ data, isLoading, onRefresh }: { data?: Ins
       <TableBody>
         {data?.map((item) => {
           const isThisItemActioning =
-            (approveMutation.isPending && approveMutation.variables === item.id) ||
-            (rejectMutation.isPending && rejectMutation.variables?.applicationId === item.id) ||
-            (suspendMutation.isPending && suspendMutation.variables.instructorId === item.accountId) ||
-            (reactivateMutation.isPending && reactivateMutation.variables === item.accountId);
+            (approveMutation.isPending && approveMutation.variables === item.publicId) ||
+            (rejectMutation.isPending && rejectMutation.variables?.applicationId === item.publicId) ||
+            (suspendMutation.isPending && suspendMutation.variables?.instructorId === item.publicId) ||
+            (reactivateMutation.isPending && reactivateMutation.variables === item.publicId);
 
           return (
             <TableRow key={item.id} className="hover:bg-slate-50/30 border-slate-100 group transition-colors">

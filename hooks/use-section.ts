@@ -96,12 +96,13 @@ export function useReorderSections() {
 
   return useMutation({
     mutationFn: async (variables: {
+      courseDbId: string;
       courseId: string;
       data: { items: { id: string; sortOrder: number }[] };
     }): Promise<boolean> => {
       try {
         await apiClient.put(
-          `/course-service/api/v1/sections/course/${variables.courseId}/reorder`,
+          `/course-service/api/v1/sections/course/${variables.courseDbId}/reorder`,
           variables.data
         );
         toast.success("Cập nhật thứ tự chương học thành công!");

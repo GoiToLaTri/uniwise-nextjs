@@ -2,7 +2,12 @@
 import { ApiResponse, ListResponse, RoleResponse } from "@/interfaces/response";
 import apiClient from "@/lib/api-client";
 import { getTokenResponse } from "@/stores/token-store";
-import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
+import type { QueryClient } from "@tanstack/react-query";
 import { toast } from "sonner"; // or your toast library
 import { ROLES_QUERY_KEY } from "./use-role";
 import { getApiErrorMessage } from "@/lib/auth-error";
@@ -19,8 +24,37 @@ export interface AccountListResponse extends ListResponse {
 }
 
 // Query keys
-export const ACCOUNTS_QUERY_KEY = ["accounts"];
-export const ACCOUNT_DETAIL_QUERY_KEY = (id: string) => ["account", id];
+export const ACCOUNTS_QUERY_KEY = ["accounts"] as const;
+export const ACCOUNT_DETAIL_QUERY_KEY = (id: string) =>
+  ["account", id] as const;
+
+/**
+ * Ghi AccountResponse vào cache chi tiết và mọi trang danh sách account đang
+ * có. Query danh sách có thêm page/size/search nên không được chỉ cập nhật
+ * chính key gốc `["accounts"]`.
+ */
+function syncAccountCache(
+  queryClient: QueryClient,
+  updatedAccount: AccountResponse,
+): void {
+  queryClient.setQueryData(
+    ACCOUNT_DETAIL_QUERY_KEY(updatedAccount.id),
+    updatedAccount,
+  );
+  queryClient.setQueriesData<AccountListResponse | null>(
+    { queryKey: ACCOUNTS_QUERY_KEY },
+    (cached) => {
+      if (!cached?.content) return cached;
+
+      return {
+        ...cached,
+        content: cached.content.map((account) =>
+          account.id === updatedAccount.id ? updatedAccount : account,
+        ),
+      };
+    },
+  );
+}
 
 // Hook lấy danh sách accounts (có phân trang)
 export function useAccounts(pageNumber = 0, pageSize = 10, search?: string) {
@@ -35,7 +69,7 @@ export function useAccounts(pageNumber = 0, pageSize = 10, search?: string) {
       const response = await apiClient.get<never, ApiResponse<AccountListResponse>>(
         "/identity-service/api/v1/accounts",
         {
-          params: { page: pageNumber, size: pageSize, search },
+          params: { page: pageNumber, size: pageSize, keyword: search },
         }
       );
 
@@ -88,13 +122,9 @@ export function useUpdateAccount() {
         throw error;
       }
     },
-    onSuccess: (updatedAccount, { id }) => {
+    onSuccess: (updatedAccount) => {
       if (updatedAccount) {
-        // Update cache chi tiết
-        queryClient.setQueryData(ACCOUNT_DETAIL_QUERY_KEY(id), updatedAccount);
-        
-        // Invalidate danh sách accounts
-        queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+        syncAccountCache(queryClient, updatedAccount);
       }
     },
   });
@@ -126,27 +156,11 @@ export function useAssignRolesToAccount() {
         throw error;
       }
     },
-    onSuccess: (updatedAccount, { id }) => {
-      queryClient.invalidateQueries({queryKey: ROLES_QUERY_KEY})
+    onSuccess: (updatedAccount) => {
+      queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
 
       if (updatedAccount) {
-        // Update cache chi tiết
-        queryClient.setQueryData(ACCOUNT_DETAIL_QUERY_KEY(id), updatedAccount);
-        
-        // Update trong danh sách accounts cache
-        const cached = queryClient.getQueryData<AccountListResponse>(ACCOUNTS_QUERY_KEY);
-        if (cached?.content) {
-          const updatedContent = cached.content.map((account) =>
-            account.id === id ? updatedAccount : account
-          );
-          queryClient.setQueryData(ACCOUNTS_QUERY_KEY, {
-            ...cached,
-            content: updatedContent,
-          });
-        } else {
-          // Nếu không có cache thì invalidate
-          queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
-        }
+        syncAccountCache(queryClient, updatedAccount);
       }
     },
   });
@@ -178,26 +192,10 @@ export function useRevokeRolesFromAccount() {
         throw error;
       }
     },
-    onSuccess: (updatedAccount, { id }) => {
-      queryClient.invalidateQueries({queryKey: ROLES_QUERY_KEY})
+    onSuccess: (updatedAccount) => {
+      queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
       if (updatedAccount) {
-        // Update cache chi tiết
-        queryClient.setQueryData(ACCOUNT_DETAIL_QUERY_KEY(id), updatedAccount);
-        
-        // Update trong danh sách accounts cache
-        const cached = queryClient.getQueryData<AccountListResponse>(ACCOUNTS_QUERY_KEY);
-        if (cached?.content) {
-          const updatedContent = cached.content.map((account) =>
-            account.id === id ? updatedAccount : account
-          );
-          queryClient.setQueryData(ACCOUNTS_QUERY_KEY, {
-            ...cached,
-            content: updatedContent,
-          });
-        } else {
-          // Nếu không có cache thì invalidate
-          queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
-        }
+        syncAccountCache(queryClient, updatedAccount);
       }
     },
   });

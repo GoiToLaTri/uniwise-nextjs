@@ -1,7 +1,7 @@
 import { PartnerHero } from "./_components/partner-hero";
 import { InstructorFeature } from "./_components/instructor-feature";
 import { PartnerCategory } from "./_components/partner-category";
-import { Building2, Users, Share2, Lightbulb } from "lucide-react";
+import { Building2, Share2, Lightbulb } from "lucide-react";
 
 export default function PartnersPage() {
   return (

@@ -1,5 +1,5 @@
 'use client';
-import { MediaPlayer, MediaProvider, isHLSProvider, MediaProviderChangeEvent, MediaProviderAdapter, MediaPlayerInstance } from '@vidstack/react';
+import { MediaPlayer, MediaProvider, isHLSProvider, MediaProviderAdapter, MediaPlayerInstance, type MediaTimeUpdateEventDetail } from '@vidstack/react';
 import { DefaultVideoLayout, defaultLayoutIcons } from '@vidstack/react/player/layouts/default';
 import '@vidstack/react/player/styles/default/theme.css';
 import '@vidstack/react/player/styles/default/layouts/video.css';
@@ -28,7 +28,7 @@ export function VideoPlayer({ src, title, poster, onTimeUpdate, onEnd, initialTi
     loadToken();
   }, []);
 
-  function onProviderChange(provider: MediaProviderAdapter | null, nativeEvent: MediaProviderChangeEvent) {
+  function onProviderChange(provider: MediaProviderAdapter | null) {
     if (isHLSProvider(provider)) {
       if (!provider.config) {
         provider.config = {};
@@ -67,11 +67,9 @@ export function VideoPlayer({ src, title, poster, onTimeUpdate, onEnd, initialTi
         crossOrigin
         onProviderChange={onProviderChange}
         onCanPlay={handleCanPlay}
-        onTimeUpdate={(e: any) => {
-          // e can be the time directly or an event object depending on the vidstack version.
-          const time = typeof e === 'number' ? e : e.detail?.currentTime ?? e.detail ?? e.currentTime;
-          if (typeof time === 'number' && onTimeUpdate) {
-            onTimeUpdate(time);
+        onTimeUpdate={(detail: MediaTimeUpdateEventDetail) => {
+          if (onTimeUpdate) {
+            onTimeUpdate(detail.currentTime);
           }
         }}
         onEnd={onEnd}

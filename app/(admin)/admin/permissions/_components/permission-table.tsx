@@ -7,10 +7,11 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { toast } from "sonner";
 import { PermissionFormDialog } from "./permission-form-dialog";
-import { PermissionResponse, useAllPermissions } from "@/hooks/use-permission";
+import { PermissionResponse } from "@/hooks/use-permission";
 
 export function PermissionTable({ data, isLoading, onRefresh }: { data?: { content: PermissionResponse[] } | null, isLoading: boolean, onRefresh: () => void }) {
   const handleDelete = async (id: number) => {
+    void id;
     if (confirm("Bạn có chắc chắn muốn xóa quyền này? Hành động này có thể ảnh hưởng đến các vai trò đang được gán.")) {
       toast.success("Đã xóa quyền hạn thành công");
       onRefresh();

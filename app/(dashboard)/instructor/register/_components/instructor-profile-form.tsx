@@ -63,7 +63,7 @@ export function InstructorProfileForm() {
     
     // Gọi API thông qua hook
     applyInstructor(apiPayload, {
-      onSuccess: (data) => {
+      onSuccess: () => {
         // Lưu bản đầy đủ để hiển thị ở màn success
         setFormData(finalPayload);
         setIsSuccess(true);

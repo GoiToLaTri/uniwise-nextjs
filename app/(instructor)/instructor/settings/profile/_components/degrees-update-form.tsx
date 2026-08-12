@@ -23,7 +23,7 @@ import {
 } from "@/components/ui/popover";
 import { 
   ArrowRight, ArrowLeft, Plus, Trash2, 
-  CalendarIcon, AlertCircle, ChevronDown, Award 
+  CalendarIcon, AlertCircle, ChevronDown
 } from "lucide-react";
 import { updateInstructorProfileSchema, type UpdateInstructorFormValues } from "../_lib/update-schema";
 import { cn } from "@/lib/utils";

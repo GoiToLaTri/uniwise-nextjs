@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { BookOpen, Search, Filter, Plus, RefreshCcw, Loader2 } from "lucide-react";
+import { BookOpen, Search, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { 
@@ -40,10 +40,15 @@ export default function MyCoursesPage() {
   const { data: priceTiersData } = usePriceTiers(0, 100);
   const priceTiers = priceTiersData?.content || [];
 
-  // Reset về trang 0 khi thay đổi tìm kiếm hoặc bộ lọc
-  React.useEffect(() => {
+  const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    setSearch(event.target.value);
     setPage(0);
-  }, [debouncedSearch, status]);
+  };
+
+  const handleStatusChange = (nextStatus: string) => {
+    setStatus(nextStatus);
+    setPage(0);
+  };
 
   return (
     <div className="space-y-8 animate-in fade-in duration-700">
@@ -75,12 +80,12 @@ export default function MyCoursesPage() {
             placeholder="Tìm kiếm theo tiêu đề khóa học..." 
             className="border-slate-200 bg-white shadow-sm transition-all font-medium pl-10 h-11 rounded-xl focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0"
             value={search}
-            onChange={(e) => setSearch(e.target.value)}
+            onChange={handleSearchChange}
           />
         </div>
         
         <div className="flex items-center gap-3 w-full md:w-auto">
-          <Select value={status} onValueChange={setStatus}>
+          <Select value={status} onValueChange={handleStatusChange}>
             <SelectTrigger className={cn(
               "!h-11 rounded-xl border-slate-200 bg-white focus-visible:ring-1 focus-visible:ring-indigo-500/30 focus-visible:border-indigo-500 focus-visible:ring-offset-0 outline-hidden !w-full md:w-[180px]"
             )}>

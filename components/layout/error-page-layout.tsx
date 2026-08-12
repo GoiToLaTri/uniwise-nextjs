@@ -1,6 +1,5 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils"; // Assuming you have a cn utility for class merging
 
 interface ErrorPageLayoutProps {
   statusCode: string;

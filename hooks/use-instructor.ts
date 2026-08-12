@@ -16,6 +16,10 @@ import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import publicApiClient from "@/lib/public-api-client";
+import {
+  ACCOUNTS_QUERY_KEY,
+  ACCOUNT_DETAIL_QUERY_KEY,
+} from "@/hooks/use-account";
 
 const INSTRUCTOR_QUERY_KEY = ["instructor", "me"];
 const INSTRUCTOR_APPLICATIONS_QUERY_KEY = ["instructor-applications"];
@@ -334,6 +338,13 @@ export function useApproveInstructorApplication() {
         // Invalidate instructor profile (nếu cần)
         queryClient.invalidateQueries({ queryKey: ["instructor", "me"] });
         queryClient.refetchQueries({ queryKey: ["instructor", "me"] });
+
+        // Duyệt instructor làm backend gán role. Không suy roles từ
+        // InstructorProfileResponse; lấy lại AccountResponse từ identity-service.
+        queryClient.invalidateQueries({
+          queryKey: ACCOUNT_DETAIL_QUERY_KEY(data.accountId),
+        });
+        queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
       }
     },
   });
@@ -388,14 +399,17 @@ export function useSuspendInstructor() {
     }: { 
       instructorId: string; 
       reviewComment: string;
-    }): Promise<boolean> => {
+    }): Promise<InstructorProfile | null> => {
       try {
-        await apiClient.patch(
+        const response = await apiClient.patch<
+          never,
+          ApiResponse<InstructorProfile>
+        >(
           `/user-service/api/v1/instructors/applications/${instructorId}/suspend`,
           { reviewComment }
         );
         toast.success("Đã tạm ngưng giảng viên!");
-        return true;
+        return response.data;
       } catch (error: unknown) {
         toast.error(
           getApiErrorMessage(error, "Không thể tạm ngưng giảng viên."),
@@ -403,7 +417,7 @@ export function useSuspendInstructor() {
         throw error;
       }
     },
-    onSuccess: (_, instructorId) => {
+    onSuccess: (data, { instructorId }) => {
       // Invalidate các query liên quan
       queryClient.invalidateQueries({ queryKey: INSTRUCTORS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: INSTRUCTOR_QUERY_KEY });
@@ -412,6 +426,13 @@ export function useSuspendInstructor() {
       
       // Invalidate danh sách courses của instructor (nếu có)
       queryClient.invalidateQueries({ queryKey: ["instructor-courses", instructorId] });
+
+      if (data) {
+        queryClient.invalidateQueries({
+          queryKey: ACCOUNT_DETAIL_QUERY_KEY(data.accountId),
+        });
+        queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+      }
     },
   });
 }
@@ -421,14 +442,19 @@ export function useReactivateInstructor() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (instructorId: string): Promise<boolean> => {
+    mutationFn: async (
+      instructorId: string,
+    ): Promise<InstructorProfile | null> => {
       try {
-        await apiClient.patch(
+        const response = await apiClient.patch<
+          never,
+          ApiResponse<InstructorProfile>
+        >(
           `/user-service/api/v1/instructors/applications/${instructorId}/reactivate`,
           {}
         );
         toast.success("Đã kích hoạt lại giảng viên!");
-        return true;
+        return response.data;
       } catch (error: unknown) {
         toast.error(
           getApiErrorMessage(error, "Không thể kích hoạt lại giảng viên."),
@@ -436,7 +462,7 @@ export function useReactivateInstructor() {
         throw error;
       }
     },
-    onSuccess: (_, instructorId) => {
+    onSuccess: (data, instructorId) => {
       // Invalidate các query liên quan
       queryClient.invalidateQueries({ queryKey: INSTRUCTORS_QUERY_KEY });
       queryClient.invalidateQueries({ queryKey: INSTRUCTOR_QUERY_KEY });
@@ -445,6 +471,13 @@ export function useReactivateInstructor() {
       
       // Invalidate danh sách courses của instructor (nếu có)
       queryClient.invalidateQueries({ queryKey: ["instructor-courses", instructorId] });
+
+      if (data) {
+        queryClient.invalidateQueries({
+          queryKey: ACCOUNT_DETAIL_QUERY_KEY(data.accountId),
+        });
+        queryClient.invalidateQueries({ queryKey: ACCOUNTS_QUERY_KEY });
+      }
     },
   });
 }

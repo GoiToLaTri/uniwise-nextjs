@@ -7,9 +7,10 @@ import {
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
+import { type CourseSection } from "@/interfaces/course.interface";
 
 interface LearningSidebarProps {
-  sections: any[];
+  sections: CourseSection[];
   activeLessonId?: string;
   sidebarOpen: boolean;
   onCloseSidebar: () => void;
@@ -55,7 +56,7 @@ export function LearningSidebar({
                 
                 <AccordionContent className="pb-0 bg-slate-50/50">
                   <div className="flex flex-col">
-                    {section.lessons?.map((lesson: any, lIdx: number) => {
+                    {section.lessons?.map((lesson, lIdx) => {
                       const isActive = activeLessonId === lesson.id;
                       const isCompleted = lesson.isCompleted;
                       

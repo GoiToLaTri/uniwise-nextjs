@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname, useRouter } from "next/navigation";
+import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, BookOpen, Users, BarChart3,
   Settings, ShieldCheck, Key, GraduationCap,
@@ -12,7 +12,6 @@ import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/use-profile";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Skeleton } from "@/components/ui/skeleton";
-import { toast } from "sonner";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -152,10 +151,11 @@ export function AdminSidebar() {
 
               <DropdownMenuItem
                 onClick={handleLogout}
+                disabled={isPending}
                 className="rounded-xl px-3 py-2.5 font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer group"
               >
                 <LogOut className="w-4 h-4 mr-3 text-rose-400 group-focus:text-rose-600" />
-                Đăng xuất
+                {isPending ? "Đang đăng xuất..." : "Đăng xuất"}
               </DropdownMenuItem>
             </DropdownMenuContent>
           </DropdownMenu>

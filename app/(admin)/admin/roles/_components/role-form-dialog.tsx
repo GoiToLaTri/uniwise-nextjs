@@ -1,12 +1,12 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { 
   ShieldPlus, Info, KeyRound, AlignLeft, 
-  Save, Loader2, AlertCircle 
+  Loader2, AlertCircle
 } from "lucide-react";
 
 import {
@@ -22,7 +22,6 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { useCreateRole, useUpdateRole } from "@/hooks/use-role";
 
@@ -60,9 +59,9 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
     register,
     handleSubmit,
     reset,
+    control,
     formState: { errors },
     setValue,
-    watch
   } = useForm<RoleFormValues>({
     resolver: zodResolver(roleSchema),
     defaultValues: initialData || {
@@ -74,7 +73,7 @@ export function RoleFormDialog({ children, initialData }: RoleFormDialogProps) {
   });
 
   // Tự động viết hoa trường Name
-  const nameValue = watch("name");
+  const nameValue = useWatch({ control, name: "name" });
   React.useEffect(() => {
     if (nameValue && !isEditMode) {
       setValue("name", nameValue.toUpperCase(), { shouldValidate: true });

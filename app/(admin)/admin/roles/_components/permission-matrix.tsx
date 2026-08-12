@@ -12,7 +12,7 @@ import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import { Input } from "@/components/ui/input";
 import { PermissionResponse, useAllPermissions } from "@/hooks/use-permission";
-import { useRolePermissions, useAssignPermissions, useRevokePermissions } from "@/hooks/use-role";
+import { useRolePermissions, useAssignPermissions } from "@/hooks/use-role";
 
 export function PermissionMatrix({ 
   children, 
@@ -28,19 +28,18 @@ export function PermissionMatrix({
   const { data: allPermissions, isLoading: isLoadingAllPermissions } = useAllPermissions();
   const { data: currentPermissions, isLoading: isLoadingCurrentPermissions } = useRolePermissions(roleId);
   const assignPermissions = useAssignPermissions();
-  const revokePermissions = useRevokePermissions();
   
-  const [selectedPermissionNames, setSelectedPermissionNames] = React.useState<string[]>(initialPermissionNames);
+  const [permissionSelection, setPermissionSelection] = React.useState<
+    string[] | null
+  >(null);
   const [searchQuery, setSearchQuery] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
 
-  // Đồng bộ state với currentPermissions từ API
-  React.useEffect(() => {
-    if (currentPermissions && currentPermissions.permissions) {
-      const currentNames = currentPermissions.permissions.map(p => p.name);
-      setSelectedPermissionNames(currentNames);
-    }
-  }, [currentPermissions]);
+  const currentPermissionNames =
+    currentPermissions?.permissions?.map((permission) => permission.name) ??
+    initialPermissionNames;
+  const selectedPermissionNames =
+    permissionSelection ?? currentPermissionNames;
 
   // Lọc và nhóm quyền theo Resource
   const groupedPermissions = React.useMemo(() => {
@@ -64,10 +63,10 @@ export function PermissionMatrix({
 
   const handleToggle = (permissionName: string) => {
     if (!permissionName) return;
-    setSelectedPermissionNames(prev => 
-      prev.includes(permissionName) 
-        ? prev.filter(name => name !== permissionName) 
-        : [...prev, permissionName]
+    setPermissionSelection(
+      selectedPermissionNames.includes(permissionName)
+        ? selectedPermissionNames.filter((name) => name !== permissionName)
+        : [...selectedPermissionNames, permissionName],
     );
   };
 
@@ -77,8 +76,8 @@ export function PermissionMatrix({
       return;
     }
 
-    const currentNames = currentPermissions?.permissions?.map(p => p.name) ?? [];
-    const newNames = selectedPermissionNames ?? [];
+    const currentNames = currentPermissionNames;
+    const newNames = selectedPermissionNames;
 
     // So sánh để check có thay đổi không
     const hasChanges =
@@ -98,73 +97,22 @@ export function PermissionMatrix({
         roleId,
         permissionNames: newNames,
       });
-    } catch (error) {
-      console.error("Error updating permissions:", error);
-      toast.error("Có lỗi xảy ra khi cập nhật quyền");
+    } catch {
+      // useAssignPermissions đã hiển thị lỗi chuẩn từ backend.
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  // const handleSave = async () => {
-  //   if (!roleId) {
-  //     toast.error("Không tìm thấy ID vai trò");
-  //     return;
-  //   }
-
-  //   // Xác định quyền cần cấp và thu hồi
-  //   const currentNames = currentPermissions?.permissions?.map(p => p.name) || [];
-  //   const newNames = selectedPermissionNames || [];
-    
-  //   const toAssign = newNames.filter(name => !currentNames.includes(name));
-  //   const toRevoke = currentNames.filter(name => !newNames.includes(name));
-    
-  //   if (toAssign.length === 0 && toRevoke.length === 0) {
-  //     toast.info("Không có thay đổi nào để lưu");
-  //     return;
-  //   }
-
-  //   setIsSubmitting(true);
-    
-  //   try {
-  //     // Thực hiện cấp quyền và thu hồi quyền song song
-  //     const promises = [];
-      
-  //     if (toAssign.length > 0) {
-  //       promises.push(
-  //         assignPermissions.mutateAsync({
-  //           roleId,
-  //           permissionNames: toAssign,
-  //         })
-  //       );
-  //     }
-      
-  //     if (toRevoke.length > 0) {
-  //       promises.push(
-  //         revokePermissions.mutateAsync({
-  //           roleId,
-  //           permissionNames: toRevoke,
-  //         })
-  //       );
-  //     }
-      
-  //     await Promise.all(promises);
-      
-  //     // toast.success(`Đã cập nhật quyền cho vai trò ${roleName}`);
-      
-  //   } catch (error) {
-  //     console.error("Error updating permissions:", error);
-  //     toast.error("Có lỗi xảy ra khi cập nhật quyền");
-  //   } finally {
-  //     setIsSubmitting(false);
-  //   }
-  // };
-
   const isLoading = isLoadingAllPermissions || isLoadingCurrentPermissions;
-  const currentPermissionNames = new Set(currentPermissions?.permissions?.map(p => p.name) || []);
+  const currentPermissionNameSet = new Set(currentPermissionNames);
 
   return (
-    <Sheet>
+    <Sheet
+      onOpenChange={(open) => {
+        if (!open) setPermissionSelection(null);
+      }}
+    >
       <SheetTrigger asChild>{children}</SheetTrigger>
       <SheetContent className="sm:max-w-md w-full bg-white border-l-slate-200 p-0 flex flex-col outline-hidden">
         
@@ -215,7 +163,7 @@ export function PermissionMatrix({
                   {perms.map((perm) => {
                     if (!perm || !perm.name) return null;
                     
-                    const isCurrentlyAssigned = currentPermissionNames.has(perm.name);
+                    const isCurrentlyAssigned = currentPermissionNameSet.has(perm.name);
                     const isSelected = selectedPermissionNames.includes(perm.name);
                     
                     return (
@@ -234,11 +182,6 @@ export function PermissionMatrix({
                             <code className="text-[11px] font-bold font-mono text-indigo-600 bg-indigo-50 px-1.5 py-0.5 rounded">
                               {perm.name}
                             </code>
-                            {isCurrentlyAssigned && !isSelected && (
-                              <span className="text-[9px] font-bold text-green-600 bg-green-50 px-1.5 py-0.5 rounded whitespace-nowrap">
-                                Đã cấp
-                              </span>
-                            )}
                             {isCurrentlyAssigned && isSelected && (
                               <span className="text-[9px] font-bold text-yellow-600 bg-yellow-50 px-1.5 py-0.5 rounded whitespace-nowrap">
                                 Giữ nguyên
@@ -262,6 +205,7 @@ export function PermissionMatrix({
                         <Checkbox 
                           checked={isSelected}
                           onCheckedChange={() => handleToggle(perm.name)}
+                          onClick={(event) => event.stopPropagation()}
                           className="rounded-md border-slate-300 data-[state=checked]:bg-indigo-600 data-[state=checked]:border-indigo-600 shadow-sm transition-transform group-active:scale-90"
                         />
                       </div>
@@ -285,7 +229,7 @@ export function PermissionMatrix({
             <div className="flex items-center justify-between gap-4">
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Đã chọn</span>
-                <span className="text-lg font-black text-indigo-600 leading-none">{selectedPermissionNames?.length || 0}</span>
+                <span className="text-lg font-black text-indigo-600 leading-none">{selectedPermissionNames.length}</span>
               </div>
               <div className="flex flex-col">
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Đã cấp hiện tại</span>
@@ -295,9 +239,9 @@ export function PermissionMatrix({
                 <span className="text-[10px] font-black uppercase text-slate-400 tracking-tighter">Thay đổi</span>
                 <span className="text-lg font-black text-amber-600 leading-none">
                   {(() => {
-                    const currentNames = currentPermissions?.permissions?.map(p => p.name) || [];
-                    const added = selectedPermissionNames?.filter(n => !currentNames.includes(n)).length || 0;
-                    const removed = currentNames.filter(n => !selectedPermissionNames?.includes(n)).length || 0;
+                    const currentNames = currentPermissionNames;
+                    const added = selectedPermissionNames.filter(n => !currentNames.includes(n)).length;
+                    const removed = currentNames.filter(n => !selectedPermissionNames.includes(n)).length;
                     return added + removed;
                   })()}
                 </span>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ export function BasicInfoUpdateForm({ onNext, initialData }: { onNext: (data: St
   const {
     register,
     handleSubmit,
-    watch,
+    control,
     formState: { errors },
   } = useForm<StepOneValues>({
     resolver: zodResolver(updateInstructorProfileSchema.pick({
@@ -28,7 +28,7 @@ export function BasicInfoUpdateForm({ onNext, initialData }: { onNext: (data: St
     defaultValues: initialData,
   });
 
-  const bioContent = watch("biography") || "";
+  const bioContent = useWatch({ control, name: "biography" }) || "";
 
   return (
     <form onSubmit={handleSubmit(onNext)} className="space-y-8 animate-in fade-in slide-in-from-right-4 duration-500">

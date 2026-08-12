@@ -63,9 +63,9 @@ export function UserTable({ data, isLoading }: { data?: { content: ProfileRespon
               </div>
             </TableCell>
             <TableCell className="text-center">
-               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-emerald-50 text-emerald-600 text-[10px] font-black uppercase tracking-widest">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  Hoạt động
+               <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-slate-100 text-slate-500 text-[10px] font-black uppercase tracking-widest">
+                  <div className="w-1.5 h-1.5 rounded-full bg-slate-400" />
+                  Chưa đồng bộ
                </span>
             </TableCell>
             <TableCell>
@@ -82,8 +82,11 @@ export function UserTable({ data, isLoading }: { data?: { content: ProfileRespon
                     </DropdownMenuItem>
                   </UserAccessDialog>
                   <DropdownMenuSeparator />
-                  <DropdownMenuItem className="rounded-lg font-bold text-rose-600 focus:bg-rose-50 focus:text-rose-600 cursor-pointer">
-                    <Ban className="w-4 h-4 mr-2" /> Khóa tài khoản
+                  <DropdownMenuItem
+                    disabled
+                    className="rounded-lg font-bold text-slate-400"
+                  >
+                    <Ban className="w-4 h-4 mr-2" /> Chưa hỗ trợ khóa tài khoản
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

@@ -5,9 +5,10 @@ import { VideoPlayer } from "@/components/shared/video-player";
 import { FileText, MessageCircle, FileBox } from "lucide-react";
 import { useSyncVideoPosition, useCompleteLesson } from "@/hooks/use-learning-progress";
 import { toast } from "sonner";
+import { type CourseLesson } from "@/interfaces/course.interface";
 
 interface LessonContentProps {
-  lesson: any | null;
+  lesson: CourseLesson | null;
   videoUrl: string;
   courseId: string;
 }

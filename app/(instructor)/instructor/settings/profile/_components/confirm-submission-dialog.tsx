@@ -6,8 +6,7 @@ import {
   DialogHeader, DialogTitle, DialogTrigger 
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { CheckCircle2, AlertCircle, Loader2, Send } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { AlertCircle, Loader2, Send } from "lucide-react";
 
 interface ConfirmSubmissionDialogProps {
   children: React.ReactNode;

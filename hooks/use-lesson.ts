@@ -95,13 +95,13 @@ export function useReorderLessons() {
 
   return useMutation({
     mutationFn: async (variables: {
-      sectionId: string;
+      sectionDbId: string;
       courseId: string;
       data: { items: { id: string; sortOrder: number }[] };
     }): Promise<boolean> => {
       try {
         await apiClient.put(
-          `/course-service/api/v1/lessons/section/${variables.sectionId}/reorder`,
+          `/course-service/api/v1/lessons/section/${variables.sectionDbId}/reorder`,
           variables.data
         );
         toast.success("Cập nhật thứ tự bài giảng thành công!");

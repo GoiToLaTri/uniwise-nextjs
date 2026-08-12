@@ -14,7 +14,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { 
-  Plus, Trash2, AlertCircle, CheckCircle2, ArrowLeft, Cpu, BadgeCheck 
+  Plus, Trash2, AlertCircle, ArrowLeft, Cpu
 } from "lucide-react";
 import { updateInstructorProfileSchema, type UpdateInstructorFormValues } from "../_lib/update-schema";
 import { cn } from "@/lib/utils";

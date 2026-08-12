@@ -4,28 +4,25 @@ import { useInstructorProfile } from "@/hooks/use-instructor";
 import { ReactNode } from "react";
 import { 
   GraduationCap, Loader2, CheckCircle2, Clock, 
-  AlertCircle, ArrowRight, LayoutDashboard, 
-  ShieldAlert, Mail, Sparkles
+  AlertCircle, ArrowRight, ShieldAlert, Sparkles
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { cn } from "@/lib/utils";
 
-export default function RegisterLayout({ children }: { children: ReactNode }) {
-  const { data: instructor, isLoading } = useInstructorProfile();
-
-  // Component trang trí nền
-  const BackgroundDecor = () => (
+function BackgroundDecor() {
+  return (
     <div className="fixed inset-0 -z-10 overflow-hidden pointer-events-none">
-      {/* 1. Subtle Dot Grid Pattern */}
       <div className="absolute inset-0 bg-[url('https://grainy-gradients.vercel.app/noise.svg')] opacity-[0.03] brightness-0" />
       <div className="absolute inset-0 bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-[size:40px_40px] [mask-image:radial-gradient(ellipse_60%_50%_at_50%_0%,#000_70%,transparent_100%)]" />
-      
-      {/* 2. Large Ambient Glows (OKLCH) */}
       <div className="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] rounded-full bg-indigo-500/10 blur-[120px] animate-pulse" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] rounded-full bg-blue-500/10 blur-[100px]" />
     </div>
   );
+}
+
+export default function RegisterLayout({ children }: { children: ReactNode }) {
+  const { data: instructor, isLoading } = useInstructorProfile();
 
   if (isLoading) {
     return (

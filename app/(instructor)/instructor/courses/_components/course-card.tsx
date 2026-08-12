@@ -18,6 +18,7 @@ import { PriceTierResponse } from "@/hooks/use-price-tier";
 import { useDeleteCourse } from "@/hooks/use-course";
 import { CourseFormDialog } from "./course-form-dialog";
 import Link from "next/link";
+import { RemoteImage } from "@/components/shared/remote-image";
 
 interface CourseCardProps {
   course: CourseSearchResponse;
@@ -68,10 +69,12 @@ export function CourseCard({ course, priceTiers, onRefresh }: CourseCardProps) {
       {/* 1. Course Thumbnail */}
       <div className="relative aspect-video w-full overflow-hidden bg-slate-100 border-b border-slate-100">
         {course.thumbnailUrl ? (
-          <img
+          <RemoteImage
             src={course.thumbnailUrl}
             alt={course.title}
-            className="w-full h-full object-cover group-hover:scale-105 transition-all duration-500"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            className="object-cover group-hover:scale-105 transition-all duration-500"
             onError={(e) => {
               (e.target as HTMLElement).style.display = "none";
             }}

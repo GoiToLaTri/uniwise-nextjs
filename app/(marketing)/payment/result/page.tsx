@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useSearchParams, useRouter } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { usePaymentDetail } from "@/hooks/use-payment";
 import { useCourse } from "@/hooks/use-course";
@@ -13,36 +13,39 @@ import {
   ArrowRight, 
   RefreshCw, 
   Home, 
-  HelpCircle,
   BookOpen
 } from "lucide-react";
-import { toast } from "sonner";
 import { Suspense } from "react";
+
+const emptySubscribe = () => () => undefined;
+
+function useHasHydrated() {
+  return React.useSyncExternalStore(emptySubscribe, () => true, () => false);
+}
 
 function PaymentResultContent() {
   const searchParams = useSearchParams();
-  const router = useRouter();
+  const hasHydrated = useHasHydrated();
   
   // Các query parameter trả về từ VNPay
   const vnpResponseCode = searchParams.get("vnp_ResponseCode");
   const vnpAmount = searchParams.get("vnp_Amount");
   const vnpTxnRef = searchParams.get("vnp_TxnRef");
   
-  const [paymentId, setPaymentId] = React.useState<string | null>(null);
-  const [coursePublicId, setCoursePublicId] = React.useState<string | null>(null);
-
-  const [isCheckingStorage, setIsCheckingStorage] = React.useState(true);
+  const [paymentId] = React.useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : localStorage.getItem("uniwise_last_payment_id"),
+  );
+  const [coursePublicId] = React.useState<string | null>(() =>
+    typeof window === "undefined"
+      ? null
+      : localStorage.getItem("uniwise_last_course_public_id"),
+  );
   const [isRelayingIPN, setIsRelayingIPN] = React.useState(false);
 
   // Đọc thông tin từ localStorage khi client mount & Relay IPN parameters về local backend
   React.useEffect(() => {
-    const savedPaymentId = localStorage.getItem("uniwise_last_payment_id");
-    const savedCoursePublicId = localStorage.getItem("uniwise_last_course_public_id");
-    
-    if (savedPaymentId) setPaymentId(savedPaymentId);
-    if (savedCoursePublicId) setCoursePublicId(savedCoursePublicId);
-    setIsCheckingStorage(false);
-
     const relayIPN = async () => {
       if (searchParams.has("vnp_SecureHash") && searchParams.has("vnp_TxnRef")) {
         setIsRelayingIPN(true);
@@ -62,7 +65,7 @@ function PaymentResultContent() {
   }, [searchParams]);
 
   // Gọi query để lấy thông tin chi tiết giao dịch từ DB
-  const { data: payment, isLoading, error } = usePaymentDetail(paymentId || "");
+  const { data: payment, isLoading } = usePaymentDetail(paymentId || "");
 
   // Gọi thêm dữ liệu khóa học để hiển thị tên khóa học (nếu có coursePublicId)
   const { data: course } = useCourse(coursePublicId || "");
@@ -85,7 +88,7 @@ function PaymentResultContent() {
     ? payment.status === "FAILED"
     : vnpResponseCode !== null && vnpResponseCode !== "00";
 
-  const isPending = isCheckingStorage || isRelayingIPN || (payment 
+  const isPending = !hasHydrated || isRelayingIPN || (payment
     ? payment.status === "PENDING"
     : paymentId !== null && isLoading);
 

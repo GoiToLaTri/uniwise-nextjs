@@ -6,7 +6,6 @@ import { DegreesUpdateForm } from "./degrees-update-form";
 import { UpdateInstructorFormValues } from "../_lib/update-schema";
 import { StepProgress } from "@/app/(dashboard)/instructor/register/_components/step-progress";
 import { ExpertiseUpdateForm } from "./expertise-update-form";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
 import { useUpdateInstructorProfile } from "@/hooks/use-instructor";
 
@@ -23,14 +22,16 @@ export function InstructorUpdateForm({ initialData }: InstructorUpdateFormProps)
   const updateProfileMutation = useUpdateInstructorProfile();
 
   // Xử lý Giai đoạn 1 hoàn tất
-  const handleStepOneNext = (data: any) => {
+  const handleStepOneNext = (
+    data: Pick<UpdateInstructorFormValues, "name" | "headline" | "biography" | "yearsOfExperience">,
+  ) => {
     setFormData((prev) => ({ ...prev, ...data }));
     setCurrentStep(2);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   // Xử lý Giai đoạn 2 hoàn tất
-  const handleStepTwoNext = (data: any) => {
+  const handleStepTwoNext = (data: Pick<UpdateInstructorFormValues, "degrees">) => {
     setFormData((prev) => ({ ...prev, ...data }));
     setCurrentStep(3);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -41,7 +42,9 @@ export function InstructorUpdateForm({ initialData }: InstructorUpdateFormProps)
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
-  const handleFinalSubmit = async (expertiseData: any) => {
+  const handleFinalSubmit = async (
+    expertiseData: Pick<UpdateInstructorFormValues, "expertises">,
+  ) => {
     const finalPayload = { ...formData, ...expertiseData };
     
     try {

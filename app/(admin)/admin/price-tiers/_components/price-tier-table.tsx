@@ -1,6 +1,6 @@
 "use client";
 
-import { MoreHorizontal, Edit3, Trash2, Banknote, Users, Coins } from "lucide-react";
+import { MoreHorizontal, Edit3, Trash2, Banknote, Users } from "lucide-react";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";

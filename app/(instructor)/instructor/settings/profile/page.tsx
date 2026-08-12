@@ -9,6 +9,21 @@ import { useInstructorProfile } from "@/hooks/use-instructor";
 import { InstructorUpdateForm } from "./_components/instructor-update-form";
 import { UpdateInstructorFormValues } from "./_lib/update-schema";
 
+type ExpertiseLevel = UpdateInstructorFormValues["expertises"][number]["level"];
+
+function getExpertiseLevel(level?: string): ExpertiseLevel {
+  if (
+    level === "BEGINNER" ||
+    level === "INTERMEDIATE" ||
+    level === "ADVANCED" ||
+    level === "EXPERT"
+  ) {
+    return level;
+  }
+
+  return "INTERMEDIATE";
+}
+
 export default function UpdateProfilePage() {
   const { data: profile, isLoading } = useInstructorProfile();
 
@@ -29,19 +44,19 @@ export default function UpdateProfilePage() {
     headline: profile.headline || "",
     biography: profile.biography || "",
     yearsOfExperience: profile.yearsOfExperience || 0,
-    degrees: profile.degrees.map((d: any) => ({
-      id: d.id,
-      type: d.type,
-      name: d.name,
-      institution: d.institution,
-      issuedDate: d.issuedDate,
-      description: d.description || "",
+    degrees: profile.degrees.map((degree) => ({
+      id: degree.id,
+      type: degree.type,
+      name: degree.name,
+      institution: degree.institution,
+      issuedDate: degree.issuedDate,
+      description: degree.description || "",
     })),
-    expertises: profile.expertises.map((e: any) => ({
-      id: e.id,
-      name: e.name,
-      description: e.description || "",
-      level: e.level as "BEGINNER" | "INTERMEDIATE" | "ADVANCED" | "EXPERT", // Ép kiểu enum
+    expertises: profile.expertises.map((expertise) => ({
+      id: expertise.id,
+      name: expertise.name,
+      description: expertise.description || "",
+      level: getExpertiseLevel(expertise.level),
     })),
   };
 
@@ -99,7 +114,7 @@ export default function UpdateProfilePage() {
             
             <div className="bg-rose-50/50 rounded-2xl p-6 border border-rose-100/50">
                <p className="text-slate-800 font-bold text-lg leading-relaxed">
-                  "{profile.reviewComment || "Hồ sơ cần được cập nhật thêm thông tin chuyên môn."}"
+                  &ldquo;{profile.reviewComment || "Hồ sơ cần được cập nhật thêm thông tin chuyên môn."}&rdquo;
                </p>
             </div>
           </div>

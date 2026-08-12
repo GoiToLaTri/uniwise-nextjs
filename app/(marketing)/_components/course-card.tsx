@@ -6,6 +6,7 @@ import { Star, Users, BookOpen } from "lucide-react";
 import { CourseSearchResponse } from "@/interfaces/course.interface";
 import { PriceTierResponse } from "@/hooks/use-price-tier";
 import Link from "next/link";
+import { RemoteImage } from "@/components/shared/remote-image";
 
 interface CourseCardProps {
   course: CourseSearchResponse;
@@ -32,10 +33,12 @@ export function CourseCard({ course, priceTiers }: CourseCardProps) {
     <Card className="group border-slate-200 bg-white/90 backdrop-blur-md rounded-xl overflow-hidden hover:shadow-[0_20px_50px_rgba(79,70,229,0.1)] transition-all duration-500 flex flex-col h-full">
       <Link href={`/courses/${course.publicId}`} className="block relative aspect-video overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center">
         {course.thumbnailUrl ? (
-          <img 
+          <RemoteImage
             src={course.thumbnailUrl} 
             alt={course.title} 
-            className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+            fill
+            sizes="(max-width: 768px) 100vw, (max-width: 1280px) 50vw, 33vw"
+            className="object-cover transition-transform duration-500 group-hover:scale-110"
             onError={(e) => {
               (e.target as HTMLElement).style.display = "none";
             }}

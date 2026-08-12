@@ -5,14 +5,16 @@ import { useMyCourses } from "@/hooks/use-learning-progress";
 import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
-import { BookOpen, PlayCircle, Loader2, CheckCircle2, Clock } from "lucide-react";
+import { BookOpen, PlayCircle, Loader2 } from "lucide-react";
 import Link from "next/link";
 import { format } from "date-fns";
 import { vi } from "date-fns/locale";
 import { UserCourseDto } from "@/interfaces/course.interface";
+import { RemoteImage } from "@/components/shared/remote-image";
 
 export default function MyCoursesPage() {
   const [page, setPage] = useState(1);
+  const [activeTabId, setActiveTabId] = useState("all");
   const size = 12;
 
   const { data: myCoursesData, isLoading, error } = useMyCourses(page, size);
@@ -87,10 +89,12 @@ export default function MyCoursesPage() {
           >
             <Link href={`/course/${course.publicId}/learn`} className="block relative aspect-video overflow-hidden bg-slate-50 border-b border-slate-100 flex items-center justify-center">
               {course.thumbnail ? (
-                <img 
+                <RemoteImage
                   src={course.thumbnail} 
                   alt={course.title} 
-                  className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110"
+                  fill
+                  sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 25vw"
+                  className="object-cover transition-transform duration-500 group-hover:scale-110"
                   onError={(e) => {
                     (e.target as HTMLElement).style.display = "none";
                   }}
@@ -162,8 +166,6 @@ export default function MyCoursesPage() {
     { id: "wishlist", label: "Yêu thích" },
     { id: "history", label: "Lịch sử mua" },
   ];
-
-  const [activeTabId, setActiveTabId] = useState("all");
 
   return (
     <div className="w-full">

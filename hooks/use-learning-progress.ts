@@ -1,7 +1,7 @@
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import { ApiResponse } from "@/interfaces/response/api-response.interface";
-import { MyCoursesResponse } from "@/interfaces/course.interface";
+import { CourseResponse, MyCoursesResponse } from "@/interfaces/course.interface";
 
 export const useMyCourses = (page: number = 1, size: number = 12) => {
   return useQuery({
@@ -44,14 +44,14 @@ export const useCompleteLesson = (lessonId: string, courseId: string) => {
       queryClient.invalidateQueries({ queryKey: ["my-courses"] });
       
       // Update local cache for immediate UI feedback
-      queryClient.setQueryData(["course", courseId], (oldData: any) => {
+      queryClient.setQueryData<CourseResponse | undefined>(["course", courseId], (oldData) => {
         if (!oldData) return oldData;
         
         let lessonsCount = 0;
         let completedCount = 0;
         
-        const newSections = oldData.sections?.map((section: any) => {
-          const newLessons = section.lessons?.map((lesson: any) => {
+        const newSections = oldData.sections.map((section) => {
+          const newLessons = section.lessons.map((lesson) => {
             lessonsCount++;
             let isCompleted = lesson.isCompleted;
             if (lesson.id === lessonId) {

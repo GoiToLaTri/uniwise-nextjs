@@ -5,7 +5,6 @@ import { getTokenResponse } from "@/stores/token-store";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { toast } from "sonner";
 import { getApiErrorMessage } from "@/lib/auth-error";
-import { PermissionResponse } from "./use-permission";
 
 export const ROLES_QUERY_KEY = ["roles"];
 const ROLE_DETAIL_QUERY_KEY = (id: number) => ["role", id];
@@ -150,15 +149,12 @@ export function useToggleRoleActive() {
   const queryClient = useQueryClient();
 
   return useMutation({
-    mutationFn: async (id: number): Promise<RoleResponse | null> => {
+    mutationFn: async (id: number): Promise<void> => {
       try {
-        const response = await apiClient.patch<never, ApiResponse<RoleResponse>>(
+        await apiClient.patch<never, ApiResponse<never>>(
           `/identity-service/api/v1/roles/${id}/toggle-active`
         );
-        toast.success(
-          response.data.isActive ? "Kích hoạt role thành công!" : "Vô hiệu hóa role thành công!"
-        );
-        return response.data;
+        toast.success("Đã thay đổi trạng thái role!");
       } catch (error: unknown) {
         toast.error(
           getApiErrorMessage(error, "Không thể thay đổi trạng thái role."),
@@ -166,26 +162,10 @@ export function useToggleRoleActive() {
         throw error;
       }
     },
-    onSuccess: (updatedRole, id) => {
-      if (updatedRole) {
-        // Update cache chi tiết
-        queryClient.setQueryData(ROLE_DETAIL_QUERY_KEY(id), updatedRole);
-        
-        // Update trong danh sách roles cache
-        const cached = queryClient.getQueryData<RoleListResponse>(ROLES_QUERY_KEY);
-        if (cached?.content) {
-          const updatedContent = cached.content.map((role) =>
-            role.id === id ? updatedRole : role
-          );
-          queryClient.setQueryData(ROLES_QUERY_KEY, {
-            ...cached,
-            content: updatedContent,
-          });
-        } else {
-          // Nếu không có cache thì invalidate
-          queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
-        }
-      }
+    onSuccess: (_, id) => {
+      // Endpoint toggle không trả data nên phải lấy lại trạng thái thật.
+      queryClient.invalidateQueries({ queryKey: ROLE_DETAIL_QUERY_KEY(id) });
+      queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
     },
   });
 }
@@ -279,11 +259,11 @@ export function useAssignPermissions() {
     }: {
       roleId: number;
       permissionNames: string[]; // Mảng tên quyền (permission names)
-    }): Promise<PermissionResponse[] | null> => {
+    }): Promise<RoleResponse | null> => {
       try {
-        const response = await apiClient.post<never, ApiResponse<PermissionResponse[]>>(
+        const response = await apiClient.post<never, ApiResponse<RoleResponse>>(
           `/identity-service/api/v1/roles/${roleId}/assign-permissions`,
-          permissionNames // Gửi mảng tên quyền
+          permissionNames
         );
         toast.success(`Đã cấp ${permissionNames.length} quyền thành công!`);
         return response.data;
@@ -294,19 +274,14 @@ export function useAssignPermissions() {
         throw error;
       }
     },
-    onSuccess: (data, { roleId }) => {
-      if (data) {
-        // Invalidate permissions của role
-        queryClient.invalidateQueries({ queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId) });
-        
-        // Vì userCount có thể thay đổi sau khi cấp/thu hồi quyền
+    onSuccess: (updatedRole, { roleId }) => {
+      if (updatedRole) {
+        queryClient.setQueryData(
+          ROLE_PERMISSIONS_QUERY_KEY(roleId),
+          updatedRole,
+        );
+        queryClient.setQueryData(ROLE_DETAIL_QUERY_KEY(roleId), updatedRole);
         queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
-        
-        // Invalidate chi tiết role (nếu có)
-        queryClient.invalidateQueries({ queryKey: ROLE_DETAIL_QUERY_KEY(roleId) });
-        
-        // Invalidate danh sách permissions
-        queryClient.invalidateQueries({ queryKey: ["permissions"] });
       }
     },
   });
@@ -323,11 +298,11 @@ export function useRevokePermissions() {
     }: {
       roleId: number;
       permissionNames: string[]; // Mảng tên quyền (permission names)
-    }): Promise<PermissionResponse[] | null> => {
+    }): Promise<RoleResponse | null> => {
       try {
-        const response = await apiClient.post<never, ApiResponse<PermissionResponse[]>>(
+        const response = await apiClient.post<never, ApiResponse<RoleResponse>>(
           `/identity-service/api/v1/roles/${roleId}/revoke-permissions`,
-          permissionNames // Gửi mảng tên quyền
+          permissionNames
         );
         toast.success(`Đã thu hồi ${permissionNames.length} quyền thành công!`);
         return response.data;
@@ -338,19 +313,14 @@ export function useRevokePermissions() {
         throw error;
       }
     },
-    onSuccess: (data, { roleId }) => {
-      if (data) {
-        // Invalidate permissions của role
-        queryClient.invalidateQueries({ queryKey: ROLE_PERMISSIONS_QUERY_KEY(roleId) });
-        
-        // Invalidate danh sách roles
+    onSuccess: (updatedRole, { roleId }) => {
+      if (updatedRole) {
+        queryClient.setQueryData(
+          ROLE_PERMISSIONS_QUERY_KEY(roleId),
+          updatedRole,
+        );
+        queryClient.setQueryData(ROLE_DETAIL_QUERY_KEY(roleId), updatedRole);
         queryClient.invalidateQueries({ queryKey: ROLES_QUERY_KEY });
-        
-        // Invalidate chi tiết role
-        queryClient.invalidateQueries({ queryKey: ROLE_DETAIL_QUERY_KEY(roleId) });
-        
-        // Invalidate danh sách permissions
-        queryClient.invalidateQueries({ queryKey: ["permissions"] });
       }
     },
   });

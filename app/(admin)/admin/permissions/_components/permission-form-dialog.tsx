@@ -1,7 +1,7 @@
 "use client";
 
 import * as React from "react";
-import { useForm } from "react-hook-form";
+import { useForm, useWatch } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import * as z from "zod";
 import { Key, Loader2, AlertCircle } from "lucide-react";
@@ -11,9 +11,12 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
 import { cn } from "@/lib/utils";
-import { useCreatePermission, useUpdatePermission } from "@/hooks/use-permission";
+import {
+  type PermissionResponse,
+  useCreatePermission,
+  useUpdatePermission,
+} from "@/hooks/use-permission";
 
 // Import hooks
 
@@ -26,7 +29,13 @@ const permissionSchema = z.object({
 
 type PermissionFormValues = z.infer<typeof permissionSchema>;
 
-export function PermissionFormDialog({ children, initialData, onSuccess }: { children: React.ReactNode, initialData?: any, onSuccess: () => void }) {
+interface PermissionFormDialogProps {
+  children: React.ReactNode;
+  initialData?: PermissionResponse;
+  onSuccess: () => void;
+}
+
+export function PermissionFormDialog({ children, initialData, onSuccess }: PermissionFormDialogProps) {
   const [open, setOpen] = React.useState(false);
   const isEdit = !!initialData;
   
@@ -36,7 +45,7 @@ export function PermissionFormDialog({ children, initialData, onSuccess }: { chi
 
   const isPending = createPermission.isPending || updatePermission.isPending;
 
-  const { register, handleSubmit, reset, formState: { errors }, setValue, watch } = useForm<PermissionFormValues>({
+  const { control, register, handleSubmit, reset, formState: { errors }, setValue } = useForm<PermissionFormValues>({
     resolver: zodResolver(permissionSchema),
     defaultValues: initialData || { name: "", description: "" },
   });
@@ -51,7 +60,7 @@ export function PermissionFormDialog({ children, initialData, onSuccess }: { chi
   }, [open, initialData, reset]);
 
   // Logic Tự động chuyển về lowercase khi người dùng nhập
-  const nameValue = watch("name");
+  const nameValue = useWatch({ control, name: "name" });
   React.useEffect(() => {
     if (nameValue && !isEdit) { // Chỉ tự động format khi tạo mới, không khi edit
       setValue("name", nameValue.toLowerCase().replace(/\s+/g, '-'), { shouldValidate: true });
