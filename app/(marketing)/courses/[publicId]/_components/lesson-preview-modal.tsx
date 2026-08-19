@@ -11,12 +11,14 @@ export interface PreviewLesson {
 
 interface LessonPreviewModalProps {
   isEnrolled: boolean;
+  isEnrollmentPending: boolean;
   lesson: PreviewLesson;
-  onCheckout: () => void;
+  enrollmentLabel: string;
+  onEnroll: () => void;
   onClose: () => void;
 }
 
-export function LessonPreviewModal({ isEnrolled, lesson, onCheckout, onClose }: LessonPreviewModalProps) {
+export function LessonPreviewModal({ isEnrolled, isEnrollmentPending, lesson, enrollmentLabel, onEnroll, onClose }: LessonPreviewModalProps) {
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/75 backdrop-blur-xs p-4 animate-in fade-in duration-300">
       <div className="bg-slate-900 text-white w-full max-w-4xl rounded-2xl overflow-hidden shadow-2xl flex flex-col max-h-[90vh]">
@@ -51,8 +53,12 @@ export function LessonPreviewModal({ isEnrolled, lesson, onCheckout, onClose }: 
 
         <div className="p-4 bg-slate-800 text-center border-t border-slate-700">
           {!isEnrolled && (
-            <button onClick={onCheckout} className="px-6 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 text-sm cursor-pointer inline-flex items-center gap-2">
-              Đăng ký khóa học để mở khóa toàn bộ
+            <button
+              onClick={onEnroll}
+              disabled={isEnrollmentPending}
+              className="px-6 h-10 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 text-sm cursor-pointer inline-flex items-center gap-2 disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+            >
+              {isEnrollmentPending ? "Đang xử lý..." : enrollmentLabel}
             </button>
           )}
         </div>

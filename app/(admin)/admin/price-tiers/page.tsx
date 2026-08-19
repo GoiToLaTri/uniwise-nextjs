@@ -77,7 +77,7 @@ export default function PriceTiersPage() {
             </SelectTrigger>
             <SelectContent className="rounded-xl border-slate-200 !w-full">
               <SelectItem value="ALL" className="rounded-lg cursor-pointer py-2.5 px-3">Tất cả tiền tệ</SelectItem>
-              <SelectItem value="VND" className="rounded-lg cursor-pointer py-2.5 px-3">VND (VN Đồng)</SelectItem>
+              <SelectItem value="VND" className="rounded-lg cursor-pointer py-2.5 px-3">VND (Việt Nam Đồng)</SelectItem>
               <SelectItem value="USD" className="rounded-lg cursor-pointer py-2.5 px-3">USD (Đô la Mỹ)</SelectItem>
             </SelectContent>
           </Select>

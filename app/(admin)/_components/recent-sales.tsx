@@ -3,10 +3,10 @@ import { Button } from "@/components/ui/button";
 import { MoreHorizontal, ExternalLink } from "lucide-react";
 
 const DATA = [
-  { id: "1", user: "Phong Nguyen", course: "Next.js Pro", price: "1.290k", date: "2 phút trước" },
-  { id: "2", user: "Minh Anh", course: "Tailwind v4 UI", price: "850k", date: "15 phút trước" },
-  { id: "3", user: "Hoàng Vũ", course: "React Query", price: "450k", date: "1 giờ trước" },
-  { id: "4", user: "Lan Chi", course: "Figma to Code", price: "990k", date: "3 giờ trước" },
+  { id: "1", user: "Phong Nguyen", course: "Next.js Pro", price: "1.290.000 VND", date: "2 phút trước" },
+  { id: "2", user: "Minh Anh", course: "Tailwind v4 UI", price: "850.000 VND", date: "15 phút trước" },
+  { id: "3", user: "Hoàng Vũ", course: "React Query", price: "450.000 VND", date: "1 giờ trước" },
+  { id: "4", user: "Lan Chi", course: "Figma to Code", price: "990.000 VND", date: "3 giờ trước" },
 ];
 
 export function RecentSales() {

@@ -8,7 +8,10 @@ import { toast } from "sonner";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useCourse } from "@/hooks/use-course";
 import { useCreatePayment } from "@/hooks/use-payment";
+import { useEnrollFreeCourse } from "@/hooks/use-learning-progress";
 import { usePriceTier } from "@/hooks/use-price-tier";
+import { getTokenResponse } from "@/stores/token-store";
+import { formatCurrencyAmount } from "@/lib/currency";
 import { type CourseLesson } from "@/interfaces/course.interface";
 import { CheckoutModal } from "./_components/checkout-modal";
 import { CourseDescriptionCard } from "./_components/course-description-card";
@@ -44,18 +47,30 @@ export default function CourseDetailPage() {
   const { publicId } = useParams<{ publicId: string }>();
   const router = useRouter();
   const { data: course, isLoading: isLoadingCourse, isError: isErrorCourse } = useCourse(publicId);
-  const { data: priceTier, isLoading: isLoadingPrice } = usePriceTier(course?.priceTierId || "");
+  const {
+    data: priceTier,
+    isLoading: isLoadingPrice,
+    isError: isErrorPrice,
+  } = usePriceTier(course?.priceTierId || "");
   const createPayment = useCreatePayment();
+  const enrollFreeCourse = useEnrollFreeCourse();
   const [expandedSections, setExpandedSections] = React.useState<Record<string, boolean> | null>(null);
   const [previewLesson, setPreviewLesson] = React.useState<PreviewLesson | null>(null);
   const [showCheckoutModal, setShowCheckoutModal] = React.useState(false);
 
   const isEnrolled = course?.isEnrolled || false;
+  const hasPriceTier = Boolean(course?.priceTierId);
+  const isFreeCourse = !hasPriceTier || priceTier?.priceAmount === 0;
+  const isPricePending = hasPriceTier && isLoadingPrice;
+  const isPriceUnavailable =
+    hasPriceTier && !isLoadingPrice && (isErrorPrice || !priceTier);
   const priceDisplay = React.useMemo(() => {
+    if (!hasPriceTier) return "Miễn phí";
     if (isLoadingPrice) return "Đang tải...";
-    if (!priceTier || priceTier.priceAmount === 0) return "Miễn phí";
-    return `${new Intl.NumberFormat().format(priceTier.priceAmount)}đ`;
-  }, [isLoadingPrice, priceTier]);
+    if (isErrorPrice || !priceTier) return "Chưa xác định";
+    if (priceTier.priceAmount === 0) return "Miễn phí";
+    return formatCurrencyAmount(priceTier.priceAmount, priceTier.currency);
+  }, [hasPriceTier, isErrorPrice, isLoadingPrice, priceTier]);
   const totalLessons = React.useMemo(
     () => course?.sections.reduce((total, section) => total + section.lessons.length, 0) ?? 0,
     [course?.sections],
@@ -75,6 +90,40 @@ export default function CourseDetailPage() {
     });
   };
 
+  const handleStartLearning = () => {
+    if (!course) return;
+
+    const firstLesson = course.sections.flatMap((section) => section.lessons)[0];
+    const lessonQuery = firstLesson ? `?lessonId=${firstLesson.id}` : "";
+    router.push(`/course/${course.publicId}/learn${lessonQuery}`);
+  };
+
+  const ensureAuthenticated = async () => {
+    const tokenResponse = await getTokenResponse();
+    if (tokenResponse) return true;
+
+    toast.info("Vui lòng đăng nhập để đăng ký khóa học.");
+    const returnPath = `/courses/${publicId}`;
+    router.push(`/signin?redirect=${encodeURIComponent(returnPath)}`);
+    return false;
+  };
+
+  const handleEnrollment = async () => {
+    if (!course) return;
+    if (isPricePending) {
+      toast.info("Học phí đang được tải. Vui lòng chờ trong giây lát.");
+      return;
+    }
+    if (isPriceUnavailable) {
+      toast.error("Chưa thể xác định học phí. Vui lòng thử lại sau.");
+      return;
+    }
+    if (!(await ensureAuthenticated())) return;
+
+    setPreviewLesson(null);
+    setShowCheckoutModal(true);
+  };
+
   const handleOpenLesson = (lesson: CourseLesson) => {
     if (isEnrolled && course) {
       router.push(`/course/${course.publicId}/learn?lessonId=${lesson.id}`);
@@ -90,20 +139,40 @@ export default function CourseDetailPage() {
       return;
     }
 
-    toast.warning("Vui lòng mua khóa học để mở khóa bài học này.");
-    setShowCheckoutModal(true);
+    if (isPricePending) {
+      toast.info("Học phí đang được tải. Vui lòng chờ trong giây lát.");
+      return;
+    }
+
+    if (isPriceUnavailable) {
+      toast.error("Chưa thể xác định học phí. Vui lòng thử lại sau.");
+      return;
+    }
+
+    toast.warning(
+      isFreeCourse
+        ? "Hãy đăng ký miễn phí để mở khóa bài học này."
+        : "Vui lòng mua khóa học để mở khóa bài học này.",
+    );
+    void handleEnrollment();
   };
 
-  const handleStartLearning = () => {
-    if (!course) return;
+  const handleConfirmEnrollment = async () => {
+    if (!course?.id || !(await ensureAuthenticated())) return;
 
-    const firstLesson = course.sections.flatMap((section) => section.lessons)[0];
-    const lessonQuery = firstLesson ? `?lessonId=${firstLesson.id}` : "";
-    router.push(`/course/${course.publicId}/learn${lessonQuery}`);
-  };
-
-  const handleConfirmCheckout = async () => {
-    if (!course?.id) return;
+    if (isFreeCourse) {
+      try {
+        await enrollFreeCourse.mutateAsync({
+          courseId: course.id,
+          coursePublicId: course.publicId,
+        });
+        setShowCheckoutModal(false);
+        handleStartLearning();
+      } catch {
+        // Hook đã hiển thị thông báo lỗi phù hợp.
+      }
+      return;
+    }
 
     try {
       const response = await createPayment.mutateAsync({ courseId: course.id });
@@ -175,9 +244,13 @@ export default function CourseDetailPage() {
           <CourseEnrollmentCard
             course={course}
             isEnrolled={isEnrolled}
+            isEnrollmentPending={enrollFreeCourse.isPending || createPayment.isPending}
+            isFree={isFreeCourse}
+            isPricePending={isPricePending}
+            isPriceUnavailable={isPriceUnavailable}
             priceDisplay={priceDisplay}
             totalLessons={totalLessons}
-            onCheckout={() => setShowCheckoutModal(true)}
+            onEnroll={() => void handleEnrollment()}
             onLessonOpen={handleOpenLesson}
             onStartLearning={handleStartLearning}
           />
@@ -187,21 +260,24 @@ export default function CourseDetailPage() {
       {previewLesson && (
         <LessonPreviewModal
           isEnrolled={isEnrolled}
+          isEnrollmentPending={enrollFreeCourse.isPending || createPayment.isPending}
           lesson={previewLesson}
+          enrollmentLabel={isFreeCourse ? "Đăng ký miễn phí để mở khóa toàn bộ" : "Mua khóa học để mở khóa toàn bộ"}
           onClose={() => setPreviewLesson(null)}
-          onCheckout={() => {
+          onEnroll={() => {
             setPreviewLesson(null);
-            setShowCheckoutModal(true);
+            void handleEnrollment();
           }}
         />
       )}
-      {showCheckoutModal && (
+      {showCheckoutModal && !isPriceUnavailable && (
         <CheckoutModal
           courseTitle={course.title}
-          isPending={createPayment.isPending}
+          isFree={isFreeCourse}
+          isPending={enrollFreeCourse.isPending || createPayment.isPending}
           priceDisplay={priceDisplay}
           onClose={() => setShowCheckoutModal(false)}
-          onConfirm={handleConfirmCheckout}
+          onConfirm={handleConfirmEnrollment}
         />
       )}
     </div>

@@ -22,6 +22,7 @@ import {
   useCreatePriceTier,
   useUpdatePriceTier,
 } from "@/hooks/use-price-tier";
+import { formatCurrencyAmount, normalizeCurrencyCode } from "@/lib/currency";
 
 // ─── SCHEMA ───
 const priceTierSchema = z.object({
@@ -121,13 +122,13 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: PriceT
                     type="number"
                     {...register("priceAmount", {valueAsNumber: true})}
                     className={cn(
-                      "h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 pl-10 font-mono font-bold w-full",
+                      "h-11 rounded-xl border-slate-200 focus-visible:ring-indigo-500/20 focus-visible:border-indigo-500 pl-14 font-mono font-bold w-full",
                       errors.priceAmount && "border-rose-500 focus-visible:ring-rose-500/10"
                     )}
                     disabled={isPending}
                   />
-                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 font-bold">
-                    {currency === "VND" ? "₫" : "$"}
+                  <div className="absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-xs font-bold">
+                    {normalizeCurrencyCode(currency)}
                   </div>
                 </div>
               </div>
@@ -146,8 +147,8 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: PriceT
                     <SelectValue />
                   </SelectTrigger>
                   <SelectContent className="rounded-xl border-slate-200">
-                    <SelectItem value="VND" className="rounded-lg cursor-pointer py-2.5 px-3">VND (₫)</SelectItem>
-                    <SelectItem value="USD" className="rounded-lg cursor-pointer py-2.5 px-3">USD ($)</SelectItem>
+                    <SelectItem value="VND" className="rounded-lg cursor-pointer py-2.5 px-3">VND</SelectItem>
+                    <SelectItem value="USD" className="rounded-lg cursor-pointer py-2.5 px-3">USD</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -175,7 +176,7 @@ export function PriceTierFormDialog({ children, initialData, onSuccess }: PriceT
             <div className="flex items-center justify-between">
               <span className="text-[9px] font-black uppercase text-slate-400 tracking-tighter">Giá hiển thị thực tế:</span>
               <span className={cn("text-lg font-black", isEdit ? "text-amber-600" : "text-indigo-600")}>
-                {new Intl.NumberFormat().format(priceAmount || 0)} {currency}
+                {formatCurrencyAmount(priceAmount || 0, currency)}
               </span>
             </div>
           </div>

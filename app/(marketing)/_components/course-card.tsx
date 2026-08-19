@@ -7,6 +7,7 @@ import { CourseSearchResponse } from "@/interfaces/course.interface";
 import { PriceTierResponse } from "@/hooks/use-price-tier";
 import Link from "next/link";
 import { RemoteImage } from "@/components/shared/remote-image";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 interface CourseCardProps {
   course: CourseSearchResponse;
@@ -18,9 +19,12 @@ export function CourseCard({ course, priceTiers }: CourseCardProps) {
 
   // Tìm thông tin định giá
   const priceTier = priceTiers.find((tier) => tier.id === course.priceTierId);
-  const formattedPrice = priceTier
-    ? `${new Intl.NumberFormat().format(priceTier.priceAmount)}đ`
-    : "Miễn phí";
+  const formattedPrice =
+    !course.priceTierId || priceTier?.priceAmount === 0
+      ? "Miễn phí"
+      : priceTier
+        ? formatCurrencyAmount(priceTier.priceAmount, priceTier.currency)
+        : "Chưa xác định";
 
   const totalLessons = course.totalLessons || 0;
 

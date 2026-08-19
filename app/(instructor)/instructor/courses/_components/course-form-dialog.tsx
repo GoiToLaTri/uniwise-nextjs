@@ -26,6 +26,7 @@ import {
   validateThumbnailFile,
 } from "@/lib/upload-validation";
 import { CourseThumbnailField } from "./course-thumbnail-field";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 // ─── ZOD SCHEMA ───
 const courseSchema = z.object({
@@ -265,7 +266,7 @@ export function CourseFormDialog({ children, initialData, onSuccess }: CourseFor
                       </SelectItem>
                       {priceTiers.map((tier) => (
                         <SelectItem key={tier.id} value={tier.id} className="rounded-lg cursor-pointer py-2.5 px-3">
-                          {tier.tierName} ({new Intl.NumberFormat().format(tier.priceAmount)} {tier.currency})
+                          {tier.tierName} ({formatCurrencyAmount(tier.priceAmount, tier.currency)})
                         </SelectItem>
                       ))}
                     </SelectContent>

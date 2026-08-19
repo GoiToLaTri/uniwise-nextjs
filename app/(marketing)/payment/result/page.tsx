@@ -6,6 +6,8 @@ import Link from "next/link";
 import { usePaymentDetail } from "@/hooks/use-payment";
 import { useCourse } from "@/hooks/use-course";
 import apiClient from "@/lib/api-client";
+import { useQueryClient } from "@tanstack/react-query";
+import { formatCurrencyAmount } from "@/lib/currency";
 import { 
   CheckCircle2, 
   XCircle, 
@@ -25,6 +27,7 @@ function useHasHydrated() {
 
 function PaymentResultContent() {
   const searchParams = useSearchParams();
+  const queryClient = useQueryClient();
   const hasHydrated = useHasHydrated();
   
   // Các query parameter trả về từ VNPay
@@ -68,7 +71,7 @@ function PaymentResultContent() {
   const { data: payment, isLoading } = usePaymentDetail(paymentId || "");
 
   // Gọi thêm dữ liệu khóa học để hiển thị tên khóa học (nếu có coursePublicId)
-  const { data: course } = useCourse(coursePublicId || "");
+  const { data: course, refetch: refetchCourse } = useCourse(coursePublicId || "");
 
   // Dọn dẹp localStorage khi giao dịch kết thúc trạng thái PENDING
   React.useEffect(() => {
@@ -92,20 +95,45 @@ function PaymentResultContent() {
     ? payment.status === "PENDING"
     : paymentId !== null && isLoading);
 
+  React.useEffect(() => {
+    if (!isSuccess || !coursePublicId || course?.isEnrolled) return;
+
+    let attempts = 0;
+    const refreshEnrollment = async () => {
+      attempts += 1;
+      await queryClient.invalidateQueries({ queryKey: ["my-courses"] });
+      await refetchCourse();
+    };
+
+    void refreshEnrollment();
+    const intervalId = window.setInterval(() => {
+      if (attempts >= 10) {
+        window.clearInterval(intervalId);
+        return;
+      }
+      void refreshEnrollment();
+    }, 1500);
+
+    return () => window.clearInterval(intervalId);
+  }, [course?.isEnrolled, coursePublicId, isSuccess, queryClient, refetchCourse]);
+
   // Format số tiền hiển thị
   const amountDisplay = React.useMemo(() => {
     if (payment) {
-      return `${new Intl.NumberFormat().format(payment.amount)}đ`;
+      return formatCurrencyAmount(payment.amount, payment.currency);
     }
     if (vnpAmount) {
       const parsedAmount = parseInt(vnpAmount) / 100;
-      return `${new Intl.NumberFormat().format(parsedAmount)}đ`;
+      return formatCurrencyAmount(parsedAmount, "VND");
     }
     return "N/A";
   }, [payment, vnpAmount]);
 
   // CTA Link cho khóa học
   const courseLink = coursePublicId ? `/courses/${coursePublicId}` : "/courses";
+  const learningLink = coursePublicId && course?.isEnrolled
+    ? `/course/${coursePublicId}/learn`
+    : courseLink;
 
   return (
     <div className="min-h-[80vh] flex items-center justify-center bg-gradient-to-tr from-slate-50 via-indigo-50/20 to-purple-50/30 px-4 py-16">
@@ -208,11 +236,11 @@ function PaymentResultContent() {
           {!isPending && isSuccess && (
             <>
               <Link 
-                href={courseLink}
+                href={learningLink}
                 className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 text-sm flex items-center justify-center gap-2 cursor-pointer shadow-lg shadow-indigo-100"
               >
                 <BookOpen className="w-4 h-4" />
-                Vào học ngay
+                {course?.isEnrolled ? "Vào học ngay" : "Xem khóa học"}
                 <ArrowRight className="w-4 h-4" />
               </Link>
               <Link 

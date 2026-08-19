@@ -15,6 +15,7 @@ import {
 import { cn } from "@/lib/utils";
 import { CourseSearchResponse } from "@/interfaces/course.interface";
 import { PriceTierResponse } from "@/hooks/use-price-tier";
+import { formatCurrencyAmount } from "@/lib/currency";
 import { useDeleteCourse } from "@/hooks/use-course";
 import { CourseFormDialog } from "./course-form-dialog";
 import Link from "next/link";
@@ -33,7 +34,7 @@ export function CourseCard({ course, priceTiers, onRefresh }: CourseCardProps) {
   // Tìm thông tin price tier để hiển thị giá tiền thực tế
   const priceTier = priceTiers.find((tier) => tier.id === course.priceTierId);
   const formattedPrice = priceTier
-    ? `${new Intl.NumberFormat().format(priceTier.priceAmount)} ${priceTier.currency}`
+    ? formatCurrencyAmount(priceTier.priceAmount, priceTier.currency)
     : "Miễn phí / Chưa định giá";
 
   const totalLessons = course.totalLessons || 0;

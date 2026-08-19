@@ -12,6 +12,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { PriceTierFormDialog } from "./price-tier-form-dialog";
 import { PriceTierResponse, useDeletePriceTier } from "@/hooks/use-price-tier";
+import { formatCurrencyAmount } from "@/lib/currency";
 
 interface PriceTierTableProps {
   data?: { content: PriceTierResponse[] } | null;
@@ -63,12 +64,7 @@ export function PriceTierTable({ data, isLoading, onRefresh }: PriceTierTablePro
               </div>
             </TableCell>
             <TableCell className="text-right font-black text-slate-900">
-              <div className="flex items-center justify-end gap-1">
-                {item.priceAmount.toLocaleString()}
-                <Badge variant="outline" className="text-[10px] font-black bg-slate-50 ml-1">
-                  {item.currency}
-                </Badge>
-              </div>
+              {formatCurrencyAmount(item.priceAmount, item.currency)}
             </TableCell>
             <TableCell className="text-center">
               <Badge className="bg-slate-100 text-slate-600 border-none rounded-lg font-bold">

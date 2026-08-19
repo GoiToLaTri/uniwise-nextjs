@@ -14,9 +14,13 @@ const courseBenefits = [
 interface CourseEnrollmentCardProps {
   course: CourseResponse;
   isEnrolled: boolean;
+  isEnrollmentPending: boolean;
+  isFree: boolean;
+  isPricePending: boolean;
+  isPriceUnavailable: boolean;
   priceDisplay: string;
   totalLessons: number;
-  onCheckout: () => void;
+  onEnroll: () => void;
   onLessonOpen: (lesson: CourseLesson) => void;
   onStartLearning: () => void;
 }
@@ -24,9 +28,13 @@ interface CourseEnrollmentCardProps {
 export function CourseEnrollmentCard({
   course,
   isEnrolled,
+  isEnrollmentPending,
+  isFree,
+  isPricePending,
+  isPriceUnavailable,
   priceDisplay,
   totalLessons,
-  onCheckout,
+  onEnroll,
   onLessonOpen,
   onStartLearning,
 }: CourseEnrollmentCardProps) {
@@ -61,7 +69,11 @@ export function CourseEnrollmentCard({
             <div className="flex items-baseline gap-2 mb-2">
               <span className="text-3xl font-black text-slate-900">{priceDisplay}</span>
             </div>
-            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-6">Cam kết hoàn tiền trong 7 ngày nếu không hài lòng</p>
+            <p className="text-xs text-slate-400 font-bold uppercase tracking-wider mb-6">
+              {isFree
+                ? "Ghi danh miễn phí, truy cập nội dung trọn đời"
+                : "Cam kết hoàn tiền trong 7 ngày nếu không hài lòng"}
+            </p>
           </div>
 
           {isEnrolled ? (
@@ -84,8 +96,22 @@ export function CourseEnrollmentCard({
             </div>
           ) : (
             <div className="space-y-3">
-              <button onClick={onCheckout} className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md">
-                Đăng ký học ngay
+              <button
+                onClick={onEnroll}
+                disabled={isEnrollmentPending || isPricePending || isPriceUnavailable}
+                className="w-full h-12 rounded-xl bg-indigo-600 hover:bg-indigo-700 text-white font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer shadow-md disabled:cursor-not-allowed disabled:opacity-60 disabled:active:scale-100"
+              >
+                {isEnrollmentPending
+                  ? isFree
+                    ? "Đang ghi danh..."
+                    : "Đang xử lý..."
+                  : isPricePending
+                    ? "Đang tải học phí..."
+                    : isPriceUnavailable
+                      ? "Chưa thể đăng ký"
+                      : isFree
+                        ? "Đăng ký miễn phí"
+                        : "Mua khóa học ngay"}
               </button>
               {firstPreviewLesson && (
                 <button onClick={() => onLessonOpen(firstPreviewLesson)} className="w-full h-12 rounded-xl bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold transition-all active:scale-95 flex items-center justify-center gap-2 cursor-pointer">

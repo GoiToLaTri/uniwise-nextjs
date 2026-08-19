@@ -2,10 +2,15 @@ import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import apiClient from "@/lib/api-client";
 import { ApiResponse } from "@/interfaces/response/api-response.interface";
 import { CourseResponse, MyCoursesResponse } from "@/interfaces/course.interface";
+import { COURSE_DETAIL_QUERY_KEY } from "@/hooks/use-course";
+import { toast } from "sonner";
+import { getApiErrorMessage } from "@/lib/auth-error";
+
+const MY_LEARNING_COURSES_QUERY_KEY = ["my-courses"];
 
 export const useMyCourses = (page: number = 1, size: number = 12) => {
   return useQuery({
-    queryKey: ["my-courses", page, size],
+    queryKey: [...MY_LEARNING_COURSES_QUERY_KEY, page, size],
     queryFn: async () => {
       const response = await apiClient.get<never, ApiResponse<MyCoursesResponse>>(
         "/course-service/api/v1/learning-progress/my-courses",
@@ -14,6 +19,42 @@ export const useMyCourses = (page: number = 1, size: number = 12) => {
         }
       );
       return response.data;
+    },
+  });
+};
+
+export const useEnrollFreeCourse = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: async ({ courseId }: { courseId: string; coursePublicId: string }) => {
+      await apiClient.post<never, ApiResponse<void>>(
+        `/course-service/api/v1/learning-progress/courses/${courseId}/enroll-free`,
+      );
+    },
+    onSuccess: async (_, { coursePublicId }) => {
+      queryClient.setQueryData<CourseResponse | null>(
+        COURSE_DETAIL_QUERY_KEY(coursePublicId),
+        (currentCourse) =>
+          currentCourse
+            ? {
+                ...currentCourse,
+                isEnrolled: true,
+                progressPercentage: currentCourse.progressPercentage ?? 0,
+                completedLessonsCount: currentCourse.completedLessonsCount ?? 0,
+              }
+            : currentCourse,
+      );
+
+      await queryClient.invalidateQueries({
+        queryKey: MY_LEARNING_COURSES_QUERY_KEY,
+      });
+      toast.success("Đăng ký khóa học miễn phí thành công!");
+    },
+    onError: (error: unknown) => {
+      toast.error(
+        getApiErrorMessage(error, "Không thể đăng ký khóa học miễn phí."),
+      );
     },
   });
 };

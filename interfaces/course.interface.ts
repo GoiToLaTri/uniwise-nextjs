@@ -33,7 +33,7 @@ export interface CourseResponse {
   id: string;
   publicId: string;
   instructor: InstructorSummaryResponse | null;
-  priceTierId: string;
+  priceTierId: string | null;
   title: string;
   description: string;
   thumbnailUrl: string;
@@ -59,7 +59,7 @@ export interface CreateCourseRequest {
   description: string;
   thumbnailUrl: string;
   thumbnailName?: string;
-  priceTierId: string;
+  priceTierId: string | null;
   status: string;
 }
 
@@ -68,7 +68,7 @@ export interface UpdateCourseRequest {
   description: string;
   thumbnailUrl: string;
   thumbnailName?: string;
-  priceTierId: string;
+  priceTierId: string | null;
   status: string;
 }
 
